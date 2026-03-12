@@ -1,0 +1,11 @@
+.git/
+.gitignore
+.vscode/
+node_modules/
+*.zip
+*.sql
+*backup*
+*debug*
+*test*
+*teste*
+*.log
