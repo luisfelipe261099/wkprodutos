@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste de Funcionalidades de Busca</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="css/style-new.css" rel="stylesheet">
+    <style>
+        body { padding: 2rem; }
+        .test-section { margin-bottom: 3rem; }
+        .test-table { margin-top: 1rem; }
+        .mobile-card { 
+            border: 1px solid #dee2e6; 
+            border-radius: 0.375rem; 
+            padding: 1rem; 
+            margin-bottom: 1rem; 
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <h1 class="mb-4">Teste de Funcionalidades de Busca</h1>
+        
+        <!-- Teste 1: Busca em Produtos -->
+        <div class="test-section">
+            <div class="modern-card">
+                <div class="card-header-modern d-flex justify-content-between align-items-center flex-wrap gap-3">
+                    <div class="d-flex align-items-center">
+                        <span><i class="fas fa-box"></i> Teste - Lista de Produtos</span>
+                        <div class="ms-auto">
+                            <span class="badge bg-primary">5 produtos</span>
+                        </div>
+                    </div>
+                    <div class="d-flex gap-2 flex-grow-1 flex-md-grow-0">
+                        <div class="input-group" style="max-width: 300px;">
+                            <input type="text" class="form-control" placeholder="Buscar produtos..." id="searchInputProdutos">
+                            <button class="btn btn-outline-primary" type="button">
+                                <i class="fas fa-search"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body-modern">
+                    <div class="table-responsive d-none d-lg-block">
+                        <table class="table table-hover" id="produtosTestTable">
+                            <thead>
+                                <tr>
+                                    <th>Produto</th>
+                                    <th>SKU</th>
+                                    <th>Preço</th>
+                                    <th>Estoque</th>
+                                    <th>Fornecedor</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Notebook Dell Inspiron</td>
+                                    <td>NB001</td>
+                                    <td>R$ 2.500,00</td>
+                                    <td>10</td>
+                                    <td>Dell Brasil</td>
+                                </tr>
+                                <tr>
+                                    <td>Mouse Logitech MX</td>
+                                    <td>MS002</td>
+                                    <td>R$ 150,00</td>
+                                    <td>25</td>
+                                    <td>Logitech</td>
+                                </tr>
+                                <tr>
+                                    <td>Teclado Mecânico RGB</td>
+                                    <td>KB003</td>
+                                    <td>R$ 300,00</td>
+                                    <td>15</td>
+                                    <td>Corsair</td>
+                                </tr>
+                                <tr>
+                                    <td>Monitor Samsung 24"</td>
+                                    <td>MN004</td>
+                                    <td>R$ 800,00</td>
+                                    <td>8</td>
+                                    <td>Samsung</td>
+                                </tr>
+                                <tr>
+                                    <td>Webcam Logitech HD</td>
+                                    <td>WC005</td>
+                                    <td>R$ 200,00</td>
+                                    <td>20</td>
+                                    <td>Logitech</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <!-- Cards Mobile -->
+                    <div class="mobile-products-container d-block d-lg-none">
+                        <div class="mobile-card mobile-product-item">
+                            <strong>Notebook Dell Inspiron</strong><br>
+                            SKU: NB001 | Preço: R$ 2.500,00<br>
+                            Fornecedor: Dell Brasil
+                        </div>
+                        <div class="mobile-card mobile-product-item">
+                            <strong>Mouse Logitech MX</strong><br>
+                            SKU: MS002 | Preço: R$ 150,00<br>
+                            Fornecedor: Logitech
+                        </div>
+                        <div class="mobile-card mobile-product-item">
+                            <strong>Teclado Mecânico RGB</strong><br>
+                            SKU: KB003 | Preço: R$ 300,00<br>
+                            Fornecedor: Corsair
+                        </div>
+                        <div class="mobile-card mobile-product-item">
+                            <strong>Monitor Samsung 24"</strong><br>
+                            SKU: MN004 | Preço: R$ 800,00<br>
+                            Fornecedor: Samsung
+                        </div>
+                        <div class="mobile-card mobile-product-item">
+                            <strong>Webcam Logitech HD</strong><br>
+                            SKU: WC005 | Preço: R$ 200,00<br>
+                            Fornecedor: Logitech
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Teste 2: Busca em Clientes -->
+        <div class="test-section">
+            <div class="modern-card">
+                <div class="card-header-modern d-flex justify-content-between align-items-center flex-wrap gap-3">
+                    <div class="d-flex align-items-center">
+                        <span><i class="fas fa-users"></i> Teste - Lista de Clientes</span>
+                        <div class="ms-auto">
+                            <span class="badge bg-primary">3 clientes</span>
+                        </div>
+                    </div>
+                    <div class="d-flex gap-2 flex-grow-1 flex-md-grow-0">
+                        <div class="input-group" style="max-width: 300px;">
+                            <input type="text" class="form-control" placeholder="Buscar clientes..." id="searchInputClientes">
+                            <button class="btn btn-outline-primary" type="button">
+                                <i class="fas fa-search"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body-modern">
+                    <div class="table-responsive">
+                        <table class="table table-hover" id="clientesTestTable">
+                            <thead>
+                                <tr>
+                                    <th>Cliente</th>
+                                    <th>Email</th>
+                                    <th>Telefone</th>
+                                    <th>Cidade</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>João Silva</td>
+                                    <td>joao@email.com</td>
+                                    <td>(11) 99999-9999</td>
+                                    <td>São Paulo</td>
+                                </tr>
+                                <tr>
+                                    <td>Maria Santos</td>
+                                    <td>maria@email.com</td>
+                                    <td>(21) 88888-8888</td>
+                                    <td>Rio de Janeiro</td>
+                                </tr>
+                                <tr>
+                                    <td>Pedro Oliveira</td>
+                                    <td>pedro@email.com</td>
+                                    <td>(31) 77777-7777</td>
+                                    <td>Belo Horizonte</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Instruções de Teste -->
+        <div class="alert alert-info">
+            <h5><i class="fas fa-info-circle"></i> Instruções de Teste</h5>
+            <ul>
+                <li><strong>Desktop:</strong> Teste a busca nas tabelas acima</li>
+                <li><strong>Tablet:</strong> Redimensione a janela para 768px-1024px e teste a responsividade</li>
+                <li><strong>Mobile:</strong> Redimensione para menos de 768px e teste os cards mobile</li>
+                <li><strong>Funcionalidades:</strong> Digite termos como "Logitech", "João", "Dell" para testar a busca</li>
+                <li><strong>Tecla ESC:</strong> Limpa a busca</li>
+            </ul>
+        </div>
+    </div>
+
+    <script src="js/search-utils.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Teste busca produtos
+            SearchUtils.initializeSearch({
+                inputId: 'searchInputProdutos',
+                tableId: 'produtosTestTable',
+                mobileCardsSelector: '.mobile-product-item',
+                searchColumns: [0, 1, 4] // Nome, SKU, Fornecedor
+            });
+
+            // Teste busca clientes
+            SearchUtils.initializeSearch({
+                inputId: 'searchInputClientes',
+                tableId: 'clientesTestTable',
+                searchColumns: [0, 1, 3] // Nome, Email, Cidade
+            });
+        });
+    </script>
+</body>
+</html>

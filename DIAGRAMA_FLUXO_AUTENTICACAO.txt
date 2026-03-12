@@ -1,0 +1,209 @@
+╔════════════════════════════════════════════════════════════════════════════════╗
+║                    FLUXO DE AUTENTICAÇÃO DO SISTEMA                            ║
+║                  wkprodutosdelimpeza.com.br/system                             ║
+╚════════════════════════════════════════════════════════════════════════════════╝
+
+┌─────────────────────────────────────────────────────────────────────────────────┐
+│ 1. ACESSO À RAIZ DO SISTEMA                                                     │
+├─────────────────────────────────────────────────────────────────────────────────┤
+│                                                                                  │
+│  URL: https://wkprodutosdelimpeza.com.br/system                                │
+│  URL: https://wkprodutosdelimpeza.com.br/system/                               │
+│                                                                                  │
+│  ↓                                                                               │
+│                                                                                  │
+│  .htaccess intercepta a requisição                                              │
+│  (RewriteEngine On)                                                             │
+│                                                                                  │
+└─────────────────────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────────────────────┐
+│ 2. VERIFICAÇÃO NO .HTACCESS                                                     │
+├─────────────────────────────────────────────────────────────────────────────────┤
+│                                                                                  │
+│  RewriteCond %{REQUEST_FILENAME} !-f    (não é arquivo)                        │
+│  RewriteCond %{REQUEST_FILENAME} !-d    (não é diretório)                      │
+│  RewriteCond %{REQUEST_URI} !^/login\.php$  (não é login.php)                  │
+│  RewriteCond %{REQUEST_URI} !^/css/     (não é CSS)                            │
+│  RewriteCond %{REQUEST_URI} !^/js/      (não é JS)                             │
+│  RewriteCond %{REQUEST_URI} !^/images/  (não é imagens)                        │
+│  RewriteCond %{REQUEST_URI} !^/includes/ (não é includes)                      │
+│  RewriteCond %{REQUEST_URI} !^/uploads/ (não é uploads)                        │
+│  RewriteCond %{REQUEST_URI} !^/vendor/  (não é vendor)                         │
+│                                                                                  │
+│  ↓                                                                               │
+│                                                                                  │
+│  RewriteRule ^(.*)$ index.php [L]                                              │
+│  (Redireciona para index.php)                                                   │
+│                                                                                  │
+└─────────────────────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────────────────────┐
+│ 3. PROCESSAMENTO EM INDEX.PHP                                                   │
+├─────────────────────────────────────────────────────────────────────────────────┤
+│                                                                                  │
+│  session_start()                                                                │
+│  (Inicia a sessão)                                                              │
+│                                                                                  │
+│  ↓                                                                               │
+│                                                                                  │
+│  ┌─────────────────────────────────────────────────────────────────────────┐   │
+│  │ Verifica: isset($_SESSION["loggedin"]) && $_SESSION["loggedin"] === true│   │
+│  └─────────────────────────────────────────────────────────────────────────┘   │
+│                                                                                  │
+│  ↙                                                    ↘                         │
+│                                                                                  │
+│ SIM                                                  NÃO                        │
+│ (Usuário logado)                                     (Usuário não logado)       │
+│                                                                                  │
+└─────────────────────────────────────────────────────────────────────────────────┘
+
+┌──────────────────────────────────────┐  ┌──────────────────────────────────────┐
+│ 4A. USUÁRIO LOGADO                   │  │ 4B. USUÁRIO NÃO LOGADO               │
+├──────────────────────────────────────┤  ├──────────────────────────────────────┤
+│                                      │  │                                      │
+│ header("Location: dashboard.php")    │  │ header("Location: login.php")        │
+│ exit()                               │  │ exit()                               │
+│                                      │  │                                      │
+│ ↓                                    │  │ ↓                                    │
+│                                      │  │                                      │
+│ ┌──────────────────────────────────┐ │  │ ┌──────────────────────────────────┐ │
+│ │ DASHBOARD.PHP                    │ │  │ │ LOGIN.PHP                        │ │
+│ │ (Página Protegida)               │ │  │ │ (Formulário de Login)            │ │
+│ │                                  │ │  │ │                                  │ │
+│ │ ✓ Acesso ao sistema             │ │  │ │ ✓ Exibe formulário              │ │
+│ │ ✓ Dados do usuário disponíveis  │ │  │ │ ✓ Usuário insere credenciais    │ │
+│ │ ✓ Menu de navegação             │ │  │ │ ✓ Clica em "Entrar"             │ │
+│ │ ✓ Acesso a todas as páginas     │ │  │ │                                  │ │
+│ └──────────────────────────────────┘ │  │ └──────────────────────────────────┘ │
+│                                      │  │                                      │
+│                                      │  │ ↓                                    │
+│                                      │  │                                      │
+│                                      │  │ Verifica credenciais no banco       │
+│                                      │  │                                      │
+│                                      │  │ ↙                    ↘              │
+│                                      │  │                                      │
+│                                      │  │ Válidas          Inválidas          │
+│                                      │  │                                      │
+│                                      │  │ ↓                    ↓              │
+│                                      │  │                                      │
+│                                      │  │ session_regenerate_id(true)         │
+│                                      │  │ $_SESSION["loggedin"] = true        │
+│                                      │  │ $_SESSION["id"] = $id              │
+│                                      │  │ $_SESSION["nome"] = $nome          │
+│                                      │  │ $_SESSION["nivel_acesso"] = $nivel │
+│                                      │  │                                      │
+│                                      │  │ header("Location: dashboard.php")   │
+│                                      │  │ exit()                              │
+│                                      │  │                                      │
+│                                      │  │ ↓                    ↓              │
+│                                      │  │                                      │
+│                                      │  │ DASHBOARD            Exibe erro     │
+│                                      │  │ (Acesso concedido)   "Email ou     │
+│                                      │  │                      senha inválidos"
+│                                      │  │                                      │
+└──────────────────────────────────────┘  └──────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────────────────────┐
+│ 5. LOGOUT                                                                       │
+├─────────────────────────────────────────────────────────────────────────────────┤
+│                                                                                  │
+│  Usuário clica em "Logout"                                                      │
+│                                                                                  │
+│  ↓                                                                               │
+│                                                                                  │
+│  logout.php executa:                                                            │
+│  session_start()                                                                │
+│  $_SESSION = array()                                                            │
+│  session_destroy()                                                              │
+│  header("location: index.php")                                                  │
+│  exit()                                                                         │
+│                                                                                  │
+│  ↓                                                                               │
+│                                                                                  │
+│  Volta para index.php (sem sessão)                                              │
+│  → Redireciona para login.php                                                   │
+│                                                                                  │
+└─────────────────────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────────────────────┐
+│ 6. ACESSO A PÁGINA PROTEGIDA DIRETAMENTE                                        │
+├─────────────────────────────────────────────────────────────────────────────────┤
+│                                                                                  │
+│  URL: https://wkprodutosdelimpeza.com.br/system/vendas.php                     │
+│                                                                                  │
+│  ↓                                                                               │
+│                                                                                  │
+│  vendas.php inicia:                                                             │
+│  session_start()                                                                │
+│                                                                                  │
+│  if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {         │
+│      header("location: index.php")                                              │
+│      exit()                                                                     │
+│  }                                                                               │
+│                                                                                  │
+│  ↓                                                                               │
+│                                                                                  │
+│  ┌─────────────────────────────────────────────────────────────────────────┐   │
+│  │ Verifica: Usuário está logado?                                          │   │
+│  └─────────────────────────────────────────────────────────────────────────┘   │
+│                                                                                  │
+│  ↙                                                    ↘                         │
+│                                                                                  │
+│ SIM                                                  NÃO                        │
+│ (Exibe página)                                       (Redireciona para login)   │
+│                                                                                  │
+└─────────────────────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────────────────────┐
+│ 7. ACESSO A ARQUIVO DE TESTE (REQUER ADMIN)                                     │
+├─────────────────────────────────────────────────────────────────────────────────┤
+│                                                                                  │
+│  URL: https://wkprodutosdelimpeza.com.br/system/test_db.php                    │
+│                                                                                  │
+│  ↓                                                                               │
+│                                                                                  │
+│  test_db.php inicia:                                                            │
+│  session_start()                                                                │
+│                                                                                  │
+│  if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {         │
+│      header("location: login.php")                                              │
+│      exit()                                                                     │
+│  }                                                                               │
+│                                                                                  │
+│  if (!isset($_SESSION["nivel_acesso"]) || $_SESSION["nivel_acesso"] !== "admin")│
+│      echo "Acesso negado. Apenas administradores..."                            │
+│      exit()                                                                     │
+│  }                                                                               │
+│                                                                                  │
+│  ↓                                                                               │
+│                                                                                  │
+│  ┌─────────────────────────────────────────────────────────────────────────┐   │
+│  │ Verifica: Usuário é admin?                                              │   │
+│  └─────────────────────────────────────────────────────────────────────────┘   │
+│                                                                                  │
+│  ↙                                                    ↘                         │
+│                                                                                  │
+│ SIM                                                  NÃO                        │
+│ (Exibe conteúdo)                                     (Exibe erro de acesso)     │
+│                                                                                  │
+└─────────────────────────────────────────────────────────────────────────────────┘
+
+╔════════════════════════════════════════════════════════════════════════════════╗
+║                              RESUMO DO FLUXO                                   ║
+╠════════════════════════════════════════════════════════════════════════════════╣
+║                                                                                ║
+║  1. Usuário acessa /system                                                    ║
+║  2. .htaccess redireciona para index.php                                      ║
+║  3. index.php verifica se está logado                                         ║
+║  4. Se logado → dashboard.php                                                 ║
+║  5. Se não logado → login.php                                                 ║
+║  6. Usuário faz login                                                         ║
+║  7. Credenciais verificadas                                                   ║
+║  8. Se válidas → sessão criada → dashboard.php                                ║
+║  9. Se inválidas → erro exibido → login.php                                   ║
+║  10. Usuário pode acessar todas as páginas protegidas                          ║
+║  11. Logout destrói sessão → login.php                                        ║
+║                                                                                ║
+╚════════════════════════════════════════════════════════════════════════════════╝
+

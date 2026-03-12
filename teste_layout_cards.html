@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste de Layout dos Cards</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            padding: 20px;
+            background-color: #f8f9fa;
+        }
+        
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+        
+        @media (max-width: 800px) {
+            .summary-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+        
+        @media (max-width: 500px) {
+            .summary-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        .summary-card {
+            background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+            border: 2px solid #e9ecef;
+            border-radius: 12px;
+            padding: 15px 10px;
+            text-align: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            transition: transform 0.2s;
+            min-height: 100px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        
+        .summary-card:hover {
+            transform: translateY(-2px);
+        }
+        
+        .summary-card h3 {
+            margin: 0 0 10px 0;
+            font-size: 11px;
+            color: #6c757d;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-weight: 600;
+            line-height: 1.2;
+        }
+        
+        .summary-card .value {
+            font-size: 20px;
+            font-weight: 700;
+            color: #2c3e50;
+            margin-bottom: 5px;
+            line-height: 1.1;
+        }
+        
+        .summary-card.success .value { color: #28a745; }
+        .summary-card.info .value { color: #17a2b8; }
+        .summary-card.warning .value { color: #ffc107; }
+        .summary-card.primary .value { color: #667eea; }
+        
+        .bank-info {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+        
+        .bank-item {
+            background-color: #ffffff;
+            border: 1px solid #b3d4fc;
+            border-radius: 8px;
+            padding: 12px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            min-height: 50px;
+            box-sizing: border-box;
+        }
+        
+        .bank-label {
+            font-weight: 600;
+            color: #495057;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            white-space: nowrap;
+            margin-right: 10px;
+        }
+        
+        .bank-value {
+            font-weight: 700;
+            color: #155724;
+            font-size: 12px;
+            font-family: 'Courier New', monospace;
+            text-align: right;
+            word-break: break-all;
+            flex: 1;
+        }
+        
+        .payment-section {
+            background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
+            border: 2px solid #28a745;
+            border-radius: 12px;
+            padding: 25px;
+            margin: 30px 0;
+        }
+        
+        .payment-section h3 {
+            margin: 0 0 20px 0;
+            color: #155724;
+            font-size: 18px;
+            text-align: center;
+            font-weight: 700;
+        }
+        
+        @media print {
+            body {
+                background-color: white !important;
+            }
+            .payment-section {
+                page-break-inside: avoid;
+                margin: 20px 0;
+            }
+            .bank-info {
+                grid-template-columns: repeat(2, 1fr) !important;
+                page-break-inside: avoid;
+            }
+            .bank-item {
+                page-break-inside: avoid;
+                font-size: 10px !important;
+            }
+            .bank-value {
+                font-size: 10px !important;
+            }
+            .bank-label {
+                font-size: 9px !important;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>Teste de Layout - Relatório de Vendas</h1>
+    
+    <h2>Cards de Resumo (4 colunas)</h2>
+    <div class="summary-grid">
+        <div class="summary-card success">
+            <h3>Vendas no Período</h3>
+            <div class="value">10</div>
+        </div>
+        <div class="summary-card primary">
+            <h3>Faturamento (Concluídas)</h3>
+            <div class="value">R$ 27.351,00</div>
+        </div>
+        <div class="summary-card info">
+            <h3>Lucro Bruto (Concluídas)</h3>
+            <div class="value">R$ 1.367,55</div>
+        </div>
+        <div class="summary-card warning">
+            <h3>Margem Média</h3>
+            <div class="value">5,0%</div>
+        </div>
+    </div>
+    
+    <h2>Informações Bancárias (2 colunas - Layout corrigido)</h2>
+    <div class="payment-section">
+        <h3>💳 Informações Bancárias para Pagamento</h3>
+        
+        <div class="bank-info">
+            <div class="bank-item">
+                <span class="bank-label">🏦 Banco:</span>
+                <span class="bank-value">INTER - 077</span>
+            </div>
+            <div class="bank-item">
+                <span class="bank-label">👤 Beneficiário:</span>
+                <span class="bank-value">KARLA WOLLINGER DOS SANTOS</span>
+            </div>
+            <div class="bank-item">
+                <span class="bank-label">🏢 CNPJ:</span>
+                <span class="bank-value">30.459.625/0001-87</span>
+            </div>
+            <div class="bank-item">
+                <span class="bank-label">🏪 Agência:</span>
+                <span class="bank-value">0001</span>
+            </div>
+            <div class="bank-item">
+                <span class="bank-label">💰 Conta Corrente:</span>
+                <span class="bank-value">44337759-6</span>
+            </div>
+            <div class="bank-item">
+                <span class="bank-label">🔑 Chave PIX:</span>
+                <span class="bank-value">30.459.625/0001-87</span>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        function testPrint() {
+            window.print();
+        }
+    </script>
+    
+    <button onclick="testPrint()" style="background: #667eea; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer;">
+        🖨️ Testar Impressão
+    </button>
+</body>
+</html>

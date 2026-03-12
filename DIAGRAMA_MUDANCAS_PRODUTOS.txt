@@ -1,0 +1,206 @@
+╔════════════════════════════════════════════════════════════════════════════════╗
+║                    DIAGRAMA DE MUDANÇAS - PRODUTOS.PHP                         ║
+╚════════════════════════════════════════════════════════════════════════════════╝
+
+┌────────────────────────────────────────────────────────────────────────────────┐
+│ FLUXO ANTES (COM PROBLEMAS)                                                    │
+└────────────────────────────────────────────────────────────────────────────────┘
+
+Usuário digita "água"
+        ↓
+JavaScript filtra visualmente
+        ↓
+Tabela mostra apenas "água"
+        ↓
+❌ MAS paginação não se atualiza
+❌ Mostra 28 páginas
+❌ Contador mostra 406 (total geral)
+❌ Erro: $total_produtos indefinida
+
+┌────────────────────────────────────────────────────────────────────────────────┐
+│ FLUXO DEPOIS (CORRIGIDO)                                                       │
+└────────────────────────────────────────────────────────────────────────────────┘
+
+Usuário digita "água"
+        ↓
+JavaScript envia para servidor (com debounce 500ms)
+        ↓
+PHP filtra no banco de dados
+        ↓
+WHERE (nome LIKE '%água%' OR sku LIKE '%água%' OR fornecedor LIKE '%água%')
+        ↓
+Conta total de resultados (45 produtos)
+        ↓
+Calcula paginação (45 / 15 = 3 páginas)
+        ↓
+Mostra página 1 com 15 produtos
+        ↓
+✅ Paginação se atualiza (mostra 3 páginas)
+✅ Contador mostra 45 resultados
+✅ Sem erros
+
+┌────────────────────────────────────────────────────────────────────────────────┐
+│ MUDANÇA 1: FILTRO DE BUSCA SERVER-SIDE                                         │
+└────────────────────────────────────────────────────────────────────────────────┘
+
+ANTES:
+┌─────────────────────────────────────────────────────────────────────────────┐
+│ Apenas filtro de fornecedor                                                 │
+│                                                                              │
+│ if (!empty($filtro_fornecedor)) {                                           │
+│     $where_conditions[] = "fornecedor = ?";                                 │
+│ }                                                                            │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+DEPOIS:
+┌─────────────────────────────────────────────────────────────────────────────┐
+│ Filtro de fornecedor + Filtro de busca                                      │
+│                                                                              │
+│ if (!empty($filtro_fornecedor)) {                                           │
+│     $where_conditions[] = "fornecedor = ?";                                 │
+│ }                                                                            │
+│                                                                              │
+│ if (!empty($filtro_busca)) {                                                │
+│     $where_conditions[] = "(nome LIKE ? OR sku LIKE ? OR fornecedor LIKE ?)";
+│     // Busca em 3 campos                                                    │
+│ }                                                                            │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+┌────────────────────────────────────────────────────────────────────────────────┐
+│ MUDANÇA 2: PAGINAÇÃO INTELIGENTE                                               │
+└────────────────────────────────────────────────────────────────────────────────┘
+
+ANTES:
+┌─────────────────────────────────────────────────────────────────────────────┐
+│ Mostra todas as páginas                                                     │
+│                                                                              │
+│ for ($i = 1; $i <= $total_paginas; $i++) {                                 │
+│     // Mostra página $i                                                     │
+│ }                                                                            │
+│                                                                              │
+│ Resultado: 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 ... 28       │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+DEPOIS:
+┌─────────────────────────────────────────────────────────────────────────────┐
+│ Mostra apenas 7 páginas ao redor da página atual                            │
+│                                                                              │
+│ $intervalo_paginas = 7;                                                     │
+│ $pagina_inicio = max(1, $pagina_atual - floor($intervalo_paginas / 2));    │
+│ $pagina_fim = min($total_paginas, $pagina_inicio + $intervalo_paginas - 1);│
+│                                                                              │
+│ for ($i = $pagina_inicio; $i <= $pagina_fim; $i++) {                       │
+│     // Mostra página $i                                                     │
+│ }                                                                            │
+│                                                                              │
+│ Resultado: << 1 2 3 4 5 6 7 >>                                             │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+┌────────────────────────────────────────────────────────────────────────────────┐
+│ MUDANÇA 3: VARIÁVEL CORRIGIDA                                                  │
+└────────────────────────────────────────────────────────────────────────────────┘
+
+ANTES (Linha 155):
+┌─────────────────────────────────────────────────────────────────────────────┐
+│ <div class="stats-value"><?php echo $total_produtos; ?></div>               │
+│                                                                              │
+│ ❌ Erro: Variável $total_produtos não definida                              │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+DEPOIS (Linha 168):
+┌─────────────────────────────────────────────────────────────────────────────┐
+│ <div class="stats-value"><?php echo $total_produtos_db; ?></div>            │
+│                                                                              │
+│ ✅ Usa variável correta $total_produtos_db                                  │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+┌────────────────────────────────────────────────────────────────────────────────┐
+│ MUDANÇA 4: CONTADOR DINÂMICO                                                   │
+└────────────────────────────────────────────────────────────────────────────────┘
+
+ANTES:
+┌─────────────────────────────────────────────────────────────────────────────┐
+│ <span class="badge bg-secondary" id="resultsCounter"></span>                │
+│                                                                              │
+│ JavaScript tenta atualizar, mas não funciona corretamente                   │
+│ Sempre mostra 406 resultados (total geral)                                  │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+DEPOIS:
+┌─────────────────────────────────────────────────────────────────────────────┐
+│ <span class="badge bg-secondary">                                           │
+│     <?php echo $total_produtos_db; ?> resultado<?php echo ... ?>            │
+│ </span>                                                                      │
+│                                                                              │
+│ PHP calcula dinamicamente                                                   │
+│ Mostra número correto com pluralização                                      │
+│ Exemplo: "45 resultados" ou "1 resultado"                                   │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+┌────────────────────────────────────────────────────────────────────────────────┐
+│ MUDANÇA 5: JAVASCRIPT MELHORADO                                                │
+└────────────────────────────────────────────────────────────────────────────────┘
+
+ANTES:
+┌─────────────────────────────────────────────────────────────────────────────┐
+│ SearchUtils.initializeSearch({                                              │
+│     inputId: 'searchInput',                                                 │
+│     tableId: 'produtosTable',                                               │
+│     mobileCardsSelector: '.mobile-product-item',                            │
+│     searchColumns: [0, 1, 4]                                                │
+│ });                                                                          │
+│                                                                              │
+│ ❌ Apenas filtra visualmente (client-side)                                  │
+│ ❌ Não atualiza paginação                                                   │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+DEPOIS:
+┌─────────────────────────────────────────────────────────────────────────────┐
+│ searchInput.addEventListener('keyup', function(e) {                         │
+│     if (e.key === 'Enter') {                                                │
+│         performSearch();                                                    │
+│         return;                                                             │
+│     }                                                                        │
+│     clearTimeout(searchTimeout);                                            │
+│     searchTimeout = setTimeout(performSearch, 500);                         │
+│ });                                                                          │
+│                                                                              │
+│ function performSearch() {                                                  │
+│     const searchTerm = searchInput.value.trim();                            │
+│     const url = new URL(window.location);                                   │
+│     url.searchParams.set('search', searchTerm);                             │
+│     url.searchParams.set('page', '1');                                      │
+│     window.location.href = url.toString();                                  │
+│ }                                                                            │
+│                                                                              │
+│ ✅ Busca server-side                                                        │
+│ ✅ Debounce 500ms                                                           │
+│ ✅ Enter para busca imediata                                                │
+│ ✅ Atualiza paginação                                                       │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+┌────────────────────────────────────────────────────────────────────────────────┐
+│ RESUMO DE MUDANÇAS                                                             │
+└────────────────────────────────────────────────────────────────────────────────┘
+
+Arquivo: produtos.php
+
+Linhas 61-83:    ✅ Adicionado filtro de busca server-side
+Linha 168:       ✅ Corrigida variável $total_produtos
+Linhas 194-197:  ✅ Contador dinâmico
+Linhas 338-413:  ✅ Paginação inteligente
+Linhas 449-522:  ✅ JavaScript melhorado
+
+Total de mudanças: 5 principais
+Linhas modificadas: ~150
+Complexidade: Média
+Tempo de implementação: ~30 minutos
+
+╔════════════════════════════════════════════════════════════════════════════════╗
+║                              STATUS: ✅ COMPLETO                              ║
+║                                                                                ║
+║  Todas as mudanças foram implementadas e testadas com sucesso.                ║
+║  Nenhum erro de sintaxe PHP detectado.                                        ║
+║  Pronto para produção.                                                        ║
+╚════════════════════════════════════════════════════════════════════════════════╝
+

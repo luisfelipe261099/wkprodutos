@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste - Busca de Produtos em Orçamentos</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="css/style-new.css" rel="stylesheet">
+    <style>
+        body { padding: 2rem; background: #f8f9fa; }
+        
+        /* Estilos específicos para busca de produtos */
+        #produto_select {
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        #produto_search {
+            transition: all 0.3s ease;
+        }
+
+        #produto_search:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+        }
+
+        .input-group .btn {
+            border-left: none;
+        }
+
+        .produtos-search-container {
+            background: #f8f9fa;
+            border-radius: 0.375rem;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            border: 1px solid #dee2e6;
+        }
+
+        #produtos_count {
+            font-weight: 500;
+            color: #6c757d;
+        }
+
+        .btn-outline-secondary:hover {
+            background-color: #6c757d;
+            border-color: #6c757d;
+            color: white;
+        }
+
+        .test-info {
+            background: #e3f2fd;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            margin-bottom: 2rem;
+            border-left: 4px solid #2196f3;
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="test-info">
+            <h4><i class="fas fa-search me-2"></i>Teste - Busca de Produtos em Criar Orçamento</h4>
+            <p class="mb-1"><strong>Funcionalidades:</strong> Busca por nome de produto + Filtro por fornecedor</p>
+            <p class="mb-0"><strong>Recursos:</strong> Busca em tempo real, contador de resultados, limpar filtros</p>
+        </div>
+
+        <!-- Simulação da seção de adicionar produtos -->
+        <div class="modern-card">
+            <div class="card-header-modern">
+                <i class="fas fa-plus-circle"></i>
+                Adicionar Produtos ao Orçamento
+            </div>
+            <div class="card-body-modern">
+                <!-- Barra de Busca e Filtros -->
+                <div class="produtos-search-container">
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-6">
+                            <label for="produto_search" class="form-label">Buscar Produto</label>
+                            <div class="input-group">
+                                <input type="text" class="form-control" id="produto_search" placeholder="Digite o nome do produto...">
+                                <button class="btn btn-outline-secondary" type="button" id="clearSearchBtn">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="empresa_filter" class="form-label">Filtrar por Empresa</label>
+                            <select class="form-control" id="empresa_filter">
+                                <option value="">Todas as empresas</option>
+                                <option value="1">Dell Brasil</option>
+                                <option value="2">Logitech</option>
+                                <option value="3">Samsung</option>
+                                <option value="4">Corsair</option>
+                                <option value="5">Microsoft</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">&nbsp;</label>
+                            <div class="d-flex gap-2">
+                                <button type="button" class="btn btn-outline-primary" id="clearFiltersBtn">
+                                    <i class="fas fa-filter me-1"></i> Limpar Filtros
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Seleção de Produtos -->
+                <div class="row g-3 align-items-end">
+                    <div class="col-md-4">
+                        <label for="produto_select" class="form-label">Produto</label>
+                        <select class="form-control" id="produto_select" size="6">
+                            <option value="">Selecione um produto...</option>
+                            <option value="1" data-preco="2500.00" data-empresa="1" data-nome="Notebook Dell Inspiron 15">Notebook Dell Inspiron 15 (Dell Brasil)</option>
+                            <option value="2" data-preco="350.00" data-empresa="2" data-nome="Mouse Logitech MX Master 3">Mouse Logitech MX Master 3 (Logitech)</option>
+                            <option value="3" data-preco="1200.00" data-empresa="3" data-nome="Monitor Samsung 27 4K">Monitor Samsung 27" 4K (Samsung)</option>
+                            <option value="4" data-preco="450.00" data-empresa="4" data-nome="Teclado Corsair K95 RGB">Teclado Corsair K95 RGB (Corsair)</option>
+                            <option value="5" data-preco="180.00" data-empresa="2" data-nome="Webcam Logitech C920">Webcam Logitech C920 (Logitech)</option>
+                            <option value="6" data-preco="800.00" data-empresa="1" data-nome="Notebook Dell Vostro 14">Notebook Dell Vostro 14 (Dell Brasil)</option>
+                            <option value="7" data-preco="2800.00" data-empresa="3" data-nome="TV Samsung 55 QLED">TV Samsung 55" QLED (Samsung)</option>
+                            <option value="8" data-preco="120.00" data-empresa="5" data-nome="Teclado Microsoft Ergonomic">Teclado Microsoft Ergonomic (Microsoft)</option>
+                            <option value="9" data-preco="90.00" data-empresa="5" data-nome="Mouse Microsoft Surface">Mouse Microsoft Surface (Microsoft)</option>
+                            <option value="10" data-preco="650.00" data-empresa="4" data-nome="Headset Corsair Virtuoso">Headset Corsair Virtuoso (Corsair)</option>
+                        </select>
+                        <small class="text-muted">
+                            <span id="produtos_count">10</span> produto(s) encontrado(s)
+                        </small>
+                    </div>
+                    <div class="col-md-2">
+                        <label for="quantidade_item" class="form-label">Quantidade</label>
+                        <input type="number" class="form-control" id="quantidade_item" value="1" min="1">
+                    </div>
+                    <div class="col-md-2">
+                        <label for="preco_unitario_item" class="form-label">Preço Unit.</label>
+                        <input type="text" class="form-control" id="preco_unitario_item" value="0,00" placeholder="0,00">
+                    </div>
+                    <div class="col-md-2">
+                        <button type="button" class="btn btn-primary w-100" id="addItemBtn">
+                            <i class="fas fa-plus-circle me-1"></i> Adicionar
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Instruções de Teste -->
+        <div class="alert alert-success mt-4">
+            <h5><i class="fas fa-check-circle"></i> Funcionalidades Implementadas</h5>
+            <div class="row">
+                <div class="col-md-6">
+                    <h6>Busca de Produtos:</h6>
+                    <ul class="mb-0">
+                        <li>✅ Busca em tempo real por nome</li>
+                        <li>✅ Filtro por empresa/fornecedor</li>
+                        <li>✅ Contador de resultados</li>
+                        <li>✅ Botão limpar busca (X)</li>
+                        <li>✅ Tecla ESC limpa busca</li>
+                    </ul>
+                </div>
+                <div class="col-md-6">
+                    <h6>Interface:</h6>
+                    <ul class="mb-0">
+                        <li>✅ Select com scroll para muitos produtos</li>
+                        <li>✅ Botão "Limpar Filtros"</li>
+                        <li>✅ Layout responsivo</li>
+                        <li>✅ Feedback visual nos filtros</li>
+                        <li>✅ Integração com seleção de produtos</li>
+                    </ul>
+                </div>
+            </div>
+            <hr>
+            <p class="mb-0"><strong>Teste:</strong> Digite "Dell", "Mouse", "Samsung" ou selecione uma empresa no filtro para ver a busca funcionando!</p>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const produtoSelect = document.getElementById('produto_select');
+            const empresaFilter = document.getElementById('empresa_filter');
+            const produtoSearch = document.getElementById('produto_search');
+            const clearSearchBtn = document.getElementById('clearSearchBtn');
+            const clearFiltersBtn = document.getElementById('clearFiltersBtn');
+            const precoUnitarioInput = document.getElementById('preco_unitario_item');
+            
+            let todosProdutos = [];
+
+            // Carregar todos os produtos no array
+            Array.from(produtoSelect.options).forEach(option => {
+                if (option.value) {
+                    todosProdutos.push({
+                        value: option.value,
+                        text: option.textContent,
+                        preco: option.dataset.preco,
+                        empresa: option.dataset.empresa || '',
+                        nome: option.dataset.nome || option.textContent
+                    });
+                }
+            });
+
+            // Função para filtrar produtos por empresa e busca
+            function filtrarProdutos() {
+                const empresaSelecionada = empresaFilter.value;
+                const termoBusca = produtoSearch.value.toLowerCase();
+                
+                produtoSelect.innerHTML = '<option value="">Selecione um produto...</option>';
+                let produtosFiltrados = 0;
+                
+                todosProdutos.forEach(produto => {
+                    const matchEmpresa = !empresaSelecionada || produto.empresa === empresaSelecionada;
+                    const matchBusca = !termoBusca || produto.nome.toLowerCase().includes(termoBusca);
+                    
+                    if (matchEmpresa && matchBusca) {
+                        const option = document.createElement('option');
+                        option.value = produto.value;
+                        option.textContent = produto.text;
+                        option.dataset.preco = produto.preco;
+                        option.dataset.empresa = produto.empresa;
+                        option.dataset.nome = produto.nome;
+                        produtoSelect.appendChild(option);
+                        produtosFiltrados++;
+                    }
+                });
+                
+                // Atualizar contador
+                document.getElementById('produtos_count').textContent = produtosFiltrados;
+            }
+
+            // Event listeners
+            if (empresaFilter) {
+                empresaFilter.addEventListener('change', filtrarProdutos);
+            }
+
+            if (produtoSearch) {
+                produtoSearch.addEventListener('input', filtrarProdutos);
+                produtoSearch.addEventListener('keyup', function(e) {
+                    if (e.key === 'Escape') {
+                        this.value = '';
+                        filtrarProdutos();
+                    }
+                });
+            }
+
+            if (clearSearchBtn) {
+                clearSearchBtn.addEventListener('click', function() {
+                    produtoSearch.value = '';
+                    filtrarProdutos();
+                    produtoSearch.focus();
+                });
+            }
+
+            if (clearFiltersBtn) {
+                clearFiltersBtn.addEventListener('click', function() {
+                    produtoSearch.value = '';
+                    empresaFilter.value = '';
+                    filtrarProdutos();
+                });
+            }
+
+            // Atualizar preço quando produto é selecionado
+            produtoSelect.addEventListener('change', function() {
+                const selectedOption = this.options[this.selectedIndex];
+                if (selectedOption.value) {
+                    precoUnitarioInput.value = parseFloat(selectedOption.dataset.preco).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+                } else {
+                    precoUnitarioInput.value = '0,00';
+                }
+            });
+
+            // Inicializar contagem
+            filtrarProdutos();
+        });
+    </script>
+</body>
+</html>
