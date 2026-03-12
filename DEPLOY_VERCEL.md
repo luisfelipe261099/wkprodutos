@@ -14,7 +14,7 @@ Opcional (alternativa):
 - `DATABASE_URL` no formato `mysql://usuario:senha@host:3306/banco`
 
 ## 2) Runtime PHP
-Este projeto ja inclui `vercel.json` com build usando `@vercel/php`.
+Este projeto ja inclui `vercel.json` com build usando `vercel-php`.
 
 ## 3) Sessao e uploads
 - O projeto usa `session_start()` em varias paginas.
