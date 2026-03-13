@@ -1,15 +1,16 @@
-<?php
-// Inicia a sessão para verificar se o usuário está logado
-session_start();
+﻿<?php
+// Inicia a sessÃ£o para verificar se o usuÃ¡rio estÃ¡ logado
+require_once 'includes/session_bootstrap.php';
 
-// Verifica se o usuário está logado
+// Verifica se o usuÃ¡rio estÃ¡ logado
 if (isset($_SESSION["loggedin"]) && $_SESSION["loggedin"] === true) {
     // Se estiver logado, redireciona para o dashboard
     header("Location: dashboard.php");
     exit();
 } else {
-    // Se não estiver logado, redireciona para a página de login
+    // Se nÃ£o estiver logado, redireciona para a pÃ¡gina de login
     header("Location: login.php");
     exit();
 }
 ?>
+

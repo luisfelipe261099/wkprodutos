@@ -1,13 +1,13 @@
-<?php
-session_start();
+﻿<?php
+require_once 'includes/session_bootstrap.php';
 
-// Verifica se o usuário está logado e é admin
+// Verifica se o usuÃ¡rio estÃ¡ logado e Ã© admin
 if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
     header("location: login.php");
     exit;
 }
 
-// Verificar se é admin
+// Verificar se Ã© admin
 if ($_SESSION["nivel_acesso"] !== "admin") {
     header("location: dashboard.php");
     exit;
@@ -20,14 +20,14 @@ $message_type = '';
 $user_id = isset($_GET['id']) ? $_GET['id'] : null;
 $is_edit = !empty($user_id);
 
-// Dados do usuário para edição
+// Dados do usuÃ¡rio para ediÃ§Ã£o
 $user_data = [
     'nome' => '',
     'email' => '',
     'nivel_acesso' => 'colaborador'
 ];
 
-// Se for edição, buscar dados do usuário
+// Se for ediÃ§Ã£o, buscar dados do usuÃ¡rio
 if ($is_edit) {
     $sql_select = "SELECT * FROM usuarios WHERE id = ?";
     $stmt_select = $conn->prepare($sql_select);
@@ -38,14 +38,14 @@ if ($is_edit) {
     if ($result->num_rows > 0) {
         $user_data = $result->fetch_assoc();
     } else {
-        $message = "Usuário não encontrado.";
+        $message = "UsuÃ¡rio nÃ£o encontrado.";
         $message_type = "danger";
         $is_edit = false;
     }
     $stmt_select->close();
 }
 
-// Processar formulário
+// Processar formulÃ¡rio
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $nome = trim($_POST['nome']);
     $email = trim($_POST['email']);
@@ -53,24 +53,24 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $confirmar_senha = trim($_POST['confirmar_senha']);
     $nivel_acesso = $_POST['nivel_acesso'];
 
-    // Validações
+    // ValidaÃ§Ãµes
     if (empty($nome) || empty($email)) {
-        $message = "Nome e email são obrigatórios.";
+        $message = "Nome e email sÃ£o obrigatÃ³rios.";
         $message_type = "danger";
     } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-        $message = "Email inválido.";
+        $message = "Email invÃ¡lido.";
         $message_type = "danger";
     } elseif (!$is_edit && empty($senha)) {
-        $message = "Senha é obrigatória para novos usuários.";
+        $message = "Senha Ã© obrigatÃ³ria para novos usuÃ¡rios.";
         $message_type = "danger";
     } elseif (!empty($senha) && $senha !== $confirmar_senha) {
-        $message = "As senhas não coincidem.";
+        $message = "As senhas nÃ£o coincidem.";
         $message_type = "danger";
     } elseif (!empty($senha) && strlen($senha) < 6) {
         $message = "A senha deve ter pelo menos 6 caracteres.";
         $message_type = "danger";
     } else {
-        // Verificar se email já existe (exceto para o próprio usuário em edição)
+        // Verificar se email jÃ¡ existe (exceto para o prÃ³prio usuÃ¡rio em ediÃ§Ã£o)
         $sql_check = $is_edit ?
             "SELECT id FROM usuarios WHERE email = ? AND id != ?" :
             "SELECT id FROM usuarios WHERE email = ?";
@@ -85,11 +85,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $result_check = $stmt_check->get_result();
 
         if ($result_check->num_rows > 0) {
-            $message = "Este email já está sendo usado por outro usuário.";
+            $message = "Este email jÃ¡ estÃ¡ sendo usado por outro usuÃ¡rio.";
             $message_type = "danger";
         } else {
             if ($is_edit) {
-                // Atualizar usuário
+                // Atualizar usuÃ¡rio
                 if (!empty($senha)) {
                     // Atualizar com nova senha
                     $senha_hash = password_hash($senha, PASSWORD_DEFAULT);
@@ -103,7 +103,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     $stmt->bind_param("sssi", $nome, $email, $nivel_acesso, $user_id);
                 }
             } else {
-                // Inserir novo usuário
+                // Inserir novo usuÃ¡rio
                 $senha_hash = password_hash($senha, PASSWORD_DEFAULT);
                 $sql_insert = "INSERT INTO usuarios (nome, email, senha, nivel_acesso) VALUES (?, ?, ?, ?)";
                 $stmt = $conn->prepare($sql_insert);
@@ -111,16 +111,16 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             }
 
             if ($stmt->execute()) {
-                $message = $is_edit ? "Usuário atualizado com sucesso!" : "Usuário cadastrado com sucesso!";
+                $message = $is_edit ? "UsuÃ¡rio atualizado com sucesso!" : "UsuÃ¡rio cadastrado com sucesso!";
                 $message_type = "success";
 
                 if (!$is_edit) {
-                    // Redirecionar para a lista após cadastro
+                    // Redirecionar para a lista apÃ³s cadastro
                     header("Location: usuarios.php");
                     exit;
                 }
             } else {
-                $message = "Erro ao " . ($is_edit ? "atualizar" : "cadastrar") . " usuário: " . $stmt->error;
+                $message = "Erro ao " . ($is_edit ? "atualizar" : "cadastrar") . " usuÃ¡rio: " . $stmt->error;
                 $message_type = "danger";
             }
             $stmt->close();
@@ -137,10 +137,10 @@ include_once 'includes/header.php';
 <div class="page-header fade-in-up">
     <h1 class="page-title">
         <i class="fas fa-user-plus"></i>
-        <?php echo $is_edit ? 'Editar Usuário' : 'Cadastrar Novo Usuário'; ?>
+        <?php echo $is_edit ? 'Editar UsuÃ¡rio' : 'Cadastrar Novo UsuÃ¡rio'; ?>
     </h1>
     <p class="page-subtitle">
-        <?php echo $is_edit ? 'Atualize os dados do usuário' : 'Adicione um novo usuário ao sistema'; ?>
+        <?php echo $is_edit ? 'Atualize os dados do usuÃ¡rio' : 'Adicione um novo usuÃ¡rio ao sistema'; ?>
     </p>
 </div>
 
@@ -156,15 +156,15 @@ include_once 'includes/header.php';
 <div class="modern-card fade-in-up">
     <div class="card-header-modern">
         <i class="fas fa-edit"></i>
-        Dados do Usuário
+        Dados do UsuÃ¡rio
     </div>
     <div class="card-body-modern">
         <form method="POST" action="">
             <div class="row g-4">
-                <!-- Informações Básicas -->
+                <!-- InformaÃ§Ãµes BÃ¡sicas -->
                 <div class="col-12">
                     <h5 class="text-primary mb-3">
-                        <i class="fas fa-user me-2"></i>Informações Pessoais
+                        <i class="fas fa-user me-2"></i>InformaÃ§Ãµes Pessoais
                     </h5>
                 </div>
 
@@ -180,15 +180,15 @@ include_once 'includes/header.php';
                            value="<?php echo htmlspecialchars($user_data['email']); ?>" required>
                 </div>
 
-                <!-- Acesso e Segurança -->
+                <!-- Acesso e SeguranÃ§a -->
                 <div class="col-12">
                     <h5 class="text-primary mb-3 mt-4">
-                        <i class="fas fa-shield-alt me-2"></i>Acesso e Segurança
+                        <i class="fas fa-shield-alt me-2"></i>Acesso e SeguranÃ§a
                     </h5>
                 </div>
 
                 <div class="col-md-4">
-                    <label for="nivel_acesso" class="form-label">Nível de Acesso *</label>
+                    <label for="nivel_acesso" class="form-label">NÃ­vel de Acesso *</label>
                     <select class="form-control" id="nivel_acesso" name="nivel_acesso" required>
                         <option value="colaborador" <?php echo $user_data['nivel_acesso'] == 'colaborador' ? 'selected' : ''; ?>>
                             Colaborador
@@ -198,7 +198,7 @@ include_once 'includes/header.php';
                         </option>
                     </select>
                     <small class="text-muted">
-                        Administradores têm acesso total ao sistema
+                        Administradores tÃªm acesso total ao sistema
                     </small>
                 </div>
 
@@ -213,7 +213,7 @@ include_once 'includes/header.php';
                             <i class="fas fa-eye" id="senha-icon"></i>
                         </button>
                     </div>
-                    <small class="text-muted">Mínimo 6 caracteres</small>
+                    <small class="text-muted">MÃ­nimo 6 caracteres</small>
                 </div>
 
                 <div class="col-md-4">
@@ -230,10 +230,10 @@ include_once 'includes/header.php';
                 </div>
 
                 <?php if ($is_edit): ?>
-                <!-- Informações do Sistema -->
+                <!-- InformaÃ§Ãµes do Sistema -->
                 <div class="col-12">
                     <h5 class="text-primary mb-3 mt-4">
-                        <i class="fas fa-info-circle me-2"></i>Informações do Sistema
+                        <i class="fas fa-info-circle me-2"></i>InformaÃ§Ãµes do Sistema
                     </h5>
                 </div>
 
@@ -250,7 +250,7 @@ include_once 'includes/header.php';
                 </div>
                 <?php endif; ?>
 
-                <!-- Botões -->
+                <!-- BotÃµes -->
                 <div class="col-12">
                     <div class="d-flex gap-2 justify-content-end mt-4">
                         <a href="usuarios.php" class="btn btn-outline-secondary">
@@ -282,13 +282,13 @@ function togglePassword(fieldId) {
     }
 }
 
-// Validação de senhas em tempo real
+// ValidaÃ§Ã£o de senhas em tempo real
 document.getElementById('confirmar_senha').addEventListener('input', function() {
     const senha = document.getElementById('senha').value;
     const confirmarSenha = this.value;
 
     if (senha !== confirmarSenha && confirmarSenha.length > 0) {
-        this.setCustomValidity('As senhas não coincidem');
+        this.setCustomValidity('As senhas nÃ£o coincidem');
         this.classList.add('is-invalid');
     } else {
         this.setCustomValidity('');
@@ -305,3 +305,4 @@ document.getElementById('senha').addEventListener('input', function() {
 </script>
 
 <?php include_once 'includes/footer.php'; ?>
+

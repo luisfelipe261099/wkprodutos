@@ -1,11 +1,11 @@
-<?php
-session_start();
+﻿<?php
+require_once 'includes/session_bootstrap.php';
 require_once 'includes/db_connect.php';
 
 // Verificar token de acesso
 $token = $_GET['token'] ?? '';
 if (empty($token)) {
-    die('Acesso negado. Token inválido.');
+    die('Acesso negado. Token invÃ¡lido.');
 }
 
 // Validar token e buscar dados do cliente
@@ -19,7 +19,7 @@ $stmt_token->execute();
 $result_token = $stmt_token->get_result();
 
 if ($result_token->num_rows === 0) {
-    die('Link inválido ou expirado.');
+    die('Link invÃ¡lido ou expirado.');
 }
 
 $link_data = $result_token->fetch_assoc();
@@ -93,7 +93,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         
         $conn->commit();
         
-        // Redirecionar para página de sucesso
+        // Redirecionar para pÃ¡gina de sucesso
         header("Location: marketplace_sucesso.php?token=" . $token . "&pedido=" . $pedido_id);
         exit;
         
@@ -203,7 +203,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                                 <div>
                                     <h6 class="mb-1"><?php echo htmlspecialchars($item['produto_nome']); ?></h6>
                                     <p class="text-muted small mb-0">
-                                        Quantidade: <?php echo $item['quantidade']; ?> × 
+                                        Quantidade: <?php echo $item['quantidade']; ?> Ã— 
                                         R$ <?php echo number_format($item['preco_unitario'], 2, ',', '.'); ?>
                                     </p>
                                 </div>
@@ -220,7 +220,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     </div>
                 </div>
 
-                <!-- Formulário de Checkout -->
+                <!-- FormulÃ¡rio de Checkout -->
                 <div class="card">
                     <div class="card-header bg-light">
                         <h5 class="mb-0">
@@ -238,7 +238,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                                         Tipo de Faturamento *
                                     </label>
                                     <select class="form-select" id="tipo_faturamento" name="tipo_faturamento" required>
-                                        <option value="avista">À Vista</option>
+                                        <option value="avista">Ã€ Vista</option>
                                         <option value="15_dias">15 dias</option>
                                         <option value="20_dias">20 dias</option>
                                         <option value="30_dias">30 dias</option>
@@ -255,27 +255,27 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                                            min="<?php echo date('Y-m-d', strtotime('+1 day')); ?>">
                                 </div>
 
-                                <!-- Endereço de Entrega -->
+                                <!-- EndereÃ§o de Entrega -->
                                 <div class="col-12">
                                     <label for="endereco_entrega" class="form-label">
                                         <i class="fas fa-map-marker-alt me-2"></i>
-                                        Endereço de Entrega
+                                        EndereÃ§o de Entrega
                                     </label>
                                     <textarea class="form-control" id="endereco_entrega" name="endereco_entrega" rows="3" 
-                                              placeholder="Digite o endereço completo para entrega..."><?php echo htmlspecialchars($link_data['endereco'] . ', ' . $link_data['cidade'] . ' - ' . $link_data['estado']); ?></textarea>
+                                              placeholder="Digite o endereÃ§o completo para entrega..."><?php echo htmlspecialchars($link_data['endereco'] . ', ' . $link_data['cidade'] . ' - ' . $link_data['estado']); ?></textarea>
                                 </div>
 
-                                <!-- Observações -->
+                                <!-- ObservaÃ§Ãµes -->
                                 <div class="col-12">
                                     <label for="observacoes" class="form-label">
                                         <i class="fas fa-comment me-2"></i>
-                                        Observações (Opcional)
+                                        ObservaÃ§Ãµes (Opcional)
                                     </label>
                                     <textarea class="form-control" id="observacoes" name="observacoes" rows="3" 
-                                              placeholder="Observações adicionais sobre o pedido..."></textarea>
+                                              placeholder="ObservaÃ§Ãµes adicionais sobre o pedido..."></textarea>
                                 </div>
 
-                                <!-- Botões -->
+                                <!-- BotÃµes -->
                                 <div class="col-12">
                                     <div class="d-flex gap-3 justify-content-end">
                                         <a href="marketplace.php?token=<?php echo $token; ?>" class="btn btn-outline-secondary">
@@ -294,13 +294,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 </div>
             </div>
 
-            <!-- Informações Adicionais -->
+            <!-- InformaÃ§Ãµes Adicionais -->
             <div class="col-lg-4">
                 <div class="card">
                     <div class="card-header bg-light">
                         <h6 class="mb-0">
                             <i class="fas fa-info-circle me-2"></i>
-                            Informações Importantes
+                            InformaÃ§Ãµes Importantes
                         </h6>
                     </div>
                     <div class="card-body">
@@ -310,8 +310,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                                 Entrega
                             </h6>
                             <p class="small text-muted mb-0">
-                                As entregas são realizadas de segunda a sexta-feira, das 8h às 18h.
-                                Prazo padrão: 3 dias úteis.
+                                As entregas sÃ£o realizadas de segunda a sexta-feira, das 8h Ã s 18h.
+                                Prazo padrÃ£o: 3 dias Ãºteis.
                             </p>
                         </div>
                         
@@ -321,8 +321,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                                 Faturamento
                             </h6>
                             <p class="small text-muted mb-0">
-                                O faturamento será gerado conforme o prazo selecionado.
-                                Você receberá a nota fiscal por email.
+                                O faturamento serÃ¡ gerado conforme o prazo selecionado.
+                                VocÃª receberÃ¡ a nota fiscal por email.
                             </p>
                         </div>
                         
@@ -332,7 +332,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                                 Suporte
                             </h6>
                             <p class="small text-muted mb-0">
-                                Dúvidas? Entre em contato conosco pelo telefone ou email.
+                                DÃºvidas? Entre em contato conosco pelo telefone ou email.
                             </p>
                         </div>
                     </div>
@@ -346,3 +346,4 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 </html>
 
 <?php $conn->close(); ?>
+

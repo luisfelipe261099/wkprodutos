@@ -1,99 +1,100 @@
-<?php
-// Inicia a sessão no início do script. Isso é fundamental para gerenciar o estado do usuário.
-session_start();
+﻿<?php
+// Inicia a sessÃ£o no inÃ­cio do script. Isso Ã© fundamental para gerenciar o estado do usuÃ¡rio.
+require_once 'includes/session_bootstrap.php';
 
-// Se o usuário já está logado, redireciona para o dashboard
+// Se o usuÃ¡rio jÃ¡ estÃ¡ logado, redireciona para o dashboard
 if (isset($_SESSION["loggedin"]) && $_SESSION["loggedin"] === true) {
     header("location: dashboard.php");
     exit;
 }
 
-// Inclui o arquivo de conexão com o banco de dados.
-// Usamos 'require_once' para garantir que a conexão seja estabelecida e para exibir um erro fatal se o arquivo não for encontrado.
+// Inclui o arquivo de conexÃ£o com o banco de dados.
+// Usamos 'require_once' para garantir que a conexÃ£o seja estabelecida e para exibir um erro fatal se o arquivo nÃ£o for encontrado.
 require_once 'includes/db_connect.php';
 
-// Inicializa a variável para mensagens de erro de login.
+// Inicializa a variÃ¡vel para mensagens de erro de login.
 $login_err = "";
 
-// Verifica se o formulário de login foi enviado via método POST.
+// Verifica se o formulÃ¡rio de login foi enviado via mÃ©todo POST.
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    // Coleta e sanitiza os dados do formulário, removendo espaços em branco extras.
+    // Coleta e sanitiza os dados do formulÃ¡rio, removendo espaÃ§os em branco extras.
     $email = trim($_POST["email"]);
     $senha = trim($_POST["senha"]);
 
-    // Validação básica: verifica se os campos não estão vazios.
+    // ValidaÃ§Ã£o bÃ¡sica: verifica se os campos nÃ£o estÃ£o vazios.
     if (empty($email) || empty($senha)) {
         $login_err = "Por favor, preencha todos os campos.";
     } else {
-        // Prepara a query SQL para buscar o usuário pelo email.
+        // Prepara a query SQL para buscar o usuÃ¡rio pelo email.
         // Usamos prepared statements para prevenir SQL Injection.
         $sql = "SELECT id, nome, email, senha, nivel_acesso FROM usuarios WHERE email = ?";
 
         if ($stmt = $conn->prepare($sql)) {
-            // Vincula o parâmetro (email) à declaração preparada. 's' indica que é um string.
+            // Vincula o parÃ¢metro (email) Ã  declaraÃ§Ã£o preparada. 's' indica que Ã© um string.
             $stmt->bind_param("s", $param_email);
 
-            // Define o valor do parâmetro.
+            // Define o valor do parÃ¢metro.
             $param_email = $email;
 
-            // Tenta executar a declaração preparada.
+            // Tenta executar a declaraÃ§Ã£o preparada.
             if ($stmt->execute()) {
                 // Armazena o resultado da query.
                 $stmt->store_result();
 
-                // Verifica se um usuário com o email fornecido foi encontrado.
+                // Verifica se um usuÃ¡rio com o email fornecido foi encontrado.
                 if ($stmt->num_rows == 1) {
-                    // Vincula as colunas do resultado às variáveis PHP.
+                    // Vincula as colunas do resultado Ã s variÃ¡veis PHP.
                     $stmt->bind_result($id, $nome, $email_db, $senha_hash, $nivel_acesso);
                     // Pega o resultado (apenas uma linha, como sabemos pelo num_rows == 1).
                     if ($stmt->fetch()) {
                         // Verifica se a senha fornecida corresponde ao hash armazenado no banco de dados.
-                        // password_verify() é a função correta para comparar senhas hashificadas com password_hash().
+                        // password_verify() Ã© a funÃ§Ã£o correta para comparar senhas hashificadas com password_hash().
                         if (password_verify($senha, $senha_hash)) {
-                            // Senha correta. Inicia/rege gera a sessão.
-                            // session_regenerate_id(true) aumenta a segurança contra ataques de fixação de sessão.
+                            // Senha correta. Inicia/rege gera a sessÃ£o.
+                            // session_regenerate_id(true) aumenta a seguranÃ§a contra ataques de fixaÃ§Ã£o de sessÃ£o.
                             session_regenerate_id(true); 
                             
-                            // Armazena as informações do usuário na sessão.
+                            // Armazena as informaÃ§Ãµes do usuÃ¡rio na sessÃ£o.
                             $_SESSION["loggedin"] = true;
                             $_SESSION["id"] = $id;
                             $_SESSION["nome"] = $nome;
                             $_SESSION["nivel_acesso"] = $nivel_acesso;
+                            kw_issue_auth_cookie((int)$id, (string)$nome, (string)$nivel_acesso);
 
-                            // Redireciona o usuário para a página do dashboard.
+                            // Redireciona o usuÃ¡rio para a pÃ¡gina do dashboard.
                             header("location: dashboard.php");
-                            // Garante que o script pare de executar após o redirecionamento.
+                            // Garante que o script pare de executar apÃ³s o redirecionamento.
                             exit; 
                         } else {
-                            // Senha inválida.
-                            $login_err = "Email ou senha inválidos.";
+                            // Senha invÃ¡lida.
+                            $login_err = "Email ou senha invÃ¡lidos.";
                         }
                     }
                 } else {
-                    // Email não encontrado.
-                    $login_err = "Email ou senha inválidos.";
+                    // Email nÃ£o encontrado.
+                    $login_err = "Email ou senha invÃ¡lidos.";
                 }
             } else {
-                // Erro na execução da query.
+                // Erro na execuÃ§Ã£o da query.
                 $login_err = "Ops! Algo deu errado. Por favor, tente novamente mais tarde.";
-                // Para depuração: echo "Erro na execução: " . $stmt->error;
+                // Para depuraÃ§Ã£o: echo "Erro na execuÃ§Ã£o: " . $stmt->error;
             }
-            // Fecha a declaração preparada.
+            // Fecha a declaraÃ§Ã£o preparada.
             $stmt->close();
         } else {
-            // Erro na preparação da query.
-            $login_err = "Erro interno no servidor ao preparar a autenticação.";
-            // Para depuração: echo "Erro na preparação: " . $conn->error;
+            // Erro na preparaÃ§Ã£o da query.
+            $login_err = "Erro interno no servidor ao preparar a autenticaÃ§Ã£o.";
+            // Para depuraÃ§Ã£o: echo "Erro na preparaÃ§Ã£o: " . $conn->error;
         }
     }
 }
 
-// Fecha a conexão com o banco de dados.
+// Fecha a conexÃ£o com o banco de dados.
 $conn->close();
 
-// O HTML da página de login começa aqui.
-// Esta página não inclui o header.php ou footer.php como as outras páginas,
-// pois tem um layout de página cheia específico para o login.
+// O HTML da pÃ¡gina de login comeÃ§a aqui.
+// Esta pÃ¡gina nÃ£o inclui o header.php ou footer.php como as outras pÃ¡ginas,
+// pois tem um layout de pÃ¡gina cheia especÃ­fico para o login.
 ?>
 <!DOCTYPE html>
 <html lang="pt-BR">
@@ -112,20 +113,20 @@ $conn->close();
             <div class="col-lg-6 d-none d-lg-block">
                 <div class="login-aside">
                     <div class="login-kicker">Painel comercial</div>
-                    <h1>Gestão com visual mais limpo, rápido e pronto para tablet e celular.</h1>
-                    <p class="login-copy">Acesse o sistema para acompanhar clientes, vendas, estoque, orçamentos e operação diária em uma interface mais leve e organizada.</p>
+                    <h1>GestÃ£o com visual mais limpo, rÃ¡pido e pronto para tablet e celular.</h1>
+                    <p class="login-copy">Acesse o sistema para acompanhar clientes, vendas, estoque, orÃ§amentos e operaÃ§Ã£o diÃ¡ria em uma interface mais leve e organizada.</p>
                     <div class="login-highlights">
                         <div class="login-highlight">
                             <i class="fas fa-mobile-screen-button"></i>
-                            <span>Uso confortável em celular e tablet</span>
+                            <span>Uso confortÃ¡vel em celular e tablet</span>
                         </div>
                         <div class="login-highlight">
                             <i class="fas fa-table-cells-large"></i>
-                            <span>Cards, tabelas e formulários com leitura melhor</span>
+                            <span>Cards, tabelas e formulÃ¡rios com leitura melhor</span>
                         </div>
                         <div class="login-highlight">
                             <i class="fas fa-bolt"></i>
-                            <span>Navegação lateral mais rápida para operação diária</span>
+                            <span>NavegaÃ§Ã£o lateral mais rÃ¡pida para operaÃ§Ã£o diÃ¡ria</span>
                         </div>
                     </div>
                 </div>
@@ -136,7 +137,7 @@ $conn->close();
                         <div class="text-center mb-4">
                             <i class="fas fa-cubes fa-3x text-primary mb-3"></i>
                             <h3 class="fw-bold text-primary">Karla Wollinger</h3>
-                            <p class="text-muted">Sistema de Gestão Comercial</p>
+                            <p class="text-muted">Sistema de GestÃ£o Comercial</p>
                         </div>
                         <h4 class="text-center mb-4">Acesse sua conta</h4>
 

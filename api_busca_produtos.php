@@ -1,25 +1,25 @@
-<?php
-session_start();
+﻿<?php
+require_once 'includes/session_bootstrap.php';
 
-// Verifica se o usuário está logado
+// Verifica se o usuÃ¡rio estÃ¡ logado
 if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
     http_response_code(401);
-    echo json_encode(['error' => 'Não autorizado']);
+    echo json_encode(['error' => 'NÃ£o autorizado']);
     exit;
 }
 
 require_once 'includes/db_connect.php';
 
-// Verifica se é uma requisição GET com termo de busca
+// Verifica se Ã© uma requisiÃ§Ã£o GET com termo de busca
 if ($_SERVER["REQUEST_METHOD"] !== "GET" || !isset($_GET['q'])) {
     http_response_code(400);
-    echo json_encode(['error' => 'Parâmetro de busca obrigatório']);
+    echo json_encode(['error' => 'ParÃ¢metro de busca obrigatÃ³rio']);
     exit;
 }
 
 $termo_busca = trim($_GET['q']);
 
-// Se o termo for muito curto, não buscar
+// Se o termo for muito curto, nÃ£o buscar
 if (strlen($termo_busca) < 2) {
     echo json_encode(['produtos' => []]);
     exit;
@@ -29,7 +29,7 @@ try {
     // Preparar termo para busca LIKE
     $termo_like = '%' . $termo_busca . '%';
     
-    // Query para buscar produtos por nome, SKU, descrição ou fornecedor
+    // Query para buscar produtos por nome, SKU, descriÃ§Ã£o ou fornecedor
     $sql = "SELECT p.id, p.nome, p.sku, p.preco_venda, p.quantidade_estoque, p.fornecedor, e.nome_empresa
             FROM produtos p
             LEFT JOIN empresas_representadas e ON p.empresa_id = e.id
@@ -49,15 +49,15 @@ try {
     
     $stmt = $conn->prepare($sql);
     if (!$stmt) {
-        throw new Exception("Erro na preparação da query: " . $conn->error);
+        throw new Exception("Erro na preparaÃ§Ã£o da query: " . $conn->error);
     }
     
-    // Bind dos parâmetros (7 vezes o mesmo termo)
-    $termo_inicio = $termo_busca . '%'; // Para priorizar resultados que começam com o termo
+    // Bind dos parÃ¢metros (7 vezes o mesmo termo)
+    $termo_inicio = $termo_busca . '%'; // Para priorizar resultados que comeÃ§am com o termo
     $stmt->bind_param("sssssss", $termo_like, $termo_like, $termo_like, $termo_like, $termo_inicio, $termo_inicio, $termo_inicio);
     
     if (!$stmt->execute()) {
-        throw new Exception("Erro na execução da query: " . $stmt->error);
+        throw new Exception("Erro na execuÃ§Ã£o da query: " . $stmt->error);
     }
     
     $result = $stmt->get_result();
@@ -94,3 +94,4 @@ try {
     }
 }
 ?>
+

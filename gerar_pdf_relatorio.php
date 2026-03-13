@@ -1,14 +1,14 @@
-<?php
+﻿<?php
 // Inicia o output buffering para evitar problemas de "headers already sent"
 ob_start();
 
-// Configurar relatório de erros para debug
+// Configurar relatÃ³rio de erros para debug
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
-session_start();
+require_once 'includes/session_bootstrap.php';
 
-// Verifica se o usuário está logado
+// Verifica se o usuÃ¡rio estÃ¡ logado
 if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
     if (ob_get_length()) ob_end_clean();
     header("location: index.php");
@@ -19,7 +19,7 @@ require_once 'includes/db_connect.php';
 require_once 'includes/PDFHelper.php';
 require_once __DIR__ . '/vendor/setasign/fpdf/fpdf.php';
 
-// Buscar os dados do usuário logado
+// Buscar os dados do usuÃ¡rio logado
 $usuario_id = $_SESSION["id"];
 $sql_usuario = "SELECT nome, empresa FROM usuarios WHERE id = ?";
 $stmt_usuario = $conn->prepare($sql_usuario);
@@ -28,7 +28,7 @@ $stmt_usuario->execute();
 $result_usuario = $stmt_usuario->get_result();
 $usuario = $result_usuario->fetch_assoc();
 
-// Funções de geração de relatório (reutilizadas do relatorios.php)
+// FunÃ§Ãµes de geraÃ§Ã£o de relatÃ³rio (reutilizadas do relatorios.php)
 function gerarRelatorioVendasGeral($conn, $di, $df, $cid, $status, $eid) {
     $sql = "SELECT v.id, v.data_venda, v.valor_total, v.status_venda, c.nome as cliente_nome, c.cpf_cnpj,
                    COALESCE(SUM(iv.quantidade * iv.preco_unitario * (p.percentual_lucro / 100)), 0) as lucro_total
@@ -144,7 +144,7 @@ function gerarRelatorioEmpresas($conn, $di, $df, $eid) {
     return ['dados' => $dados, 'resumo' => ['faturamento_geral' => $faturamento_geral, 'lucro_geral' => $lucro_geral, 'empresas_ativas' => count($dados)]];
 }
 
-// Classe para gerar PDF de relatórios
+// Classe para gerar PDF de relatÃ³rios
 class RelatoriosPDF extends FPDF {
     private $usuario_nome;
     private $titulo_relatorio;
@@ -161,7 +161,7 @@ class RelatoriosPDF extends FPDF {
             $this->Image('logo.png', 10, 6, 30);
         }
         
-        // Título do relatório
+        // TÃ­tulo do relatÃ³rio
         $this->SetFont('Arial', 'B', 16);
         $this->SetY(10);
         $this->SetX(50);
@@ -170,14 +170,14 @@ class RelatoriosPDF extends FPDF {
         // Linha descritiva
         $this->SetFont('Arial', 'I', 12);
         $this->SetX(50);
-        $this->Cell(0, 8, PDFHelper::utf8ToLatin1('Relatório Comercial para Prestação de Contas'), 0, 1, 'L');
+        $this->Cell(0, 8, PDFHelper::utf8ToLatin1('RelatÃ³rio Comercial para PrestaÃ§Ã£o de Contas'), 0, 1, 'L');
         
-        // Informações do cabeçalho
+        // InformaÃ§Ãµes do cabeÃ§alho
         $this->SetFont('Arial', '', 10);
         $this->SetX(50);
         $this->Cell(0, 8, PDFHelper::utf8ToLatin1('Representante Comercial: ' . $this->usuario_nome), 0, 1, 'L');
         $this->SetX(50);
-        $this->Cell(0, 8, PDFHelper::utf8ToLatin1('Data de Geração: ' . date('d/m/Y H:i:s')), 0, 1, 'L');
+        $this->Cell(0, 8, PDFHelper::utf8ToLatin1('Data de GeraÃ§Ã£o: ' . date('d/m/Y H:i:s')), 0, 1, 'L');
         
         // Linha separadora
         $this->Ln(5);
@@ -188,7 +188,7 @@ class RelatoriosPDF extends FPDF {
     function Footer() {
         $this->SetY(-15);
         $this->SetFont('Arial', 'I', 8);
-        $this->Cell(0, 10, PDFHelper::utf8ToLatin1('Página ' . $this->PageNo() . ' - Relatório gerado em ' . date('d/m/Y H:i:s')), 0, 0, 'C');
+        $this->Cell(0, 10, PDFHelper::utf8ToLatin1('PÃ¡gina ' . $this->PageNo() . ' - RelatÃ³rio gerado em ' . date('d/m/Y H:i:s')), 0, 0, 'C');
     }
     
     function AdicionarResumo($resumo, $tipo_relatorio) {
@@ -224,7 +224,7 @@ class RelatoriosPDF extends FPDF {
             $margem_geral = $resumo['faturamento_geral'] > 0 ? ($resumo['lucro_geral'] / $resumo['faturamento_geral']) * 100 : 0;
             $this->SetFont('Arial', '', 11);
             $this->SetX(15);
-            $this->Cell(85, 8, PDFHelper::utf8ToLatin1('Margem Média:'), 0, 0, 'L');
+            $this->Cell(85, 8, PDFHelper::utf8ToLatin1('Margem MÃ©dia:'), 0, 0, 'L');
             $this->SetFont('Arial', 'B', 11);
             $this->Cell(0, 8, number_format($margem_geral, 1, ',', '.') . '%', 0, 1, 'L');
             
@@ -236,7 +236,7 @@ class RelatoriosPDF extends FPDF {
             
             $this->SetFont('Arial', '', 11);
             $this->SetX(15);
-            $this->Cell(85, 8, PDFHelper::utf8ToLatin1('Faturamento (Concluídas):'), 0, 0, 'L');
+            $this->Cell(85, 8, PDFHelper::utf8ToLatin1('Faturamento (ConcluÃ­das):'), 0, 0, 'L');
             $this->SetFont('Arial', 'B', 11);
             $this->Cell(0, 8, 'R$ ' . number_format($resumo['faturamento'], 2, ',', '.'), 0, 1, 'L');
             
@@ -248,7 +248,7 @@ class RelatoriosPDF extends FPDF {
             
             $this->SetFont('Arial', '', 11);
             $this->SetX(15);
-            $this->Cell(85, 8, PDFHelper::utf8ToLatin1('Margem Média:'), 0, 0, 'L');
+            $this->Cell(85, 8, PDFHelper::utf8ToLatin1('Margem MÃ©dia:'), 0, 0, 'L');
             $this->SetFont('Arial', 'B', 11);
             $this->Cell(0, 8, number_format($resumo['margem_media'], 1, ',', '.') . '%', 0, 1, 'L');
             
@@ -285,7 +285,7 @@ class RelatoriosPDF extends FPDF {
         $this->Cell(0, 10, PDFHelper::utf8ToLatin1('DETALHAMENTO DAS VENDAS'), 0, 1, 'C');
         $this->Ln(3);
         
-        // Cabeçalho da tabela
+        // CabeÃ§alho da tabela
         $this->SetFont('Arial', 'B', 8);
         $this->SetFillColor(200, 200, 200);
         $this->Cell(18, 8, 'Venda', 1, 0, 'C', true);
@@ -304,10 +304,10 @@ class RelatoriosPDF extends FPDF {
         $total_lucro = 0;
         
         foreach ($dados as $row) {
-            // Quebra de página se necessário
+            // Quebra de pÃ¡gina se necessÃ¡rio
             if ($this->GetY() > 250) {
                 $this->AddPage();
-                // Repetir cabeçalho
+                // Repetir cabeÃ§alho
                 $this->SetFont('Arial', 'B', 8);
                 $this->SetFillColor(200, 200, 200);
                 $this->Cell(18, 8, 'Venda', 1, 0, 'C', true);
@@ -323,7 +323,7 @@ class RelatoriosPDF extends FPDF {
             
             $margem = $row['valor_total'] > 0 ? ($row['lucro_total'] / $row['valor_total']) * 100 : 0;
             
-            // Somar valores para totais (apenas vendas concluídas)
+            // Somar valores para totais (apenas vendas concluÃ­das)
             if ($row['status_venda'] == 'concluida') {
                 $total_faturamento += $row['valor_total'];
                 $total_lucro += $row['lucro_total'];
@@ -344,7 +344,7 @@ class RelatoriosPDF extends FPDF {
         // Linha de totais
         $this->SetFont('Arial', 'B', 8);
         $this->SetFillColor(230, 230, 230);
-        $this->Cell(125, 6, PDFHelper::utf8ToLatin1('TOTAIS (Vendas Concluídas):'), 1, 0, 'R', true);
+        $this->Cell(125, 6, PDFHelper::utf8ToLatin1('TOTAIS (Vendas ConcluÃ­das):'), 1, 0, 'R', true);
         $this->Cell(25, 6, 'R$ ' . number_format($total_faturamento, 2, ',', '.'), 1, 0, 'R', true);
         $this->Cell(22, 6, 'R$ ' . number_format($total_lucro, 2, ',', '.'), 1, 0, 'R', true);
         $margem_geral = $total_faturamento > 0 ? ($total_lucro / $total_faturamento) * 100 : 0;
@@ -361,7 +361,7 @@ class RelatoriosPDF extends FPDF {
         $this->Cell(0, 10, PDFHelper::utf8ToLatin1('PRODUTOS MAIS VENDIDOS'), 0, 1, 'C');
         $this->Ln(3);
         
-        // Cabeçalho da tabela
+        // CabeÃ§alho da tabela
         $this->SetFont('Arial', 'B', 9);
         $this->SetFillColor(200, 200, 200);
         $this->Cell(60, 8, 'Produto', 1, 0, 'C', true);
@@ -375,10 +375,10 @@ class RelatoriosPDF extends FPDF {
         $this->SetFont('Arial', '', 8);
         $contador = 0;
         foreach ($dados as $row) {
-            // Quebra de página se necessário
+            // Quebra de pÃ¡gina se necessÃ¡rio
             if ($this->GetY() > 250) {
                 $this->AddPage();
-                // Repetir cabeçalho
+                // Repetir cabeÃ§alho
                 $this->SetFont('Arial', 'B', 9);
                 $this->SetFillColor(200, 200, 200);
                 $this->Cell(60, 8, 'Produto', 1, 0, 'C', true);
@@ -412,7 +412,7 @@ class RelatoriosPDF extends FPDF {
         $this->Cell(0, 10, PDFHelper::utf8ToLatin1('PERFORMANCE POR EMPRESA'), 0, 1, 'C');
         $this->Ln(3);
         
-        // Cabeçalho da tabela
+        // CabeÃ§alho da tabela
         $this->SetFont('Arial', 'B', 9);
         $this->SetFillColor(200, 200, 200);
         $this->Cell(60, 8, 'Empresa', 1, 0, 'C', true);
@@ -426,10 +426,10 @@ class RelatoriosPDF extends FPDF {
         $this->SetFont('Arial', '', 8);
         $contador = 0;
         foreach ($dados as $row) {
-            // Quebra de página se necessário
+            // Quebra de pÃ¡gina se necessÃ¡rio
             if ($this->GetY() > 250) {
                 $this->AddPage();
-                // Repetir cabeçalho
+                // Repetir cabeÃ§alho
                 $this->SetFont('Arial', 'B', 9);
                 $this->SetFillColor(200, 200, 200);
                 $this->Cell(60, 8, 'Empresa', 1, 0, 'C', true);
@@ -459,7 +459,7 @@ class RelatoriosPDF extends FPDF {
     }
     
     function AdicionarInformacoesComissao($dados_relatorio, $tipo_relatorio, $periodo) {
-        // Altura estimada da caixa de informações bancárias (ajuste conforme necessário)
+        // Altura estimada da caixa de informaÃ§Ãµes bancÃ¡rias (ajuste conforme necessÃ¡rio)
         $altura_necessaria = 70; // mm
         $espaco_restante = $this->h - $this->GetY() - $this->bMargin;
         if ($espaco_restante < $altura_necessaria) {
@@ -467,7 +467,7 @@ class RelatoriosPDF extends FPDF {
         }
         $this->Ln(10);
         $this->SetFont('Arial', 'B', 14);
-        $this->Cell(0, 10, PDFHelper::utf8ToLatin1('INFORMAÇÕES PARA PAGAMENTO DE COMISSÕES'), 0, 1, 'C');
+        $this->Cell(0, 10, PDFHelper::utf8ToLatin1('INFORMAÃ‡Ã•ES PARA PAGAMENTO DE COMISSÃ•ES'), 0, 1, 'C');
         $this->Ln(5);
         
         // Caixa destacada
@@ -477,11 +477,11 @@ class RelatoriosPDF extends FPDF {
         $y_inicial = $this->GetY() + 5;
         $this->SetFont('Arial', '', 11);
         
-        // Período
+        // PerÃ­odo
         $this->SetXY(15, $y_inicial);
-        $this->Cell(0, 8, PDFHelper::utf8ToLatin1('Período de Referência: ' . $periodo), 0, 1, 'L');
+        $this->Cell(0, 8, PDFHelper::utf8ToLatin1('PerÃ­odo de ReferÃªncia: ' . $periodo), 0, 1, 'L');
         
-        // Valores totais baseados no tipo de relatório
+        // Valores totais baseados no tipo de relatÃ³rio
         if ($tipo_relatorio == 'lucro_por_empresa') {
             $valor_bruto = $dados_relatorio['resumo']['faturamento_geral'];
             $lucro_obtido = $dados_relatorio['resumo']['lucro_geral'];
@@ -492,7 +492,7 @@ class RelatoriosPDF extends FPDF {
             $this->SetX(15);
             $this->Cell(0, 8, PDFHelper::utf8ToLatin1('Lucro Total Obtido: R$ ' . number_format($lucro_obtido, 2, ',', '.')), 0, 1, 'L');
             $this->SetX(15);
-            $this->Cell(0, 8, PDFHelper::utf8ToLatin1('Número de Empresas Ativas: ' . $num_empresas), 0, 1, 'L');
+            $this->Cell(0, 8, PDFHelper::utf8ToLatin1('NÃºmero de Empresas Ativas: ' . $num_empresas), 0, 1, 'L');
             
         } elseif ($tipo_relatorio == 'vendas_geral') {
             $valor_bruto = $dados_relatorio['resumo']['faturamento'];
@@ -500,11 +500,11 @@ class RelatoriosPDF extends FPDF {
             $num_vendas = $dados_relatorio['resumo']['total_vendas'];
             
             $this->SetX(15);
-            $this->Cell(0, 8, PDFHelper::utf8ToLatin1('Faturamento Total (Concluídas): R$ ' . number_format($valor_bruto, 2, ',', '.')), 0, 1, 'L');
+            $this->Cell(0, 8, PDFHelper::utf8ToLatin1('Faturamento Total (ConcluÃ­das): R$ ' . number_format($valor_bruto, 2, ',', '.')), 0, 1, 'L');
             $this->SetX(15);
             $this->Cell(0, 8, PDFHelper::utf8ToLatin1('Lucro Total Obtido: R$ ' . number_format($lucro_obtido, 2, ',', '.')), 0, 1, 'L');
             $this->SetX(15);
-            $this->Cell(0, 8, PDFHelper::utf8ToLatin1('Número de Vendas: ' . $num_vendas), 0, 1, 'L');
+            $this->Cell(0, 8, PDFHelper::utf8ToLatin1('NÃºmero de Vendas: ' . $num_vendas), 0, 1, 'L');
             
         } elseif ($tipo_relatorio == 'produtos_vendidos') {
             $valor_bruto = $dados_relatorio['resumo']['total_faturamento'];
@@ -523,14 +523,14 @@ class RelatoriosPDF extends FPDF {
         
         // Nota explicativa
         $this->SetFont('Arial', 'I', 10);
-        $this->Cell(0, 6, PDFHelper::utf8ToLatin1('Obs: Este relatório apresenta todas as vendas realizadas no período para'), 0, 1, 'L');
-        $this->Cell(0, 6, PDFHelper::utf8ToLatin1('verificação e cálculo de comissões conforme acordo comercial estabelecido.'), 0, 1, 'L');
+        $this->Cell(0, 6, PDFHelper::utf8ToLatin1('Obs: Este relatÃ³rio apresenta todas as vendas realizadas no perÃ­odo para'), 0, 1, 'L');
+        $this->Cell(0, 6, PDFHelper::utf8ToLatin1('verificaÃ§Ã£o e cÃ¡lculo de comissÃµes conforme acordo comercial estabelecido.'), 0, 1, 'L');
         
         $this->Ln(5);
     }
 }
 
-// Processar os parâmetros recebidos
+// Processar os parÃ¢metros recebidos
 $tipo_relatorio = $_GET["tipo_relatorio"] ?? '';
 $data_inicio = $_GET["data_inicio"] ?? '';
 $data_fim = $_GET["data_fim"] ?? '';
@@ -540,10 +540,10 @@ $empresa_id = $_GET["empresa_id"] ?? null;
 $produto_id = $_GET["produto_id"] ?? null;
 
 if (empty($tipo_relatorio) || empty($data_inicio) || empty($data_fim)) {
-    die('Parâmetros insuficientes para gerar o relatório.');
+    die('ParÃ¢metros insuficientes para gerar o relatÃ³rio.');
 }
 
-// Gerar os dados do relatório
+// Gerar os dados do relatÃ³rio
 $dados_relatorio = [];
 $titulo_relatorio = '';
 
@@ -551,25 +551,25 @@ try {
     switch ($tipo_relatorio) {
         case 'vendas_geral':
             $dados_relatorio = gerarRelatorioVendasGeral($conn, $data_inicio, $data_fim, $cliente_id, $status_filtro, $empresa_id);
-            $titulo_relatorio = "Relatório de Vendas Detalhadas";
+            $titulo_relatorio = "RelatÃ³rio de Vendas Detalhadas";
             break;
         case 'produtos_vendidos':
             $dados_relatorio = gerarRelatorioProdutosVendidos($conn, $data_inicio, $data_fim, $empresa_id, $produto_id);
-            $titulo_relatorio = "Relatório de Produtos Vendidos";
+            $titulo_relatorio = "RelatÃ³rio de Produtos Vendidos";
             break;
         case 'lucro_por_empresa':
             $dados_relatorio = gerarRelatorioEmpresas($conn, $data_inicio, $data_fim, $empresa_id);
-            $titulo_relatorio = "Relatório de Lucratividade por Empresa";
+            $titulo_relatorio = "RelatÃ³rio de Lucratividade por Empresa";
             break;
         default:
-            throw new Exception('Tipo de relatório inválido.');
+            throw new Exception('Tipo de relatÃ³rio invÃ¡lido.');
     }
 
     if (empty($dados_relatorio['dados'])) {
-        throw new Exception('Nenhum dado encontrado para o período selecionado.');
+        throw new Exception('Nenhum dado encontrado para o perÃ­odo selecionado.');
     }
 
-    // Adicionar informações do período ao título
+    // Adicionar informaÃ§Ãµes do perÃ­odo ao tÃ­tulo
     $periodo = date('d/m/Y', strtotime($data_inicio)) . ' a ' . date('d/m/Y', strtotime($data_fim));
     $titulo_completo = $titulo_relatorio . ' - ' . $periodo;
 
@@ -580,7 +580,7 @@ try {
     // Adicionar resumo
     $pdf->AdicionarResumo($dados_relatorio['resumo'], $tipo_relatorio);
     
-    // Adicionar tabelas específicas
+    // Adicionar tabelas especÃ­ficas
     switch ($tipo_relatorio) {
         case 'vendas_geral':
             $pdf->AdicionarTabelaVendasGeral($dados_relatorio['dados']);
@@ -593,7 +593,7 @@ try {
             break;
     }
     
-    // Adicionar informações de comissão
+    // Adicionar informaÃ§Ãµes de comissÃ£o
     $pdf->AdicionarInformacoesComissao($dados_relatorio, $tipo_relatorio, $periodo);
     
     // Limpar qualquer output que possa ter sido gerado
@@ -614,10 +614,10 @@ try {
     if (ob_get_length()) ob_end_clean();
     
     // Log do erro
-    error_log("Erro ao gerar PDF relatório: " . $e->getMessage());
+    error_log("Erro ao gerar PDF relatÃ³rio: " . $e->getMessage());
     
     // Exibir erro detalhado para debug
-    echo "<h3>Erro ao gerar relatório:</h3>";
+    echo "<h3>Erro ao gerar relatÃ³rio:</h3>";
     echo "<p><strong>Mensagem:</strong> " . htmlspecialchars($e->getMessage()) . "</p>";
     echo "<p><strong>Arquivo:</strong> " . htmlspecialchars($e->getFile()) . "</p>";
     echo "<p><strong>Linha:</strong> " . $e->getLine() . "</p>";
@@ -628,3 +628,4 @@ try {
 
 $conn->close();
 ?>
+

@@ -1,5 +1,5 @@
-<?php
-session_start();
+﻿<?php
+require_once 'includes/session_bootstrap.php';
 require_once 'includes/db_connect.php';
 
 // Verificar token e pedido
@@ -7,7 +7,7 @@ $token = $_GET['token'] ?? '';
 $pedido_id = $_GET['pedido'] ?? '';
 
 if (empty($token) || empty($pedido_id)) {
-    die('Acesso negado. Parâmetros inválidos.');
+    die('Acesso negado. ParÃ¢metros invÃ¡lidos.');
 }
 
 // Validar token e buscar dados do cliente
@@ -21,7 +21,7 @@ $stmt_token->execute();
 $result_token = $stmt_token->get_result();
 
 if ($result_token->num_rows === 0) {
-    die('Link inválido ou expirado.');
+    die('Link invÃ¡lido ou expirado.');
 }
 
 $link_data = $result_token->fetch_assoc();
@@ -29,7 +29,7 @@ $link_data = $result_token->fetch_assoc();
 // Buscar dados do pedido
 $sql_pedido = "SELECT mp.*, 
                       CASE 
-                          WHEN mp.tipo_faturamento = 'avista' THEN 'À Vista'
+                          WHEN mp.tipo_faturamento = 'avista' THEN 'Ã€ Vista'
                           WHEN mp.tipo_faturamento = '15_dias' THEN '15 dias'
                           WHEN mp.tipo_faturamento = '20_dias' THEN '20 dias'
                           WHEN mp.tipo_faturamento = '30_dias' THEN '30 dias'
@@ -42,7 +42,7 @@ $stmt_pedido->execute();
 $result_pedido = $stmt_pedido->get_result();
 
 if ($result_pedido->num_rows === 0) {
-    die('Pedido não encontrado.');
+    die('Pedido nÃ£o encontrado.');
 }
 
 $pedido = $result_pedido->fetch_assoc();
@@ -159,10 +159,10 @@ while ($item = $result_itens->fetch_assoc()) {
             </div>
             <h1 class="mb-3">Pedido Confirmado!</h1>
             <p class="lead mb-4">
-                Seu pedido foi recebido com sucesso e está sendo processado.
+                Seu pedido foi recebido com sucesso e estÃ¡ sendo processado.
             </p>
             <div class="bg-white bg-opacity-10 rounded p-3 d-inline-block">
-                <h5 class="mb-1">Número do Pedido:</h5>
+                <h5 class="mb-1">NÃºmero do Pedido:</h5>
                 <h3 class="mb-0">#<?php echo htmlspecialchars($pedido['numero_pedido']); ?></h3>
             </div>
         </div>
@@ -216,14 +216,14 @@ while ($item = $result_itens->fetch_assoc()) {
                         
                         <?php if ($pedido['endereco_entrega']): ?>
                             <div class="mb-4">
-                                <h6 class="text-muted">Endereço de Entrega:</h6>
+                                <h6 class="text-muted">EndereÃ§o de Entrega:</h6>
                                 <p class="mb-0"><?php echo htmlspecialchars($pedido['endereco_entrega']); ?></p>
                             </div>
                         <?php endif; ?>
                         
                         <?php if ($pedido['observacoes']): ?>
                             <div class="mb-4">
-                                <h6 class="text-muted">Observações:</h6>
+                                <h6 class="text-muted">ObservaÃ§Ãµes:</h6>
                                 <p class="mb-0"><?php echo htmlspecialchars($pedido['observacoes']); ?></p>
                             </div>
                         <?php endif; ?>
@@ -235,7 +235,7 @@ while ($item = $result_itens->fetch_assoc()) {
                                     <tr>
                                         <th>Produto</th>
                                         <th>Quantidade</th>
-                                        <th>Preço Unit.</th>
+                                        <th>PreÃ§o Unit.</th>
                                         <th>Subtotal</th>
                                     </tr>
                                 </thead>
@@ -260,7 +260,7 @@ while ($item = $result_itens->fetch_assoc()) {
                     </div>
                 </div>
 
-                <!-- Ações -->
+                <!-- AÃ§Ãµes -->
                 <div class="d-flex gap-3 justify-content-center">
                     <a href="marketplace.php?token=<?php echo $token; ?>" class="btn btn-outline-primary">
                         <i class="fas fa-store me-2"></i>
@@ -273,7 +273,7 @@ while ($item = $result_itens->fetch_assoc()) {
                 </div>
             </div>
 
-            <!-- Status e Próximos Passos -->
+            <!-- Status e PrÃ³ximos Passos -->
             <div class="col-lg-4">
                 <div class="card mb-4">
                     <div class="card-header bg-light">
@@ -306,17 +306,17 @@ while ($item = $result_itens->fetch_assoc()) {
                     <div class="card-header bg-light">
                         <h6 class="mb-0">
                             <i class="fas fa-info-circle me-2"></i>
-                            Próximos Passos
+                            PrÃ³ximos Passos
                         </h6>
                     </div>
                     <div class="card-body">
                         <div class="mb-3">
                             <h6 class="text-primary">
                                 <i class="fas fa-envelope me-2"></i>
-                                Confirmação por Email
+                                ConfirmaÃ§Ã£o por Email
                             </h6>
                             <p class="small text-muted mb-0">
-                                Você receberá um email de confirmação com todos os detalhes do pedido.
+                                VocÃª receberÃ¡ um email de confirmaÃ§Ã£o com todos os detalhes do pedido.
                             </p>
                         </div>
                         
@@ -326,7 +326,7 @@ while ($item = $result_itens->fetch_assoc()) {
                                 Contato para Entrega
                             </h6>
                             <p class="small text-muted mb-0">
-                                Nossa equipe entrará em contato para agendar a entrega.
+                                Nossa equipe entrarÃ¡ em contato para agendar a entrega.
                             </p>
                         </div>
                         
@@ -336,7 +336,7 @@ while ($item = $result_itens->fetch_assoc()) {
                                 Faturamento
                             </h6>
                             <p class="small text-muted mb-0">
-                                A nota fiscal será enviada conforme o prazo selecionado.
+                                A nota fiscal serÃ¡ enviada conforme o prazo selecionado.
                             </p>
                         </div>
                     </div>
@@ -350,3 +350,4 @@ while ($item = $result_itens->fetch_assoc()) {
 </html>
 
 <?php $conn->close(); ?>
+

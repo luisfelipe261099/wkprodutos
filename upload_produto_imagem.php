@@ -1,7 +1,7 @@
-<?php
-session_start();
+﻿<?php
+require_once 'includes/session_bootstrap.php';
 
-// Verifica se o usuário está logado
+// Verifica se o usuÃ¡rio estÃ¡ logado
 if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
     http_response_code(403);
     echo json_encode(['success' => false, 'message' => 'Acesso negado']);
@@ -10,28 +10,28 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
 
 require_once 'includes/db_connect.php';
 
-// Configurações de upload
+// ConfiguraÃ§Ãµes de upload
 $upload_dir = 'uploads/produtos/';
 $allowed_types = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
 $max_file_size = 5 * 1024 * 1024; // 5MB
 
-// Criar diretório se não existir
+// Criar diretÃ³rio se nÃ£o existir
 if (!is_dir($upload_dir)) {
     if (!mkdir($upload_dir, 0755, true)) {
-        echo json_encode(['success' => false, 'message' => 'Erro ao criar diretório de upload']);
+        echo json_encode(['success' => false, 'message' => 'Erro ao criar diretÃ³rio de upload']);
         exit;
     }
 }
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-    echo json_encode(['success' => false, 'message' => 'Método não permitido']);
+    echo json_encode(['success' => false, 'message' => 'MÃ©todo nÃ£o permitido']);
     exit;
 }
 
 $produto_id = intval($_POST['produto_id'] ?? 0);
 
 if (!$produto_id) {
-    echo json_encode(['success' => false, 'message' => 'ID do produto inválido']);
+    echo json_encode(['success' => false, 'message' => 'ID do produto invÃ¡lido']);
     exit;
 }
 
@@ -40,7 +40,7 @@ $stmt_check = $conn->prepare("SELECT id FROM produtos WHERE id = ?");
 $stmt_check->bind_param("i", $produto_id);
 $stmt_check->execute();
 if ($stmt_check->get_result()->num_rows === 0) {
-    echo json_encode(['success' => false, 'message' => 'Produto não encontrado']);
+    echo json_encode(['success' => false, 'message' => 'Produto nÃ£o encontrado']);
     exit;
 }
 
@@ -53,25 +53,25 @@ $file = $_FILES['imagem'];
 
 // Validar tipo de arquivo
 if (!in_array($file['type'], $allowed_types)) {
-    echo json_encode(['success' => false, 'message' => 'Tipo de arquivo não permitido. Use JPEG, PNG, GIF ou WebP']);
+    echo json_encode(['success' => false, 'message' => 'Tipo de arquivo nÃ£o permitido. Use JPEG, PNG, GIF ou WebP']);
     exit;
 }
 
 // Validar tamanho do arquivo
 if ($file['size'] > $max_file_size) {
-    echo json_encode(['success' => false, 'message' => 'Arquivo muito grande. Máximo 5MB']);
+    echo json_encode(['success' => false, 'message' => 'Arquivo muito grande. MÃ¡ximo 5MB']);
     exit;
 }
 
-// Gerar nome único para o arquivo
+// Gerar nome Ãºnico para o arquivo
 $file_extension = pathinfo($file['name'], PATHINFO_EXTENSION);
 $new_filename = 'produto_' . $produto_id . '_' . time() . '.' . $file_extension;
 $upload_path = $upload_dir . $new_filename;
 
 try {
-    // Mover arquivo para o diretório de upload
+    // Mover arquivo para o diretÃ³rio de upload
     if (!move_uploaded_file($file['tmp_name'], $upload_path)) {
-        throw new Exception('Erro ao mover arquivo para o diretório de destino');
+        throw new Exception('Erro ao mover arquivo para o diretÃ³rio de destino');
     }
 
     // Buscar imagem anterior para deletar
@@ -113,3 +113,4 @@ try {
 
 $conn->close();
 ?>
+

@@ -1,6 +1,6 @@
-<?php
-// empresa_logos.php - Página para gerenciar logos das empresas representadas
-session_start();
+﻿<?php
+// empresa_logos.php - PÃ¡gina para gerenciar logos das empresas representadas
+require_once 'includes/session_bootstrap.php';
 
 if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
     header("location: index.php");
@@ -18,13 +18,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['upload_logo'])) {
         $file_type = $_FILES['logo_file']['type'];
         
         if (in_array($file_type, $allowed_types)) {
-            // Criar diretório se não existir
+            // Criar diretÃ³rio se nÃ£o existir
             $upload_dir = 'uploads/logos_empresas/';
             if (!is_dir($upload_dir)) {
                 mkdir($upload_dir, 0755, true);
             }
             
-            // Gerar nome único para o arquivo
+            // Gerar nome Ãºnico para o arquivo
             $file_extension = pathinfo($_FILES['logo_file']['name'], PATHINFO_EXTENSION);
             $new_filename = 'empresa_' . $empresa_id . '_' . time() . '.' . $file_extension;
             $upload_path = $upload_dir . $new_filename;
@@ -44,7 +44,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['upload_logo'])) {
                 $error_message = "Erro ao fazer upload do arquivo.";
             }
         } else {
-            $error_message = "Tipo de arquivo não permitido. Use apenas: JPG, PNG, GIF ou WEBP.";
+            $error_message = "Tipo de arquivo nÃ£o permitido. Use apenas: JPG, PNG, GIF ou WEBP.";
         }
     } else {
         $error_message = "Erro no upload do arquivo.";
@@ -89,7 +89,7 @@ $result = $conn->query($sql);
 <body>
     <div class="container-fluid">
         <div class="row">
-            <!-- Sidebar ou navegação aqui se necessário -->
+            <!-- Sidebar ou navegaÃ§Ã£o aqui se necessÃ¡rio -->
             
             <main class="col-md-12 ms-sm-auto px-md-4">
                 <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
@@ -123,9 +123,9 @@ $result = $conn->query($sql);
                                     <tr>
                                         <th>ID</th>
                                         <th>Empresa</th>
-                                        <th>Razão Social</th>
+                                        <th>RazÃ£o Social</th>
                                         <th>Logo Atual</th>
-                                        <th>Ações</th>
+                                        <th>AÃ§Ãµes</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -195,7 +195,7 @@ $result = $conn->query($sql);
                                                                     </div>
                                                                     <small class="text-muted">
                                                                         Formatos aceitos: JPG, PNG, GIF, WEBP<br>
-                                                                        Tamanho recomendado: máximo 2MB
+                                                                        Tamanho recomendado: mÃ¡ximo 2MB
                                                                     </small>
                                                                 </div>
 
@@ -245,19 +245,19 @@ $result = $conn->query($sql);
                             <div class="col-md-6">
                                 <h6><i class="fas fa-upload"></i> Upload de Logos</h6>
                                 <ul>
-                                    <li>Faça upload de logos para cada empresa representada</li>
+                                    <li>FaÃ§a upload de logos para cada empresa representada</li>
                                     <li>Formatos aceitos: JPG, PNG, GIF, WEBP</li>
-                                    <li>Tamanho recomendado: máximo 2MB</li>
-                                    <li>Resolução recomendada: 300x200px ou similar</li>
+                                    <li>Tamanho recomendado: mÃ¡ximo 2MB</li>
+                                    <li>ResoluÃ§Ã£o recomendada: 300x200px ou similar</li>
                                 </ul>
                             </div>
                             <div class="col-md-6">
-                                <h6><i class="fas fa-file-pdf"></i> Uso nos Orçamentos</h6>
+                                <h6><i class="fas fa-file-pdf"></i> Uso nos OrÃ§amentos</h6>
                                 <ul>
-                                    <li>Quando um orçamento contém produtos de uma empresa específica</li>
-                                    <li>A logo da empresa aparece ao lado do título "PROPOSTA COMERCIAL"</li>
-                                    <li>Se há múltiplas empresas, usa a logo da primeira encontrada</li>
-                                    <li>Se não há logo, mantém o layout padrão centralizado</li>
+                                    <li>Quando um orÃ§amento contÃ©m produtos de uma empresa especÃ­fica</li>
+                                    <li>A logo da empresa aparece ao lado do tÃ­tulo "PROPOSTA COMERCIAL"</li>
+                                    <li>Se hÃ¡ mÃºltiplas empresas, usa a logo da primeira encontrada</li>
+                                    <li>Se nÃ£o hÃ¡ logo, mantÃ©m o layout padrÃ£o centralizado</li>
                                 </ul>
                             </div>
                         </div>
@@ -276,7 +276,7 @@ $result = $conn->query($sql);
                 if (file) {
                     const reader = new FileReader();
                     reader.onload = function(e) {
-                        // Criar preview se necessário
+                        // Criar preview se necessÃ¡rio
                         console.log('Arquivo selecionado:', file.name);
                     };
                     reader.readAsDataURL(file);

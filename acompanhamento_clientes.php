@@ -1,8 +1,8 @@
-<?php
-session_start();
+﻿<?php
+require_once 'includes/session_bootstrap.php';
 require_once 'includes/db_connect.php';
 
-// Verifica se o usuário está logado
+// Verifica se o usuÃ¡rio estÃ¡ logado
 if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
     header("location: index.php");
     exit;
@@ -12,28 +12,28 @@ $message = $_SESSION['flash_message'] ?? '';
 $message_type = $_SESSION['flash_message_type'] ?? '';
 unset($_SESSION['flash_message'], $_SESSION['flash_message_type']);
 
-// --- LÓGICA DA PÁGINA ---
+// --- LÃ“GICA DA PÃGINA ---
 
-// Lógica de Concluir lembrete (movida para o topo para executar antes da listagem)
+// LÃ³gica de Concluir lembrete (movida para o topo para executar antes da listagem)
 if (isset($_GET['action']) && $_GET['action'] == 'concluir' && isset($_GET['id'])) {
     $lembrete_id_acao = intval($_GET['id']);
-    $sql_update_status = "UPDATE lembretes_acompanhamento SET status_lembrete = 'Concluído' WHERE id = ?";
+    $sql_update_status = "UPDATE lembretes_acompanhamento SET status_lembrete = 'ConcluÃ­do' WHERE id = ?";
     $stmt_update = $conn->prepare($sql_update_status);
     $stmt_update->bind_param("i", $lembrete_id_acao);
     if ($stmt_update->execute()) {
-        $_SESSION['flash_message'] = "Lembrete marcado como concluído!";
+        $_SESSION['flash_message'] = "Lembrete marcado como concluÃ­do!";
         $_SESSION['flash_message_type'] = "success";
     } else {
         $_SESSION['flash_message'] = "Erro ao atualizar status do lembrete.";
         $_SESSION['flash_message_type'] = "danger";
     }
     $stmt_update->close();
-    // Limpa os parâmetros GET da URL para evitar re-execução ao recarregar
+    // Limpa os parÃ¢metros GET da URL para evitar re-execuÃ§Ã£o ao recarregar
     header("Location: acompanhamento_clientes.php");
     exit;
 }
 
-// 1. DEFINIÇÕES DE PAGINAÇÃO E FILTROS
+// 1. DEFINIÃ‡Ã•ES DE PAGINAÃ‡ÃƒO E FILTROS
 $registros_por_pagina = 15;
 $pagina_atual = isset($_GET['pagina']) && is_numeric($_GET['pagina']) ? (int)$_GET['pagina'] : 1;
 $offset = ($pagina_atual - 1) * $registros_por_pagina;
@@ -41,7 +41,7 @@ $offset = ($pagina_atual - 1) * $registros_por_pagina;
 $filtro_status = $_GET['filtro_status'] ?? 'Pendente'; 
 $termo_busca = $_GET['q'] ?? '';
 
-// 2. MONTAGEM DINÂMICA DA CONSULTA SQL COM FILTROS
+// 2. MONTAGEM DINÃ‚MICA DA CONSULTA SQL COM FILTROS
 $params = [];
 $types = "";
 $where_conditions = [];
@@ -53,7 +53,7 @@ if ($filtro_status != 'Todos') {
     $types .= "s";
 }
 
-// Filtro por termo de busca (no nome do cliente ou na descrição)
+// Filtro por termo de busca (no nome do cliente ou na descriÃ§Ã£o)
 if (!empty($termo_busca)) {
     $where_conditions[] = "(c.nome LIKE ? OR la.descricao LIKE ?)";
     $like_term = "%{$termo_busca}%";
@@ -71,7 +71,7 @@ if (!empty($where_conditions)) {
     $where_sql = " WHERE " . implode(" AND ", $where_conditions);
 }
 
-// 3. OBTER TOTAL DE REGISTROS PARA PAGINAÇÃO
+// 3. OBTER TOTAL DE REGISTROS PARA PAGINAÃ‡ÃƒO
 $sql_total = "SELECT COUNT(la.id) as total " . $base_sql . $where_sql;
 $stmt_total = $conn->prepare($sql_total);
 if (!empty($types)) {
@@ -82,7 +82,7 @@ $total_registros = $stmt_total->get_result()->fetch_assoc()['total'];
 $total_paginas = ceil($total_registros / $registros_por_pagina);
 $stmt_total->close();
 
-// 4. OBTER REGISTROS DA PÁGINA ATUAL
+// 4. OBTER REGISTROS DA PÃGINA ATUAL
 $sql_lembretes = "SELECT la.*, c.nome AS nome_cliente, u.nome as nome_usuario " . $base_sql . $where_sql . " ORDER BY la.data_lembrete ASC, la.id DESC LIMIT ? OFFSET ?";
 $types .= "ii"; // Adiciona os tipos para LIMIT e OFFSET
 $params[] = $registros_por_pagina;
@@ -101,8 +101,8 @@ include_once 'includes/header.php';
 ?>
 
 <div class="page-header fade-in-up">
-    <h1 class="page-title"><i class="fas fa-tasks"></i> Gestão de Acompanhamentos</h1>
-    <p class="page-subtitle">Gerencie seus lembretes de forma eficiente com busca e paginação.</p>
+    <h1 class="page-title"><i class="fas fa-tasks"></i> GestÃ£o de Acompanhamentos</h1>
+    <p class="page-subtitle">Gerencie seus lembretes de forma eficiente com busca e paginaÃ§Ã£o.</p>
 </div>
 
 <?php if (!empty($message)): ?>
@@ -120,14 +120,14 @@ include_once 'includes/header.php';
     <div class="card-body-modern">
         <form method="GET" action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]); ?>" class="row g-3 align-items-end">
             <div class="col-md-5">
-                <label for="q" class="form-label">Buscar por Cliente ou Descrição</label>
-                <input type="search" name="q" id="q" class="form-control" value="<?php echo htmlspecialchars($termo_busca); ?>" placeholder="Ex: João Silva ou 'recompra'">
+                <label for="q" class="form-label">Buscar por Cliente ou DescriÃ§Ã£o</label>
+                <input type="search" name="q" id="q" class="form-control" value="<?php echo htmlspecialchars($termo_busca); ?>" placeholder="Ex: JoÃ£o Silva ou 'recompra'">
             </div>
             <div class="col-md-4">
                 <label for="filtro_status" class="form-label">Filtrar por Status</label>
                 <select name="filtro_status" id="filtro_status" class="form-select">
                     <option value="Pendente" <?php echo ($filtro_status == 'Pendente' ? 'selected' : ''); ?>>Pendentes</option>
-                    <option value="Concluído" <?php echo ($filtro_status == 'Concluído' ? 'selected' : ''); ?>>Concluídos</option>
+                    <option value="ConcluÃ­do" <?php echo ($filtro_status == 'ConcluÃ­do' ? 'selected' : ''); ?>>ConcluÃ­dos</option>
                     <option value="Todos" <?php echo ($filtro_status == 'Todos' ? 'selected' : ''); ?>>Todos</option>
                 </select>
             </div>
@@ -153,11 +153,11 @@ include_once 'includes/header.php';
                         <th>Prioridade</th>
                         <th>Data</th>
                         <th>Cliente</th>
-                        <th>Descrição</th>
+                        <th>DescriÃ§Ã£o</th>
                         <th>Venda Assoc.</th>
                         <th>Status</th>
                         <th>Criado por</th>
-                        <th class="text-center">Ações</th>
+                        <th class="text-center">AÃ§Ãµes</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -169,7 +169,7 @@ include_once 'includes/header.php';
                                 <td class="text-center align-middle">
                                     <?php if($is_overdue): ?><i class="fas fa-exclamation-circle text-danger fs-5" title="Atrasado!"></i>
                                     <?php elseif($lembrete['status_lembrete'] == 'Pendente'): ?><i class="fas fa-clock text-warning fs-5" title="Pendente"></i>
-                                    <?php else: ?><i class="fas fa-check-circle text-success fs-5" title="Concluído"></i><?php endif; ?>
+                                    <?php else: ?><i class="fas fa-check-circle text-success fs-5" title="ConcluÃ­do"></i><?php endif; ?>
                                 </td>
                                 <td class="align-middle fw-bold"><?php echo date('d/m/Y', strtotime($lembrete['data_lembrete'])); ?></td>
                                 <td class="align-middle"><?php echo htmlspecialchars($lembrete['nome_cliente']); ?></td>
@@ -185,7 +185,7 @@ include_once 'includes/header.php';
                                     <span class="badge fs-6 bg-<?php 
                                         switch ($lembrete['status_lembrete']) {
                                             case 'Pendente': echo $is_overdue ? 'danger' : 'warning text-dark'; break;
-                                            case 'Concluído': echo 'success'; break;
+                                            case 'ConcluÃ­do': echo 'success'; break;
                                             default: echo 'secondary';
                                         }
                                     ?>"><?php echo htmlspecialchars($lembrete['status_lembrete']); ?></span>
@@ -194,7 +194,7 @@ include_once 'includes/header.php';
                                 <td class="text-center align-middle">
                                     <div class="btn-group">
                                         <?php if ($lembrete['status_lembrete'] == 'Pendente'): ?>
-                                            <a href="acompanhamento_clientes.php?action=concluir&id=<?php echo $lembrete['id']; ?>" class="btn btn-sm btn-success" title="Marcar como Concluído" onclick="return confirm('Marcar este lembrete como concluído?');"><i class="fas fa-check"></i></a>
+                                            <a href="acompanhamento_clientes.php?action=concluir&id=<?php echo $lembrete['id']; ?>" class="btn btn-sm btn-success" title="Marcar como ConcluÃ­do" onclick="return confirm('Marcar este lembrete como concluÃ­do?');"><i class="fas fa-check"></i></a>
                                         <?php endif; ?>
                                         <a href="criar_acompanhamento_venda.php?venda_id=<?php echo $lembrete['venda_id']; ?>" class="btn btn-sm btn-info" title="Criar Novo Acompanhamento para esta Venda"><i class="fas fa-plus"></i></a>
                                     </div>

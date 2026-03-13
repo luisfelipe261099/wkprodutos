@@ -1,33 +1,33 @@
-<?php
-// Inicia a sessão. É o primeiro passo para gerenciar o login do usuário.
-session_start();
+﻿<?php
+// Inicia a sessÃ£o. Ã‰ o primeiro passo para gerenciar o login do usuÃ¡rio.
+require_once 'includes/session_bootstrap.php';
 
-// Verifica se o usuário está logado. Se não estiver, redireciona para a página de login (index.php).
+// Verifica se o usuÃ¡rio estÃ¡ logado. Se nÃ£o estiver, redireciona para a pÃ¡gina de login (index.php).
 if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
     header("location: index.php");
     exit;
 }
 
-// Inclui o arquivo de conexão com o banco de dados.
+// Inclui o arquivo de conexÃ£o com o banco de dados.
 require_once 'includes/db_connect.php';
 
-// --- Lógica para buscar dados dinâmicos para o Dashboard ---
+// --- LÃ³gica para buscar dados dinÃ¢micos para o Dashboard ---
 
-// 1. Total de Vendas Concluídas Hoje
+// 1. Total de Vendas ConcluÃ­das Hoje
 $total_vendas_hoje = 0;
 $sql_vendas_hoje = "SELECT SUM(valor_total) FROM vendas WHERE status_venda = 'concluida' AND DATE(data_venda) = CURDATE()";
 if ($result = $conn->query($sql_vendas_hoje)) {
     $total_vendas_hoje = $result->fetch_row()[0] ?? 0;
 }
 
-// 2. Total de Vendas do Mês
+// 2. Total de Vendas do MÃªs
 $total_vendas_mes = 0;
 $sql_vendas_mes = "SELECT SUM(valor_total) FROM vendas WHERE status_venda = 'concluida' AND MONTH(data_venda) = MONTH(CURDATE()) AND YEAR(data_venda) = YEAR(CURDATE())";
 if ($result = $conn->query($sql_vendas_mes)) {
     $total_vendas_mes = $result->fetch_row()[0] ?? 0;
 }
 
-// --- NOVOS CÁLCULOS DE LUCRO ---
+// --- NOVOS CÃLCULOS DE LUCRO ---
 
 // 3. Lucro Total de Hoje
 $lucro_hoje = 0;
@@ -40,7 +40,7 @@ if ($result = $conn->query($sql_lucro_hoje)) {
     $lucro_hoje = $result->fetch_row()[0] ?? 0;
 }
 
-// 4. Lucro Total do Mês
+// 4. Lucro Total do MÃªs
 $lucro_mes = 0;
 $sql_lucro_mes = "SELECT SUM(iv.preco_unitario * iv.quantidade * (p.percentual_lucro / 100))
                   FROM vendas v
@@ -51,7 +51,7 @@ if ($result = $conn->query($sql_lucro_mes)) {
     $lucro_mes = $result->fetch_row()[0] ?? 0;
 }
 
-// 5. Número de Produtos com Estoque Crítico
+// 5. NÃºmero de Produtos com Estoque CrÃ­tico
 $produtos_criticos = 0;
 $sql_produtos_criticos = "SELECT COUNT(*) FROM produtos WHERE quantidade_estoque <= estoque_minimo";
 if ($result = $conn->query($sql_produtos_criticos)) {
@@ -65,7 +65,7 @@ if ($result = $conn->query($sql_total_produtos)) {
     $total_produtos = $result->fetch_row()[0] ?? 0;
 }
 
-// 7. Número de Agendamentos Próximos
+// 7. NÃºmero de Agendamentos PrÃ³ximos
 $agendamentos_proximos = 0;
 $sql_agendamentos_proximos = "SELECT COUNT(*) FROM agendamentos_entrega WHERE data_hora_entrega BETWEEN CURDATE() AND DATE_ADD(CURDATE(), INTERVAL 7 DAY) AND (status_entrega = 'agendado' OR status_entrega = 'em_rota')";
 if ($result = $conn->query($sql_agendamentos_proximos)) {
@@ -79,14 +79,14 @@ if ($result = $conn->query($sql_total_clientes)) {
     $total_clientes = $result->fetch_row()[0] ?? 0;
 }
 
-// 9. Orçamentos Pendentes
+// 9. OrÃ§amentos Pendentes
 $orcamentos_pendentes = 0;
 $sql_orcamentos_pendentes = "SELECT COUNT(*) FROM orcamentos WHERE status_orcamento = 'pendente'";
 if ($result = $conn->query($sql_orcamentos_pendentes)) {
     $orcamentos_pendentes = $result->fetch_row()[0] ?? 0;
 }
 
-// 10. Vendas e Lucro dos últimos 7 dias para gráfico (SQL ATUALIZADO)
+// 10. Vendas e Lucro dos Ãºltimos 7 dias para grÃ¡fico (SQL ATUALIZADO)
 $dados_grafico = [];
 $sql_grafico = "SELECT
                     DATE(v.data_venda) as data,
@@ -104,7 +104,7 @@ if ($result = $conn->query($sql_grafico)) {
     }
 }
 
-// 11. Últimas vendas
+// 11. Ãšltimas vendas
 $ultimas_vendas = [];
 $sql_ultimas_vendas = "SELECT v.id, v.data_venda, v.valor_total, c.nome as cliente_nome, v.status_venda
                        FROM vendas v
@@ -126,10 +126,10 @@ if ($result = $conn->query($sql_produtos_estoque_baixo)) {
     $produtos_estoque_baixo = $result->fetch_all(MYSQLI_ASSOC);
 }
 
-// Fechar a conexão com o banco de dados
+// Fechar a conexÃ£o com o banco de dados
 $conn->close();
 
-// Inclui o cabeçalho da página
+// Inclui o cabeÃ§alho da pÃ¡gina
 include_once 'includes/header.php';
 ?>
 
@@ -138,7 +138,7 @@ include_once 'includes/header.php';
         <i class="fas fa-tachometer-alt"></i>
         Dashboard
     </h1>
-    <p class="page-subtitle">Visão geral do seu negócio</p>
+    <p class="page-subtitle">VisÃ£o geral do seu negÃ³cio</p>
 </div>
 
 <div class="row g-4 mb-4">
@@ -161,7 +161,7 @@ include_once 'includes/header.php';
                 <i class="fas fa-chart-line"></i>
             </div>
             <div class="stats-value"><?php echo fmt_brl($total_vendas_mes); ?></div>
-            <div class="stats-label">Vendas do Mês</div>
+            <div class="stats-label">Vendas do MÃªs</div>
             <div class="stats-change positive">
                 <i class="fas fa-dollar-sign"></i> Lucro: <?php echo fmt_brl($lucro_mes); ?>
             </div>
@@ -174,7 +174,7 @@ include_once 'includes/header.php';
                 <i class="fas fa-exclamation-triangle"></i>
             </div>
             <div class="stats-value"><?php echo $produtos_criticos; ?></div>
-            <div class="stats-label">Estoque Crítico</div>
+            <div class="stats-label">Estoque CrÃ­tico</div>
             <div class="stats-change negative">
                 <i class="fas fa-arrow-down"></i> de <?php echo $total_produtos; ?> produtos
             </div>
@@ -199,7 +199,7 @@ include_once 'includes/header.php';
                  <i class="fas fa-truck"></i>
             </div>
             <div class="stats-value"><?php echo $agendamentos_proximos; ?></div>
-            <div class="stats-label">Entregas Próximas</div>
+            <div class="stats-label">Entregas PrÃ³ximas</div>
         </div>
     </div>
 
@@ -209,7 +209,7 @@ include_once 'includes/header.php';
                 <i class="fas fa-file-invoice-dollar"></i>
             </div>
             <div class="stats-value"><?php echo $orcamentos_pendentes; ?></div>
-            <div class="stats-label">Orçamentos Pendentes</div>
+            <div class="stats-label">OrÃ§amentos Pendentes</div>
         </div>
     </div>
 </div>
@@ -219,7 +219,7 @@ include_once 'includes/header.php';
         <div class="modern-card fade-in-up">
             <div class="card-header-modern">
                 <i class="fas fa-chart-bar"></i>
-                Performance dos Últimos 7 Dias
+                Performance dos Ãšltimos 7 Dias
             </div>
             <div class="card-body-modern">
                 <div class="chart-container">
@@ -242,7 +242,7 @@ include_once 'includes/header.php';
                             <i class="fas fa-check-circle"></i>
                         </div>
                         <h6 class="text-muted">Estoque OK!</h6>
-                        <p class="text-muted small">Nenhum produto com estoque crítico.</p>
+                        <p class="text-muted small">Nenhum produto com estoque crÃ­tico.</p>
                     </div>
                 <?php else: ?>
                     <div class="space-y-3">
@@ -250,7 +250,7 @@ include_once 'includes/header.php';
                             <div class="d-flex justify-content-between align-items-center py-2 border-bottom">
                                 <div>
                                     <h6 class="mb-1 fw-semibold"><?php echo htmlspecialchars($produto['nome']); ?></h6>
-                                    <small class="text-muted">Mínimo: <?php echo $produto['estoque_minimo']; ?></small>
+                                    <small class="text-muted">MÃ­nimo: <?php echo $produto['estoque_minimo']; ?></small>
                                 </div>
                                 <span class="status-badge status-danger">
                                     <?php echo $produto['quantidade_estoque']; ?>
@@ -274,7 +274,7 @@ include_once 'includes/header.php';
         <div class="modern-card fade-in-up">
             <div class="card-header-modern">
                 <i class="fas fa-shopping-cart"></i>
-                Últimas Vendas
+                Ãšltimas Vendas
                 <div class="ms-auto">
                     <a href="registrar_venda.php" class="btn btn-primary btn-sm">
                         <i class="fas fa-plus me-1"></i> Nova Venda
@@ -288,7 +288,7 @@ include_once 'includes/header.php';
                             <i class="fas fa-receipt"></i>
                         </div>
                         <h5 class="text-muted mb-2">Nenhuma venda registrada</h5>
-                        <p class="text-muted">Suas vendas mais recentes aparecerão aqui.</p>
+                        <p class="text-muted">Suas vendas mais recentes aparecerÃ£o aqui.</p>
                         <a href="registrar_venda.php" class="btn btn-primary">
                             <i class="fas fa-plus me-2"></i> Registrar Primeira Venda
                         </a>
@@ -303,7 +303,7 @@ include_once 'includes/header.php';
                                     <th>Data</th>
                                     <th>Valor</th>
                                     <th>Status</th>
-                                    <th class="text-center">Ações</th>
+                                    <th class="text-center">AÃ§Ãµes</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -317,7 +317,7 @@ include_once 'includes/header.php';
                                                 <div class="user-avatar me-2" style="width: 32px; height: 32px; font-size: 0.75rem;">
                                                     <?php echo strtoupper(substr($venda['cliente_nome'] ?? 'C', 0, 1)); ?>
                                                 </div>
-                                                <?php echo htmlspecialchars($venda['cliente_nome'] ?? 'Cliente não informado'); ?>
+                                                <?php echo htmlspecialchars($venda['cliente_nome'] ?? 'Cliente nÃ£o informado'); ?>
                                             </div>
                                         </td>
                                         <td>
@@ -335,7 +335,7 @@ include_once 'includes/header.php';
                                             switch($venda['status_venda']) {
                                                 case 'concluida':
                                                     $status_class = 'status-success';
-                                                    $status_text = 'Concluída';
+                                                    $status_text = 'ConcluÃ­da';
                                                     break;
                                                 case 'pendente':
                                                     $status_class = 'status-warning';

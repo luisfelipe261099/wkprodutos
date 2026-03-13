@@ -1,7 +1,7 @@
-<?php
-session_start();
+﻿<?php
+require_once 'includes/session_bootstrap.php';
 
-// Verifica se o usuário está logado
+// Verifica se o usuÃ¡rio estÃ¡ logado
 if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
     header("location: index.php");
     exit;
@@ -12,7 +12,7 @@ require_once 'includes/db_connect.php';
 $message = '';
 $message_type = '';
 
-// Processar ações
+// Processar aÃ§Ãµes
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $acao = $_POST['acao'] ?? '';
     
@@ -36,7 +36,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 $pedido = $result_pedido->fetch_assoc();
 
                 if (!$pedido) {
-                    throw new Exception("Pedido não encontrado");
+                    throw new Exception("Pedido nÃ£o encontrado");
                 }
 
                 // Atualizar status do pedido
@@ -48,9 +48,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     throw new Exception("Erro ao atualizar status do pedido");
                 }
 
-                // Se confirmado, criar venda e transações financeiras
+                // Se confirmado, criar venda e transaÃ§Ãµes financeiras
                 if ($novo_status == 'confirmado' && $pedido['status_pedido'] != 'confirmado') {
-                    // Atualizar data de confirmação
+                    // Atualizar data de confirmaÃ§Ã£o
                     $sql_confirm = "UPDATE marketplace_pedidos SET data_confirmacao = NOW() WHERE id = ?";
                     $stmt_confirm = $conn->prepare($sql_confirm);
                     $stmt_confirm->bind_param("i", $pedido_id);
@@ -98,7 +98,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                         }
                     }
 
-                    // Criar transação financeira
+                    // Criar transaÃ§Ã£o financeira
                     $descricao = "Venda Marketplace #" . $pedido['numero_pedido'] . " - " . $pedido['cliente_nome'];
                     $categoria = "Vendas Marketplace";
                     $data_transacao = ($pedido['tipo_faturamento'] == 'avista') ? date('Y-m-d H:i:s') : $pedido['data_vencimento'] . ' 00:00:00';
@@ -109,25 +109,25 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     $stmt_transacao->bind_param("dssis", $pedido['valor_total'], $descricao, $categoria, $pedido_id, $data_transacao);
 
                     if (!$stmt_transacao->execute()) {
-                        throw new Exception("Erro ao criar transação financeira: " . $stmt_transacao->error);
+                        throw new Exception("Erro ao criar transaÃ§Ã£o financeira: " . $stmt_transacao->error);
                     }
 
                     $transacao_id = $conn->insert_id;
 
-                    // Vincular venda e transação ao pedido do marketplace
+                    // Vincular venda e transaÃ§Ã£o ao pedido do marketplace
                     $sql_link = "UPDATE marketplace_pedidos SET venda_id = ?, transacao_financeira_id = ? WHERE id = ?";
                     $stmt_link = $conn->prepare($sql_link);
                     $stmt_link->bind_param("iii", $venda_id, $transacao_id, $pedido_id);
 
                     if (!$stmt_link->execute()) {
-                        throw new Exception("Erro ao vincular venda e transação ao pedido: " . $stmt_link->error);
+                        throw new Exception("Erro ao vincular venda e transaÃ§Ã£o ao pedido: " . $stmt_link->error);
                     }
                 }
 
                 $conn->commit();
 
                 if ($novo_status == 'confirmado' && $pedido['status_pedido'] != 'confirmado') {
-                    $message = "Pedido confirmado! Venda e transação financeira criadas automaticamente.";
+                    $message = "Pedido confirmado! Venda e transaÃ§Ã£o financeira criadas automaticamente.";
                 } else {
                     $message = "Status do pedido atualizado com sucesso!";
                 }
@@ -189,7 +189,7 @@ if (!empty($params)) {
 $stmt_pedidos->execute();
 $result_pedidos = $stmt_pedidos->get_result();
 
-// Estatísticas
+// EstatÃ­sticas
 $sql_stats = "SELECT 
     COUNT(*) as total_pedidos,
     SUM(CASE WHEN status_pedido = 'pendente' THEN 1 ELSE 0 END) as pedidos_pendentes,
@@ -210,7 +210,7 @@ include_once 'includes/header.php';
         Marketplace - Pedidos
     </h1>
     <p class="page-subtitle">
-        Gerencie os pedidos recebidos através do marketplace
+        Gerencie os pedidos recebidos atravÃ©s do marketplace
     </p>
 </div>
 
@@ -290,7 +290,7 @@ include_once 'includes/header.php';
                 </div>
                 
                 <div class="col-md-3">
-                    <label for="data_inicio" class="form-label">Data Início</label>
+                    <label for="data_inicio" class="form-label">Data InÃ­cio</label>
                     <input type="date" class="form-control" id="data_inicio" name="data_inicio" value="<?php echo $filtro_data_inicio; ?>">
                 </div>
                 
@@ -332,9 +332,9 @@ include_once 'includes/header.php';
                         <th>Valor</th>
                         <th>Faturamento</th>
                         <th>Status</th>
-                        <th>Integração</th>
+                        <th>IntegraÃ§Ã£o</th>
                         <th>Itens</th>
-                        <th class="text-center">Ações</th>
+                        <th class="text-center">AÃ§Ãµes</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -363,7 +363,7 @@ include_once 'includes/header.php';
                             
                             $tipo_faturamento_texto = '';
                             switch ($pedido['tipo_faturamento']) {
-                                case 'avista': $tipo_faturamento_texto = 'À Vista'; break;
+                                case 'avista': $tipo_faturamento_texto = 'Ã€ Vista'; break;
                                 case '15_dias': $tipo_faturamento_texto = '15 dias'; break;
                                 case '20_dias': $tipo_faturamento_texto = '20 dias'; break;
                                 case '30_dias': $tipo_faturamento_texto = '30 dias'; break;
@@ -405,15 +405,15 @@ include_once 'includes/header.php';
                                 </td>
                                 <td>
                                     <?php if ($pedido['venda_integrada'] && $pedido['transacao_integrada']): ?>
-                                        <span class="badge bg-success" title="Venda e transação financeira criadas">
+                                        <span class="badge bg-success" title="Venda e transaÃ§Ã£o financeira criadas">
                                             <i class="fas fa-check"></i> Integrado
                                         </span>
                                     <?php elseif ($pedido['status_pedido'] == 'confirmado'): ?>
-                                        <span class="badge bg-warning text-dark" title="Pedido confirmado mas não integrado">
+                                        <span class="badge bg-warning text-dark" title="Pedido confirmado mas nÃ£o integrado">
                                             <i class="fas fa-exclamation-triangle"></i> Pendente
                                         </span>
                                     <?php else: ?>
-                                        <span class="badge bg-secondary" title="Aguardando confirmação">
+                                        <span class="badge bg-secondary" title="Aguardando confirmaÃ§Ã£o">
                                             <i class="fas fa-clock"></i> Aguardando
                                         </span>
                                     <?php endif; ?>
@@ -507,3 +507,4 @@ include_once 'includes/header.php';
 $conn->close();
 include_once 'includes/footer.php';
 ?>
+

@@ -1,7 +1,7 @@
-<?php
-session_start();
+﻿<?php
+require_once 'includes/session_bootstrap.php';
 
-// Verifica se o usuário está logado
+// Verifica se o usuÃ¡rio estÃ¡ logado
 if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
     header("location: index.php");
     exit;
@@ -14,7 +14,7 @@ require_once 'includes/PDFHelper.php';
 if (!isset($_GET['id']) || !is_numeric($_GET['id'])) {
     echo '<div style="padding:20px; text-align:center;">';
     echo '<h2>Erro</h2>';
-    echo '<p>ID da venda não fornecido ou inválido.</p>';
+    echo '<p>ID da venda nÃ£o fornecido ou invÃ¡lido.</p>';
     echo '<p><a href="vendas.php" style="background-color:#0275d8; color:white; padding:10px 15px; text-decoration:none; border-radius:3px;">Voltar para a lista de vendas</a></p>';
     echo '</div>';
     exit;
@@ -23,7 +23,7 @@ if (!isset($_GET['id']) || !is_numeric($_GET['id'])) {
 $venda_id = intval($_GET['id']);
 
 try {
-    // Verificar se FPDF está disponível
+    // Verificar se FPDF estÃ¡ disponÃ­vel
     $fpdf_path = __DIR__ . '/vendor/setasign/fpdf/fpdf.php';
     if (!file_exists($fpdf_path)) {
         throw new Exception("FPDF library not found at: " . $fpdf_path . ". Please install FPDF using: composer install");
@@ -45,13 +45,13 @@ try {
     $result_venda = $stmt_venda->get_result();
     
     if ($result_venda->num_rows === 0) {
-        throw new Exception("Venda não encontrada.");
+        throw new Exception("Venda nÃ£o encontrada.");
     }
     
     $venda = $result_venda->fetch_assoc();
     $stmt_venda->close();
     
-    // Buscar itens da venda com informações da empresa
+    // Buscar itens da venda com informaÃ§Ãµes da empresa
     $sql_itens = "SELECT iv.*, p.nome AS produto_nome, p.sku, p.descricao,
                          e.nome_empresa, e.logo_empresa
                   FROM itens_venda iv
@@ -88,7 +88,7 @@ try {
     }
     $stmt_itens->close();
     
-    // Calcular valor total se não estiver definido
+    // Calcular valor total se nÃ£o estiver definido
     if (!isset($venda['valor_total'])) {
         $venda['valor_total'] = 0;
         foreach ($itens as $item) {
@@ -124,10 +124,10 @@ function gerarPDFVenda($venda, $itens, $empresas_logos = []) {
             }
             
             function Header() {
-                // Logo ou título no cabeçalho
+                // Logo ou tÃ­tulo no cabeÃ§alho
                 $this->SetFont('Arial', 'B', 12);
                 $this->SetTextColor(100, 100, 100);
-                $this->Cell(0, 10, $this->convertToLatin1('Confirmação de Venda'), 0, 1, 'R');
+                $this->Cell(0, 10, $this->convertToLatin1('ConfirmaÃ§Ã£o de Venda'), 0, 1, 'R');
                 $this->Ln(5);
             }
             
@@ -135,7 +135,7 @@ function gerarPDFVenda($venda, $itens, $empresas_logos = []) {
                 $this->SetY(-15);
                 $this->SetFont('Arial', 'I', 8);
                 $this->SetTextColor(100, 100, 100);
-                $this->Cell(0, 10, $this->convertToLatin1('Página ') . $this->PageNo() . ' de {nb}', 0, 0, 'C');
+                $this->Cell(0, 10, $this->convertToLatin1('PÃ¡gina ') . $this->PageNo() . ' de {nb}', 0, 0, 'C');
             }
             
             function ShadowBox($x, $y, $w, $h, $title, $content) {
@@ -148,13 +148,13 @@ function gerarPDFVenda($venda, $itens, $empresas_logos = []) {
                 $this->SetDrawColor(200, 200, 200);
                 $this->Rect($x, $y, $w, $h, 'DF');
                 
-                // Título
+                // TÃ­tulo
                 $this->SetXY($x + 2, $y + 2);
                 $this->SetFont('Arial', 'B', 10);
                 $this->SetTextColor($this->primaryColor[0], $this->primaryColor[1], $this->primaryColor[2]);
                 $this->Cell($w - 4, 6, $this->convertToLatin1($title), 0, 1, 'L');
                 
-                // Conteúdo
+                // ConteÃºdo
                 $this->SetX($x + 2);
                 $this->SetFont('Arial', '', 9);
                 $this->SetTextColor(0, 0, 0);
@@ -167,7 +167,7 @@ function gerarPDFVenda($venda, $itens, $empresas_logos = []) {
             }
             
             function ModernTable($headers, $data, $widths) {
-                // Cabeçalho da tabela
+                // CabeÃ§alho da tabela
                 $this->SetFillColor($this->lightGray[0], $this->lightGray[1], $this->lightGray[2]);
                 $this->SetTextColor($this->darkGray[0], $this->darkGray[1], $this->darkGray[2]);
                 $this->SetDrawColor(200, 200, 200);
@@ -222,11 +222,11 @@ function gerarPDFVenda($venda, $itens, $empresas_logos = []) {
         
         if ($logo_empresa) {
             $pdf->SetXY(15, $pdf->GetY());
-            $pdf->Cell(140, 12, $pdf->convertToLatin1('CONFIRMAÇÃO DE VENDA'), 0, 0, 'L');
+            $pdf->Cell(140, 12, $pdf->convertToLatin1('CONFIRMAÃ‡ÃƒO DE VENDA'), 0, 0, 'L');
             $pdf->Image($logo_empresa, 160, $pdf->GetY() - 5, 30, 0);
             $pdf->Ln(12);
         } else {
-            $pdf->Cell(0, 12, $pdf->convertToLatin1('CONFIRMAÇÃO DE VENDA'), 0, 1, 'C');
+            $pdf->Cell(0, 12, $pdf->convertToLatin1('CONFIRMAÃ‡ÃƒO DE VENDA'), 0, 1, 'C');
         }
         
         $pdf->SetFont('Arial', '', 14);
@@ -239,19 +239,19 @@ function gerarPDFVenda($venda, $itens, $empresas_logos = []) {
         
         // Preparar dados do cliente
         $currentY = $pdf->GetY();
-        $client_name = $venda['cliente_nome'] ?? 'Cliente não informado';
+        $client_name = $venda['cliente_nome'] ?? 'Cliente nÃ£o informado';
         
-        // Verificar se é pessoa física ou jurídica
+        // Verificar se Ã© pessoa fÃ­sica ou jurÃ­dica
         $tipo_pessoa = $venda['tipo_pessoa'] ?? 'fisica';
         if ($tipo_pessoa == 'juridica') {
             $client_details = ($venda['nome_fantasia'] ? $venda['nome_fantasia'] . "\n" : "") . $client_name . "\n";
-            $client_details .= "CNPJ: " . ($venda['cpf_cnpj'] ?? 'Não informado') . "\n";
+            $client_details .= "CNPJ: " . ($venda['cpf_cnpj'] ?? 'NÃ£o informado') . "\n";
             if (!empty($venda['inscricao_estadual'])) {
                 $client_details .= "I.E.: " . $venda['inscricao_estadual'] . "\n";
             }
         } else {
             $client_details = $client_name . "\n";
-            $client_details .= "CPF: " . ($venda['cpf_cnpj'] ?? 'Não informado') . "\n";
+            $client_details .= "CPF: " . ($venda['cpf_cnpj'] ?? 'NÃ£o informado') . "\n";
         }
         
         if (!empty($venda['endereco'])) {
@@ -283,10 +283,10 @@ function gerarPDFVenda($venda, $itens, $empresas_logos = []) {
         $status = isset($venda['status_venda']) ? ucfirst($venda['status_venda']) : 'Pendente';
         $sale_details = "Data da Venda: " . $data_venda . "\n";
         $sale_details .= "Status: " . $status . "\n";
-        $sale_details .= "Forma de Pagamento: " . ucfirst($venda['forma_pagamento'] ?? 'Não informado') . "\n";
+        $sale_details .= "Forma de Pagamento: " . ucfirst($venda['forma_pagamento'] ?? 'NÃ£o informado') . "\n";
         $sale_details .= "Responsavel: Equipe de Vendas";
         
-        // Criar caixas de informação
+        // Criar caixas de informaÃ§Ã£o
         $pdf->ShadowBox(15, $currentY, 85, 45, 'DADOS DO CLIENTE', $client_details);
         $pdf->ShadowBox(110, $currentY, 85, 45, 'DADOS DA VENDA', $sale_details);
         
@@ -334,12 +334,12 @@ function gerarPDFVenda($venda, $itens, $empresas_logos = []) {
         $pdf->SetTextColor(25, 135, 84);
         $pdf->Cell(0, 10, $pdf->convertToLatin1('VALOR TOTAL: R$ ' . number_format($total, 2, ',', '.')), 0, 1, 'R');
         
-        // Observações finais
+        // ObservaÃ§Ãµes finais
         $pdf->Ln(10);
         $pdf->SetFont('Arial', '', 10);
         $pdf->SetTextColor(100, 100, 100);
-        $pdf->Cell(0, 5, $pdf->convertToLatin1('Este documento confirma a realização da venda e serve como comprovante.'), 0, 1, 'C');
-        $pdf->Cell(0, 5, $pdf->convertToLatin1('Para dúvidas ou esclarecimentos, entre em contato conosco.'), 0, 1, 'C');
+        $pdf->Cell(0, 5, $pdf->convertToLatin1('Este documento confirma a realizaÃ§Ã£o da venda e serve como comprovante.'), 0, 1, 'C');
+        $pdf->Cell(0, 5, $pdf->convertToLatin1('Para dÃºvidas ou esclarecimentos, entre em contato conosco.'), 0, 1, 'C');
         
         $pdf->SetDrawColor(0, 0, 0);
         $pdf->SetLineWidth(0.2);
@@ -353,3 +353,4 @@ function gerarPDFVenda($venda, $itens, $empresas_logos = []) {
     }
 }
 ?>
+

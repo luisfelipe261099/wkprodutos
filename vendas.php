@@ -1,23 +1,23 @@
-<?php
-//echo "DEBUG: vendas.php - INÍCIO<br>";
+﻿<?php
+//echo "DEBUG: vendas.php - INÃCIO<br>";
 //flush();
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
 //echo "DEBUG: vendas.php - Antes de session_start()<br>";
 //flush();
-session_start();
+require_once 'includes/session_bootstrap.php';
 //echo "DEBUG: vendas.php - Depois de session_start()<br>";
 //flush();
 
-// Verifica se o usuário está logado
+// Verifica se o usuÃ¡rio estÃ¡ logado
 if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
-    //echo "DEBUG: vendas.php - Usuário não logado, redirecionando...<br>";
+    //echo "DEBUG: vendas.php - UsuÃ¡rio nÃ£o logado, redirecionando...<br>";
     //flush();
     header("location: index.php");
     exit;
 }
-//echo "DEBUG: vendas.php - Usuário logado<br>";
+//echo "DEBUG: vendas.php - UsuÃ¡rio logado<br>";
 //flush();
 
 //echo "DEBUG: vendas.php - Antes de db_connect.php<br>";
@@ -29,26 +29,26 @@ require_once 'includes/db_connect.php';
 $message = '';
 $message_type = '';
 
-// Verificar se há mensagem de sucesso de conversão de orçamento
+// Verificar se hÃ¡ mensagem de sucesso de conversÃ£o de orÃ§amento
 if (isset($_GET['success']) && $_GET['success'] === 'orcamento_convertido') {
     $venda_id = isset($_GET['venda_id']) ? intval($_GET['venda_id']) : 0;
     if ($venda_id > 0) {
-        $message = "Orçamento convertido em venda com sucesso! Venda #$venda_id criada.";
+        $message = "OrÃ§amento convertido em venda com sucesso! Venda #$venda_id criada.";
         $message_type = 'success';
     } else {
-        $message = "Orçamento convertido em venda com sucesso!";
+        $message = "OrÃ§amento convertido em venda com sucesso!";
         $message_type = 'success';
     }
 }
 
-//echo "DEBUG: vendas.php - Antes do bloco de AÇÕES (POST/GET)<br>";
+//echo "DEBUG: vendas.php - Antes do bloco de AÃ‡Ã•ES (POST/GET)<br>";
 //flush();
 
-// --- LÓGICA DE AÇÕES (POST E GET) ---
+// --- LÃ“GICA DE AÃ‡Ã•ES (POST E GET) ---
 
-// AÇÃO: MUDAR STATUS DA VENDA (VIA MODAL)
+// AÃ‡ÃƒO: MUDAR STATUS DA VENDA (VIA MODAL)
 if (isset($_POST['action']) && $_POST['action'] == 'change_status') {
-    //echo "DEBUG: vendas.php - Entrou em AÇÃO: MUDAR STATUS DA VENDA<br>";
+    //echo "DEBUG: vendas.php - Entrou em AÃ‡ÃƒO: MUDAR STATUS DA VENDA<br>";
     //flush();
     $venda_id = intval($_POST['venda_id']);
     $novo_status = $_POST['novo_status'];
@@ -83,7 +83,7 @@ if (isset($_POST['action']) && $_POST['action'] == 'change_status') {
                 }
             }
 
-            // Atualiza transação financeira
+            // Atualiza transaÃ§Ã£o financeira
             if ($novo_status == 'concluida') {
                 $venda_data = $conn->query("SELECT valor_total FROM vendas WHERE id = $venda_id")->fetch_assoc();
                 $check_transacao = $conn->query("SELECT id FROM transacoes_financeiras WHERE referencia_id = $venda_id AND tabela_referencia = 'vendas'");
@@ -113,13 +113,13 @@ if (isset($_POST['action']) && $_POST['action'] == 'change_status') {
         $message = "Erro ao alterar o status da venda: " . $e->getMessage();
         $message_type = 'danger';
     }
-    //echo "DEBUG: vendas.php - Saiu de AÇÃO: MUDAR STATUS DA VENDA<br>";
+    //echo "DEBUG: vendas.php - Saiu de AÃ‡ÃƒO: MUDAR STATUS DA VENDA<br>";
     //flush();
 }
 
-// AÇÃO: EXCLUIR VENDA (GET)
+// AÃ‡ÃƒO: EXCLUIR VENDA (GET)
 if (isset($_GET['action']) && $_GET['action'] == 'delete' && isset($_GET['id'])) {
-    //echo "DEBUG: vendas.php - Entrou em AÇÃO: EXCLUIR VENDA<br>";
+    //echo "DEBUG: vendas.php - Entrou em AÃ‡ÃƒO: EXCLUIR VENDA<br>";
     //flush();
     $venda_id_to_delete = intval($_GET['id']);
 
@@ -136,7 +136,7 @@ if (isset($_GET['action']) && $_GET['action'] == 'delete' && isset($_GET['id']))
         }
         $stmt_itens->close();
 
-        // 2. Excluir a transação financeira associada (se houver)
+        // 2. Excluir a transaÃ§Ã£o financeira associada (se houver)
         $stmt_trans = $conn->prepare("DELETE FROM transacoes_financeiras WHERE referencia_id = ? AND tabela_referencia = 'vendas'");
         $stmt_trans->bind_param("i", $venda_id_to_delete);
         $stmt_trans->execute();
@@ -148,7 +148,7 @@ if (isset($_GET['action']) && $_GET['action'] == 'delete' && isset($_GET['id']))
         $stmt_itens_del->execute();
         $stmt_itens_del->close();
 
-        // 4. CORREÇÃO: Excluir agendamentos de entrega associados
+        // 4. CORREÃ‡ÃƒO: Excluir agendamentos de entrega associados
         $stmt_agend = $conn->prepare("DELETE FROM agendamentos_entrega WHERE venda_id = ?");
         $stmt_agend->bind_param("i", $venda_id_to_delete);
         $stmt_agend->execute();
@@ -161,7 +161,7 @@ if (isset($_GET['action']) && $_GET['action'] == 'delete' && isset($_GET['id']))
         $stmt_venda->close();
 
         $conn->commit();
-        $message = "Venda #{$venda_id_to_delete} e todos os seus dados (itens, agendamentos, etc) foram excluídos. O estoque foi revertido.";
+        $message = "Venda #{$venda_id_to_delete} e todos os seus dados (itens, agendamentos, etc) foram excluÃ­dos. O estoque foi revertido.";
         $message_type = "success";
 
     } catch (Exception $e) {
@@ -169,22 +169,22 @@ if (isset($_GET['action']) && $_GET['action'] == 'delete' && isset($_GET['id']))
         $message = "Erro ao excluir a venda: " . $e->getMessage();
         $message_type = "danger";
     }
-    //echo "DEBUG: vendas.php - Saiu de AÇÃO: EXCLUIR VENDA<br>";
+    //echo "DEBUG: vendas.php - Saiu de AÃ‡ÃƒO: EXCLUIR VENDA<br>";
     //flush();
 }
 
-//echo "DEBUG: vendas.php - Depois do bloco de AÇÕES, antes da PAGINAÇÃO<br>";
+//echo "DEBUG: vendas.php - Depois do bloco de AÃ‡Ã•ES, antes da PAGINAÃ‡ÃƒO<br>";
 //flush();
 
-// --- Lógica para buscar todas as vendas com PAGINAÇÃO ---
-$itens_por_pagina = 10; // Defina quantos itens por página
+// --- LÃ³gica para buscar todas as vendas com PAGINAÃ‡ÃƒO ---
+$itens_por_pagina = 10; // Defina quantos itens por pÃ¡gina
 $pagina_atual = isset($_GET['pagina']) ? (int)$_GET['pagina'] : 1;
 if ($pagina_atual < 1) $pagina_atual = 1;
 $offset = ($pagina_atual - 1) * $itens_por_pagina;
-//echo "DEBUG: vendas.php - Paginação calculada: itens_por_pagina=$itens_por_pagina, pagina_atual=$pagina_atual, offset=$offset<br>";
+//echo "DEBUG: vendas.php - PaginaÃ§Ã£o calculada: itens_por_pagina=$itens_por_pagina, pagina_atual=$pagina_atual, offset=$offset<br>";
 //flush();
 
-// Contar total de vendas para paginação
+// Contar total de vendas para paginaÃ§Ã£o
 $sql_total_vendas = "SELECT COUNT(*) as total FROM vendas";
 //echo "DEBUG: vendas.php - SQL total vendas: $sql_total_vendas<br>";
 //flush();
@@ -192,12 +192,12 @@ $result_total_vendas = $conn->query($sql_total_vendas);
 if (!$result_total_vendas) {
     //echo "DEBUG: vendas.php - ERRO na query total vendas: " . $conn->error . "<br>";
     //flush();
-    // Em um cenário real, logar o erro e talvez mostrar uma mensagem amigável.
+    // Em um cenÃ¡rio real, logar o erro e talvez mostrar uma mensagem amigÃ¡vel.
     die("Erro ao buscar total de vendas. Por favor, tente novamente mais tarde."); 
 }
 $total_vendas_db = $result_total_vendas->fetch_assoc()['total'];
 $total_paginas = ceil($total_vendas_db / $itens_por_pagina);
-//echo "DEBUG: vendas.php - Total vendas: $total_vendas_db, Total páginas: $total_paginas<br>";
+//echo "DEBUG: vendas.php - Total vendas: $total_vendas_db, Total pÃ¡ginas: $total_paginas<br>";
 //flush();
 
 
@@ -212,16 +212,16 @@ $stmt_vendas = $conn->prepare($sql_select_vendas);
 if (!$stmt_vendas) {
     //echo "DEBUG: vendas.php - ERRO ao preparar select vendas: " . $conn->error . "<br>";
     //flush();
-    // Em um cenário real, logar o erro e talvez mostrar uma mensagem amigável.
+    // Em um cenÃ¡rio real, logar o erro e talvez mostrar uma mensagem amigÃ¡vel.
     die("Erro ao preparar a consulta de vendas. Por favor, tente novamente mais tarde.");
 }
 //echo "DEBUG: vendas.php - Select vendas preparado<br>";
 //flush();
 $stmt_vendas->bind_param("ii", $itens_por_pagina, $offset);
-//echo "DEBUG: vendas.php - Parâmetros do select vendas vinculados<br>";
+//echo "DEBUG: vendas.php - ParÃ¢metros do select vendas vinculados<br>";
 //flush();
 if (!$stmt_vendas->execute()) {
-    // Em um cenário real, logar o erro.
+    // Em um cenÃ¡rio real, logar o erro.
     die("Erro ao executar a consulta de vendas. Por favor, tente novamente mais tarde.");
 }
 //echo "DEBUG: vendas.php - Select vendas executado<br>";
@@ -230,7 +230,7 @@ $result_vendas = $stmt_vendas->get_result();
 if (!$result_vendas) {
     //echo "DEBUG: vendas.php - ERRO ao obter resultado do select vendas: " . $stmt_vendas->error . "<br>";
     //flush();
-    // Em um cenário real, logar o erro.
+    // Em um cenÃ¡rio real, logar o erro.
     die("Erro ao obter os resultados das vendas. Por favor, tente novamente mais tarde.");
 }
 //echo "DEBUG: vendas.php - Resultado do select vendas obtido<br>";
@@ -262,7 +262,7 @@ include_once 'includes/header.php';
     </div>
 <?php endif; ?>
 
-<?php //echo "DEBUG: vendas.php - Antes do botão Adicionar Venda<br>"; flush(); ?>
+<?php //echo "DEBUG: vendas.php - Antes do botÃ£o Adicionar Venda<br>"; flush(); ?>
 <div class="mb-4 text-end fade-in-up">
     <a href="registrar_venda.php" class="btn btn-primary btn-lg">
         <i class="fas fa-plus-circle me-2"></i> Adicionar Nova Venda
@@ -301,7 +301,7 @@ include_once 'includes/header.php';
                             <th>Valor Total</th>
                             <th>Forma Pag.</th>
                             <th>Status</th>
-                            <th class="text-center">Ações</th>
+                            <th class="text-center">AÃ§Ãµes</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -342,11 +342,11 @@ include_once 'includes/header.php';
                                         </button>
                                         <a href="agendar_entrega.php?venda_id=<?php echo $venda['id']; ?>" class="btn btn-sm btn-outline-secondary me-1" title="Agendar Entrega"><i class="fas fa-truck"></i></a>
                                         <a href="gerar_pdf_venda.php?id=<?php echo $venda['id']; ?>" class="btn btn-sm btn-outline-success me-1" title="Gerar PDF" target="_blank"><i class="fas fa-file-pdf"></i></a>
-                                        <a href="vendas.php?action=delete&id=<?php echo $venda['id']; ?>" class="btn btn-sm btn-outline-danger" title="Excluir Venda" onclick="return confirm('Tem certeza que deseja excluir esta venda? Esta ação também reverterá o estoque e excluirá transações financeiras e agendamentos associados.');"><i class="fas fa-trash-alt"></i></a>
+                                        <a href="vendas.php?action=delete&id=<?php echo $venda['id']; ?>" class="btn btn-sm btn-outline-danger" title="Excluir Venda" onclick="return confirm('Tem certeza que deseja excluir esta venda? Esta aÃ§Ã£o tambÃ©m reverterÃ¡ o estoque e excluirÃ¡ transaÃ§Ãµes financeiras e agendamentos associados.');"><i class="fas fa-trash-alt"></i></a>
                                     </td>
                                 </tr>
                                 <?php
-                                 //echo "DEBUG: vendas.php - Fim da iteração do loop, Venda ID: " . $venda['id'] . "<br>"; flush();
+                                 //echo "DEBUG: vendas.php - Fim da iteraÃ§Ã£o do loop, Venda ID: " . $venda['id'] . "<br>"; flush();
                             }
                         } else {
                             //echo "DEBUG: vendas.php - Nenhuma venda encontrada.<br>"; flush();
@@ -360,7 +360,7 @@ include_once 'includes/header.php';
                         ?>
                     </tbody>
                 </table>
-                <?php //echo "DEBUG: vendas.php - Depois da tabela, antes da paginação<br>"; flush(); ?>
+                <?php //echo "DEBUG: vendas.php - Depois da tabela, antes da paginaÃ§Ã£o<br>"; flush(); ?>
             </div>
         </div>
 
@@ -417,7 +417,7 @@ include_once 'includes/header.php';
                             <a href="gerar_pdf_venda.php?id=<?php echo $venda['id']; ?>" class="btn btn-sm btn-outline-success" title="Gerar PDF" target="_blank">
                                 <i class="fas fa-file-pdf me-1"></i> PDF
                             </a>
-                            <a href="vendas.php?action=delete&id=<?php echo $venda['id']; ?>" class="btn btn-sm btn-outline-danger" title="Excluir Venda" onclick="return confirm('Tem certeza que deseja excluir esta venda? Esta ação também reverterá o estoque e excluirá transações financeiras e agendamentos associados.');">
+                            <a href="vendas.php?action=delete&id=<?php echo $venda['id']; ?>" class="btn btn-sm btn-outline-danger" title="Excluir Venda" onclick="return confirm('Tem certeza que deseja excluir esta venda? Esta aÃ§Ã£o tambÃ©m reverterÃ¡ o estoque e excluirÃ¡ transaÃ§Ãµes financeiras e agendamentos associados.');">
                                 <i class="fas fa-trash-alt me-1"></i> Excluir
                             </a>
                         </div>
@@ -431,7 +431,7 @@ include_once 'includes/header.php';
                         <i class="fas fa-shopping-cart"></i>
                     </div>
                     <h5 class="text-muted mb-2">Nenhuma venda registrada</h5>
-                    <p class="text-muted">Suas vendas aparecerão aqui quando forem registradas.</p>
+                    <p class="text-muted">Suas vendas aparecerÃ£o aqui quando forem registradas.</p>
                     <a href="registrar_venda.php" class="btn btn-primary">
                         <i class="fas fa-plus me-2"></i> Registrar Primeira Venda
                     </a>
@@ -451,7 +451,7 @@ include_once 'includes/header.php';
             'window' => 5
         ]);
         ?>
-        <?php //echo "DEBUG: vendas.php - Depois da paginação<br>"; flush(); ?>
+        <?php //echo "DEBUG: vendas.php - Depois da paginaÃ§Ã£o<br>"; flush(); ?>
     </div>
 </div>
 
@@ -472,14 +472,14 @@ include_once 'includes/header.php';
                         <label for="novo_status" class="form-label">Novo Status:</label>
                         <select name="novo_status" id="modal_novo_status" class="form-select">
                             <option value="pendente">Pendente</option>
-                            <option value="concluida">Concluída</option>
+                            <option value="concluida">ConcluÃ­da</option>
                             <option value="cancelada">Cancelada</option>
                         </select>
                     </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="submit" class="btn btn-primary">Salvar Alterações</button>
+                    <button type="submit" class="btn btn-primary">Salvar AlteraÃ§Ãµes</button>
                 </div>
             </form>
         </div>
@@ -519,4 +519,5 @@ document.addEventListener('DOMContentLoaded', function() {
 <?php //echo "DEBUG: vendas.php - Antes de incluir footer.php<br>"; flush(); ?>
 <?php include_once 'includes/footer.php'; ?>
 <?php //echo "DEBUG: vendas.php - Depois de incluir footer.php<br>"; flush(); ?>
+
 

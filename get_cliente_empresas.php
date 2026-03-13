@@ -1,7 +1,7 @@
-<?php
-session_start();
+﻿<?php
+require_once 'includes/session_bootstrap.php';
 
-// Verifica se o usuário está logado
+// Verifica se o usuÃ¡rio estÃ¡ logado
 if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
     http_response_code(403);
     echo json_encode(['success' => false, 'message' => 'Acesso negado']);
@@ -13,7 +13,7 @@ require_once 'includes/db_connect.php';
 $cliente_id = intval($_GET['cliente_id'] ?? 0);
 
 if (!$cliente_id) {
-    echo json_encode(['success' => false, 'message' => 'Cliente ID inválido']);
+    echo json_encode(['success' => false, 'message' => 'Cliente ID invÃ¡lido']);
     exit;
 }
 
@@ -37,3 +37,4 @@ try {
 
 $conn->close();
 ?>
+

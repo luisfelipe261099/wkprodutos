@@ -1,7 +1,7 @@
-<?php
-session_start();
+﻿<?php
+require_once 'includes/session_bootstrap.php';
 
-// Verifica se o usuário está logado
+// Verifica se o usuÃ¡rio estÃ¡ logado
 if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
     header("location: index.php");
     exit;
@@ -12,11 +12,11 @@ require_once 'includes/db_connect.php';
 $message = '';
 $message_type = '';
 
-// --- Lógica para Exclusão SEGURA de Produto ---
+// --- LÃ³gica para ExclusÃ£o SEGURA de Produto ---
 if (isset($_GET['action']) && $_GET['action'] == 'delete' && isset($_GET['id'])) {
     $produto_id_to_delete = intval($_GET['id']);
 
-    // 1. VERIFICAR DEPENDÊNCIAS ANTES DE EXCLUIR
+    // 1. VERIFICAR DEPENDÃŠNCIAS ANTES DE EXCLUIR
     $sql_check_vendas = "SELECT COUNT(*) FROM itens_venda WHERE produto_id = ?";
     $stmt_check_vendas = $conn->prepare($sql_check_vendas);
     $stmt_check_vendas->bind_param("i", $produto_id_to_delete);
@@ -30,16 +30,16 @@ if (isset($_GET['action']) && $_GET['action'] == 'delete' && isset($_GET['id']))
     $orcamentos_count = $stmt_check_orcamentos->get_result()->fetch_row()[0];
 
     if ($vendas_count > 0 || $orcamentos_count > 0) {
-        // Se houver dependências, impede a exclusão
-        $message = "Este produto não pode ser excluído, pois está associado a vendas ou orçamentos existentes.";
+        // Se houver dependÃªncias, impede a exclusÃ£o
+        $message = "Este produto nÃ£o pode ser excluÃ­do, pois estÃ¡ associado a vendas ou orÃ§amentos existentes.";
         $message_type = "danger";
     } else {
-        // Se não houver dependências, procede com a exclusão
+        // Se nÃ£o houver dependÃªncias, procede com a exclusÃ£o
         $sql_delete = "DELETE FROM produtos WHERE id = ?";
         if ($stmt_delete = $conn->prepare($sql_delete)) {
             $stmt_delete->bind_param("i", $produto_id_to_delete);
             if ($stmt_delete->execute()) {
-                $message = "Produto excluído com sucesso!";
+                $message = "Produto excluÃ­do com sucesso!";
                 $message_type = "success";
             } else {
                 $message = "Erro ao excluir o produto: " . $stmt_delete->error;
@@ -50,8 +50,8 @@ if (isset($_GET['action']) && $_GET['action'] == 'delete' && isset($_GET['id']))
     }
 }
 
-// --- Lógica para buscar todos os produtos com PAGINAÇÃO E FILTROS ---
-$itens_por_pagina = 15; // Defina quantos itens por página
+// --- LÃ³gica para buscar todos os produtos com PAGINAÃ‡ÃƒO E FILTROS ---
+$itens_por_pagina = 15; // Defina quantos itens por pÃ¡gina
 $pagina_atual = isset($_GET['page']) && is_numeric($_GET['page']) ? (int)$_GET['page'] : 1;
 $offset = ($pagina_atual - 1) * $itens_por_pagina;
 
@@ -84,7 +84,7 @@ if (!empty($filtro_busca)) {
 
 $where_clause = !empty($where_conditions) ? "WHERE " . implode(" AND ", $where_conditions) : "";
 
-// Contar o total de produtos para a paginação (com filtros)
+// Contar o total de produtos para a paginaÃ§Ã£o (com filtros)
 $sql_total_produtos = "SELECT COUNT(*) AS total FROM produtos $where_clause";
 $stmt_total = $conn->prepare($sql_total_produtos);
 if (!empty($types)) {
@@ -102,7 +102,7 @@ $sql_select_produtos = "SELECT id, nome, sku, percentual_lucro, preco_venda, qua
                         ORDER BY nome ASC
                         LIMIT ? OFFSET ?";
 
-// Adicionar parâmetros de paginação
+// Adicionar parÃ¢metros de paginaÃ§Ã£o
 $params[] = $itens_por_pagina;
 $params[] = $offset;
 $types .= "ii";
@@ -122,15 +122,15 @@ if ($result_fornecedores && $result_fornecedores->num_rows > 0) {
     }
 }
 
-// Carregar todos os dados em um array para reutilização
+// Carregar todos os dados em um array para reutilizaÃ§Ã£o
 $produtos_data = ($result_produtos->num_rows > 0) ? $result_produtos->fetch_all(MYSQLI_ASSOC) : [];
 
-// Calcular estatísticas (AGORA COM BASE NOS DADOS DA PÁGINA ATUAL, ou manter global se necessário)
-// Para estatísticas globais, você precisaria de outra query sem paginação ou usar $total_produtos_db
-$total_produtos_na_pagina = count($produtos_data); // Isso é o total na página atual
+// Calcular estatÃ­sticas (AGORA COM BASE NOS DADOS DA PÃGINA ATUAL, ou manter global se necessÃ¡rio)
+// Para estatÃ­sticas globais, vocÃª precisaria de outra query sem paginaÃ§Ã£o ou usar $total_produtos_db
+$total_produtos_na_pagina = count($produtos_data); // Isso Ã© o total na pÃ¡gina atual
 
-// As estatísticas de cards (Total de Produtos, Estoque Crítico, etc.) devem usar os totais globais.
-// Vamos recalcular as estatísticas globais para os cards, pois a query principal agora é paginada.
+// As estatÃ­sticas de cards (Total de Produtos, Estoque CrÃ­tico, etc.) devem usar os totais globais.
+// Vamos recalcular as estatÃ­sticas globais para os cards, pois a query principal agora Ã© paginada.
 $sql_stats_globais = "SELECT quantidade_estoque, estoque_minimo, preco_venda, fornecedor FROM produtos";
 $result_stats_globais = $conn->query($sql_stats_globais);
 $criticos = 0;
@@ -153,7 +153,7 @@ include_once 'includes/header.php';
 
 <div class="page-header fade-in-up">
     <h1 class="page-title"><i class="fas fa-box"></i> Gerenciamento de Produtos</h1>
-    <p class="page-subtitle">Controle completo do seu catálogo e estoque.</p>
+    <p class="page-subtitle">Controle completo do seu catÃ¡logo e estoque.</p>
 </div>
 
 <?php if (!empty($message)): ?>
@@ -166,7 +166,7 @@ include_once 'includes/header.php';
 
 <div class="row g-4 mb-4">
     <div class="col-6 col-lg-3"><div class="stats-card primary fade-in-up"><div class="stats-icon primary"><i class="fas fa-boxes"></i></div><div class="stats-value"><?php echo $total_produtos_db; ?></div><div class="stats-label">Total de Produtos</div></div></div>
-    <div class="col-6 col-lg-3"><div class="stats-card danger fade-in-up"><div class="stats-icon danger"><i class="fas fa-exclamation-triangle"></i></div><div class="stats-value"><?php echo $criticos; ?></div><div class="stats-label">Estoque Crítico</div></div></div>
+    <div class="col-6 col-lg-3"><div class="stats-card danger fade-in-up"><div class="stats-icon danger"><i class="fas fa-exclamation-triangle"></i></div><div class="stats-value"><?php echo $criticos; ?></div><div class="stats-label">Estoque CrÃ­tico</div></div></div>
     <div class="col-6 col-lg-3"><div class="stats-card success fade-in-up"><div class="stats-icon success"><i class="fas fa-dollar-sign"></i></div><div class="stats-value"><?php echo fmt_brl($valor_total_estoque); ?></div><div class="stats-label">Valor em Estoque</div></div></div>
     <div class="col-6 col-lg-3"><div class="stats-card info fade-in-up"><div class="stats-icon info"><i class="fas fa-truck"></i></div><div class="stats-value"><?php echo count($fornecedores_unicos); ?></div><div class="stats-label">Fornecedores</div></div></div>
 </div>
@@ -181,7 +181,7 @@ include_once 'includes/header.php';
         </div>
         <div class="d-flex gap-2 flex-grow-1 flex-md-grow-0">
             <div class="input-group" style="max-width: 400px;">
-                <input type="text" class="form-control" placeholder="Buscar por nome, código, fornecedor ou qualquer termo..." id="searchInput" autocomplete="off">
+                <input type="text" class="form-control" placeholder="Buscar por nome, cÃ³digo, fornecedor ou qualquer termo..." id="searchInput" autocomplete="off">
                 <button class="btn btn-outline-primary" type="button" onclick="document.getElementById('searchInput').focus()">
                     <i class="fas fa-search"></i>
                 </button>
@@ -223,10 +223,10 @@ include_once 'includes/header.php';
                         <tr>
                             <th>Produto</th>
                             <th>SKU</th>
-                            <th>Preço / Lucro</th>
+                            <th>PreÃ§o / Lucro</th>
                             <th class="text-center">Estoque</th>
                             <th>Fornecedor</th>
-                            <th class="text-center">Ações</th>
+                            <th class="text-center">AÃ§Ãµes</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -243,7 +243,7 @@ include_once 'includes/header.php';
                                     <small class="text-muted">Lucro: <?php echo number_format($row['percentual_lucro'], 2, ',', '.'); ?>%</small>
                                 </td>
                                 <td class="text-center">
-                                    <span class="status-badge <?php echo $estoque_baixo ? 'status-danger' : 'status-success'; ?>" title="Mínimo: <?php echo $row['estoque_minimo']; ?>">
+                                    <span class="status-badge <?php echo $estoque_baixo ? 'status-danger' : 'status-success'; ?>" title="MÃ­nimo: <?php echo $row['estoque_minimo']; ?>">
                                         <?php echo $row['quantidade_estoque']; ?>
                                     </span>
                                 </td>
@@ -256,7 +256,7 @@ include_once 'includes/header.php';
                                         <ul class="dropdown-menu">
                                             <li><a class="dropdown-item" href="cadastro_produto.php?id=<?php echo $row['id']; ?>"><i class="fas fa-edit me-2"></i>Editar</a></li>
                                             <li><hr class="dropdown-divider"></li>
-                                            <li><a class="dropdown-item text-danger" href="produtos.php?action=delete&id=<?php echo $row['id']; ?>" onclick="return confirm('Tem certeza que deseja excluir este produto? A exclusão só será permitida se ele não estiver em nenhuma venda ou orçamento.');"><i class="fas fa-trash-alt me-2"></i>Excluir</a></li>
+                                            <li><a class="dropdown-item text-danger" href="produtos.php?action=delete&id=<?php echo $row['id']; ?>" onclick="return confirm('Tem certeza que deseja excluir este produto? A exclusÃ£o sÃ³ serÃ¡ permitida se ele nÃ£o estiver em nenhuma venda ou orÃ§amento.');"><i class="fas fa-trash-alt me-2"></i>Excluir</a></li>
                                         </ul>
                                     </div>
                                 </td>
@@ -284,7 +284,7 @@ include_once 'includes/header.php';
                                 <span class="mobile-product-info-value">#<?php echo $row['id']; ?></span>
                             </div>
                             <div class="mobile-product-info-item">
-                                <span class="mobile-product-info-label">Preço de Venda:</span>
+                                <span class="mobile-product-info-label">PreÃ§o de Venda:</span>
                                 <span class="mobile-product-info-value text-success fw-bold">R$ <?php echo number_format($row['preco_venda'], 2, ',', '.'); ?></span>
                             </div>
                             <div class="mobile-product-info-item">
@@ -305,7 +305,7 @@ include_once 'includes/header.php';
                                 </span>
                             </div>
                             <div class="mobile-product-info-item">
-                                <span class="mobile-product-info-label">Estoque Mínimo:</span>
+                                <span class="mobile-product-info-label">Estoque MÃ­nimo:</span>
                                 <span class="mobile-product-info-value"><?php echo $row['estoque_minimo']; ?> unidades</span>
                             </div>
                             <?php if (!empty($row['fornecedor'])): ?>
@@ -320,7 +320,7 @@ include_once 'includes/header.php';
                             <a href="cadastro_produto.php?id=<?php echo $row['id']; ?>" class="btn btn-sm btn-outline-primary" title="Editar Produto">
                                 <i class="fas fa-edit me-1"></i> Editar
                             </a>
-                            <a href="produtos.php?action=delete&id=<?php echo $row['id']; ?>" class="btn btn-sm btn-outline-danger" title="Excluir Produto" onclick="return confirm('Tem certeza que deseja excluir este produto? A exclusão só será permitida se ele não estiver em nenhuma venda ou orçamento.');">
+                            <a href="produtos.php?action=delete&id=<?php echo $row['id']; ?>" class="btn btn-sm btn-outline-danger" title="Excluir Produto" onclick="return confirm('Tem certeza que deseja excluir este produto? A exclusÃ£o sÃ³ serÃ¡ permitida se ele nÃ£o estiver em nenhuma venda ou orÃ§amento.');">
                                 <i class="fas fa-trash-alt me-1"></i> Excluir
                             </a>
                         </div>
@@ -370,7 +370,7 @@ include_once 'includes/header.php';
     font-weight: 500;
 }
 
-/* Animação suave para resultados */
+/* AnimaÃ§Ã£o suave para resultados */
 #produtosTable tbody tr {
     transition: opacity 0.2s ease-in-out;
 }
@@ -380,7 +380,7 @@ include_once 'includes/header.php';
     transition: all 0.3s ease;
 }
 
-/* Melhorar aparência do input de busca */
+/* Melhorar aparÃªncia do input de busca */
 #searchInput:focus {
     border-color: #0d6efd;
     box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
@@ -393,12 +393,12 @@ include_once 'includes/header.php';
 </style>
 
 <script>
-// Função para limpar busca
+// FunÃ§Ã£o para limpar busca
 function clearSearch() {
     const searchInput = document.getElementById('searchInput');
     if (searchInput) {
         searchInput.value = '';
-        // Redirecionar para a página sem o parâmetro de busca
+        // Redirecionar para a pÃ¡gina sem o parÃ¢metro de busca
         const url = new URL(window.location);
         url.searchParams.delete('search');
         url.searchParams.set('page', '1');
@@ -433,7 +433,7 @@ document.addEventListener('DOMContentLoaded', function() {
             searchTimeout = setTimeout(performSearch, 500);
         });
 
-        // Permitir busca ao clicar no botão de busca
+        // Permitir busca ao clicar no botÃ£o de busca
         const searchButton = searchInput.nextElementSibling;
         if (searchButton) {
             searchButton.addEventListener('click', performSearch);
@@ -448,7 +448,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Função para executar a busca
+    // FunÃ§Ã£o para executar a busca
     function performSearch() {
         const searchTerm = searchInput.value.trim();
         const url = new URL(window.location);
@@ -459,7 +459,7 @@ document.addEventListener('DOMContentLoaded', function() {
             url.searchParams.delete('search');
         }
 
-        // Resetar para página 1 ao fazer nova busca
+        // Resetar para pÃ¡gina 1 ao fazer nova busca
         url.searchParams.set('page', '1');
 
         window.location.href = url.toString();
@@ -468,6 +468,6 @@ document.addEventListener('DOMContentLoaded', function() {
 </script>
 
 <?php
-$conn->close(); // Fechar conexão aqui
+$conn->close(); // Fechar conexÃ£o aqui
 include_once 'includes/footer.php';
 ?>

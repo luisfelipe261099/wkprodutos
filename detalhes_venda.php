@@ -1,7 +1,7 @@
-<?php
-session_start();
+﻿<?php
+require_once 'includes/session_bootstrap.php';
 
-// Verifica se o usuário está logado
+// Verifica se o usuÃ¡rio estÃ¡ logado
 if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
     header("location: index.php");
     exit;
@@ -29,7 +29,7 @@ if ($venda_id) {
         if ($result_venda->num_rows == 1) {
             $venda = $result_venda->fetch_assoc();
         } else {
-            $message = "Venda não encontrada.";
+            $message = "Venda nÃ£o encontrada.";
             $message_type = "danger";
         }
         $stmt_venda->close();
@@ -56,7 +56,7 @@ if ($venda_id) {
         $message_type = "danger";
     }
 } else {
-    $message = "ID da venda não especificado.";
+    $message = "ID da venda nÃ£o especificado.";
     $message_type = "danger";
 }
 
@@ -93,9 +93,9 @@ include_once 'includes/header.php';
     ?>
     <div class="card shadow-sm mb-4">
         <div class="card-header bg-white d-flex justify-content-between align-items-center">
-            <h5>Informações da Venda</h5>
+            <h5>InformaÃ§Ãµes da Venda</h5>
             <div>
-                <a href="gerar_pdf_venda.php?id=<?php echo htmlspecialchars($venda['id']); ?>" class="btn btn-success btn-sm me-2" title="Gerar PDF de Confirmação" target="_blank">
+                <a href="gerar_pdf_venda.php?id=<?php echo htmlspecialchars($venda['id']); ?>" class="btn btn-success btn-sm me-2" title="Gerar PDF de ConfirmaÃ§Ã£o" target="_blank">
                     <i class="fas fa-file-pdf me-1"></i> Gerar PDF
                 </a>
                 <a href="registrar_venda.php?id=<?php echo htmlspecialchars($venda['id']); ?>" class="btn btn-primary btn-sm me-2" title="Editar Venda">
@@ -135,7 +135,7 @@ include_once 'includes/header.php';
                 <tr>
                     <th>Produto</th>
                     <th>Quantidade</th>
-                    <th>Preço Unitário</th>
+                    <th>PreÃ§o UnitÃ¡rio</th>
                     <th>Subtotal</th>
                 </tr>
             </thead>

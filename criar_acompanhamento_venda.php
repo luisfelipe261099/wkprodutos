@@ -1,8 +1,8 @@
-<?php
-session_start();
+﻿<?php
+require_once 'includes/session_bootstrap.php';
 require_once 'includes/db_connect.php';
 
-// Verifica se o usuário está logado
+// Verifica se o usuÃ¡rio estÃ¡ logado
 if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
     header("location: index.php");
     exit;
@@ -11,7 +11,7 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
 $message = '';
 $message_type = '';
 
-// Lógica de processamento do formulário (permanece a mesma)
+// LÃ³gica de processamento do formulÃ¡rio (permanece a mesma)
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $venda_id = trim($_POST["venda_id"]);
     $cliente_id = trim($_POST["cliente_id"]);
@@ -21,7 +21,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $usuario_id = $_SESSION['id'];
 
     if (empty($venda_id) || empty($cliente_id) || empty($data_lembrete) || empty($descricao) || empty($tipo_lembrete)) {
-        $message = "Erro: Todos os campos são obrigatórios.";
+        $message = "Erro: Todos os campos sÃ£o obrigatÃ³rios.";
         $message_type = "danger";
     } else {
         $sql_insert = "INSERT INTO lembretes_acompanhamento (cliente_id, venda_id, data_lembrete, tipo_lembrete, descricao, usuario_id, status_lembrete) VALUES (?, ?, ?, ?, ?, ?, 'Pendente')";
@@ -41,7 +41,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     }
 }
 
-// Buscar vendas concluídas que AINDA NÃO têm um acompanhamento do tipo 'Follow-up' ou 'Pós-venda'
+// Buscar vendas concluÃ­das que AINDA NÃƒO tÃªm um acompanhamento do tipo 'Follow-up' ou 'PÃ³s-venda'
 $sql_vendas = "SELECT v.id, v.data_venda, c.id as cliente_id, c.nome as nome_cliente
                FROM vendas v
                JOIN clientes c ON v.cliente_id = c.id
@@ -49,7 +49,7 @@ $sql_vendas = "SELECT v.id, v.data_venda, c.id as cliente_id, c.nome as nome_cli
                AND NOT EXISTS (
                    SELECT 1 
                    FROM lembretes_acompanhamento la
-                   WHERE la.venda_id = v.id AND la.tipo_lembrete IN ('Follow-up', 'Pós-venda')
+                   WHERE la.venda_id = v.id AND la.tipo_lembrete IN ('Follow-up', 'PÃ³s-venda')
                )
                ORDER BY v.data_venda DESC";
 $vendas_para_acompanhar = $conn->query($sql_vendas);
@@ -126,12 +126,12 @@ include_once 'includes/header.php';
                                     <label for="tipo_lembrete" class="form-label">Tipo de Lembrete *</label>
                                     <select class="form-select" id="tipo_lembrete" name="tipo_lembrete" required>
                                         <option value="Follow-up" selected>Follow-up</option>
-                                        <option value="Pós-venda">Pós-venda</option>
+                                        <option value="PÃ³s-venda">PÃ³s-venda</option>
                                     </select>
                                 </div>
 
                                 <div class="col-12">
-                                    <label for="descricao" class="form-label">Descrição / Notas *</label>
+                                    <label for="descricao" class="form-label">DescriÃ§Ã£o / Notas *</label>
                                     <textarea class="form-control" id="descricao" name="descricao" rows="5" required></textarea>
                                 </div>
                             </div>
@@ -186,7 +186,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const response = await fetch(`api_get_venda_detalhes.php?venda_id=${vendaId}`);
             
             if (!response.ok) {
-                const errorData = await response.json().catch(() => ({error: 'Resposta inválida do servidor.'}));
+                const errorData = await response.json().catch(() => ({error: 'Resposta invÃ¡lida do servidor.'}));
                 throw new Error(`Erro ${response.status}: ${errorData.error || response.statusText}`);
             }
 
@@ -209,14 +209,14 @@ document.addEventListener('DOMContentLoaded', function() {
 
             const diasDeAntecedencia = 5; 
             let dataSugerida = new Date(dataVenda);
-            let descricaoFinal = `Realizar acompanhamento (follow-up) com o cliente ${clienteNome} referente à venda #${vendaId}.`;
+            let descricaoFinal = `Realizar acompanhamento (follow-up) com o cliente ${clienteNome} referente Ã  venda #${vendaId}.`;
             
             if (temPrevisao) {
                 dataSugerida.setDate(dataVenda.getDate() + menorDuracao - diasDeAntecedencia);
                 const dataPrevistaRecompra = new Date(dataVenda);
                 dataPrevistaRecompra.setDate(dataVenda.getDate() + menorDuracao);
                 const dataRecompraFormatada = dataPrevistaRecompra.toLocaleDateString('pt-BR');
-                descricaoFinal += `\n\nPrevisão inteligente: O produto "${itemPrincipal.nome}" (Qtd: ${itemPrincipal.quantidade}) deve acabar por volta de ${dataRecompraFormatada}. Entrar em contato para oferecer nova remessa.`;
+                descricaoFinal += `\n\nPrevisÃ£o inteligente: O produto "${itemPrincipal.nome}" (Qtd: ${itemPrincipal.quantidade}) deve acabar por volta de ${dataRecompraFormatada}. Entrar em contato para oferecer nova remessa.`;
             } else {
                 dataSugerida.setDate(dataVenda.getDate() + 15);
                 descricaoFinal += `\n\nNenhum produto nesta venda possui um ciclo de recompra definido. Verifique a necessidade do cliente.`;
@@ -227,13 +227,13 @@ document.addEventListener('DOMContentLoaded', function() {
             document.getElementById('descricao').value = descricaoFinal;
 
         } catch (error) {
-            console.error('Falha na operação:', error);
+            console.error('Falha na operaÃ§Ã£o:', error);
             alert(`Ocorreu um erro ao buscar os detalhes da venda:\n${error.message}\n\nVerifique o console do navegador (F12) para mais detalhes.`);
             
             let dataFallback = new Date(dataVenda);
             dataFallback.setDate(dataVenda.getDate() + 7);
             document.getElementById('data_lembrete').value = dataFallback.toISOString().split('T')[0];
-            document.getElementById('descricao').value = `Não foi possível calcular a data preditiva devido a um erro. Por favor, preencha os detalhes manualmente para a venda #${vendaId}.`;
+            document.getElementById('descricao').value = `NÃ£o foi possÃ­vel calcular a data preditiva devido a um erro. Por favor, preencha os detalhes manualmente para a venda #${vendaId}.`;
         } finally {
             loadingDiv.style.display = 'none';
             formFieldsDiv.style.display = 'block';

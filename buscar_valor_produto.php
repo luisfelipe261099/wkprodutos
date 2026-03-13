@@ -1,12 +1,12 @@
-<?php
-session_start();
+﻿<?php
+require_once 'includes/session_bootstrap.php';
 if (!isset($_SESSION['user_id'])) {
     header('HTTP/1.1 401 Unauthorized');
-    echo json_encode(['error' => 'Usuário não autenticado']);
+    echo json_encode(['error' => 'UsuÃ¡rio nÃ£o autenticado']);
     exit;
 }
 
-include 'includes/db_connect.php'; // Confirme se o caminho para db_connect.php está correto
+include 'includes/db_connect.php'; // Confirme se o caminho para db_connect.php estÃ¡ correto
 
 $response = ['valor_venda' => null];
 
@@ -28,13 +28,14 @@ if (isset($_POST['produto_id']) && !empty($_POST['produto_id'])) {
             $response['error'] = "Erro ao consultar o banco de dados.";
         }
     } else {
-        $response['error'] = "ID do produto inválido.";
+        $response['error'] = "ID do produto invÃ¡lido.";
     }
 } else {
-    $response['error'] = "ID do produto não fornecido.";
+    $response['error'] = "ID do produto nÃ£o fornecido.";
 }
 
 $conn->close();
 header('Content-Type: application/json');
 echo json_encode($response);
 ?>
+

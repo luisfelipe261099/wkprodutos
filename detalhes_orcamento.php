@@ -1,7 +1,7 @@
-<?php
-session_start();
+﻿<?php
+require_once 'includes/session_bootstrap.php';
 
-// Verifica se o usuário está logado
+// Verifica se o usuÃ¡rio estÃ¡ logado
 if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
     header("location: index.php");
     exit;
@@ -16,7 +16,7 @@ $message = '';
 $message_type = '';
 
 if ($orcamento_id) {
-    // Busca os dados do orçamento principal
+    // Busca os dados do orÃ§amento principal
     $sql_orcamento = "SELECT o.id, c.nome AS nome_cliente, c.cpf_cnpj, c.telefone, c.email,
                              o.data_orcamento, o.valor_total, o.status_orcamento, o.observacoes
                       FROM orcamentos o
@@ -29,16 +29,16 @@ if ($orcamento_id) {
         if ($result_orcamento->num_rows == 1) {
             $orcamento = $result_orcamento->fetch_assoc();
         } else {
-            $message = "Orçamento não encontrado.";
+            $message = "OrÃ§amento nÃ£o encontrado.";
             $message_type = "danger";
         }
         $stmt_orcamento->close();
     } else {
-        $message = "Erro ao buscar detalhes do orçamento: " . $conn->error;
+        $message = "Erro ao buscar detalhes do orÃ§amento: " . $conn->error;
         $message_type = "danger";
     }
 
-    // Busca os itens deste orçamento
+    // Busca os itens deste orÃ§amento
     $sql_itens = "SELECT p.nome AS produto_nome, io.quantidade, io.preco_unitario
                   FROM itens_orcamento io
                   JOIN produtos p ON io.produto_id = p.id
@@ -52,11 +52,11 @@ if ($orcamento_id) {
         }
         $stmt_itens->close();
     } else {
-        $message = "Erro ao buscar itens do orçamento: " . $conn->error;
+        $message = "Erro ao buscar itens do orÃ§amento: " . $conn->error;
         $message_type = "danger";
     }
 } else {
-    $message = "ID do orçamento não especificado.";
+    $message = "ID do orÃ§amento nÃ£o especificado.";
     $message_type = "danger";
 }
 
@@ -65,7 +65,7 @@ $conn->close();
 include_once 'includes/header.php';
 ?>
 
-<h2 class="mb-4"><i class="fas fa-file-invoice me-2"></i> Detalhes do Orçamento #<?php echo htmlspecialchars($orcamento_id); ?></h2>
+<h2 class="mb-4"><i class="fas fa-file-invoice me-2"></i> Detalhes do OrÃ§amento #<?php echo htmlspecialchars($orcamento_id); ?></h2>
 
 <?php if (!empty($message)): ?>
     <div class="alert alert-<?php echo $message_type; ?> alert-dismissible fade show" role="alert">
@@ -96,14 +96,14 @@ include_once 'includes/header.php';
     ?>
     <div class="card shadow-sm mb-4">
         <div class="card-header bg-white d-flex justify-content-between align-items-center">
-            <h5>Informações do Orçamento</h5>
+            <h5>InformaÃ§Ãµes do OrÃ§amento</h5>
             <div>
                 <a href="gerar_pdf_orcamento.php?id=<?php echo htmlspecialchars($orcamento['id']); ?>" class="btn btn-danger btn-sm me-2" title="Gerar PDF" target="_blank">
                     <i class="fas fa-file-pdf me-1"></i> Gerar PDF
                 </a>
                 <?php if ($orcamento['status_orcamento'] != 'convertido_venda' && $orcamento['status_orcamento'] != 'rejeitado'): ?>
-                    <a href="criar_orcamento.php?id=<?php echo htmlspecialchars($orcamento['id']); ?>" class="btn btn-primary btn-sm me-2" title="Editar Orçamento">
-                        <i class="fas fa-edit me-1"></i> Editar Orçamento
+                    <a href="criar_orcamento.php?id=<?php echo htmlspecialchars($orcamento['id']); ?>" class="btn btn-primary btn-sm me-2" title="Editar OrÃ§amento">
+                        <i class="fas fa-edit me-1"></i> Editar OrÃ§amento
                     </a>
                 <?php endif; ?>
                 <?php if ($orcamento['status_orcamento'] == 'aprovado'): ?>
@@ -111,7 +111,7 @@ include_once 'includes/header.php';
                         <i class="fas fa-exchange-alt me-1"></i> Converter para Venda
                     </a>
                 <?php endif; ?>
-                <a href="orcamentos.php" class="btn btn-secondary btn-sm" title="Voltar para Orçamentos">
+                <a href="orcamentos.php" class="btn btn-secondary btn-sm" title="Voltar para OrÃ§amentos">
                     <i class="fas fa-arrow-left me-1"></i> Voltar
                 </a>
             </div>
@@ -123,7 +123,7 @@ include_once 'includes/header.php';
                     <strong>Contato:</strong> <?php echo htmlspecialchars($orcamento['telefone']); ?> | <?php echo htmlspecialchars($orcamento['email']); ?>
                 </div>
                 <div class="col-md-6 text-md-end">
-                    <strong>Data do Orçamento:</strong> <?php echo date('d/m/Y H:i', strtotime($orcamento['data_orcamento'])); ?><br>
+                    <strong>Data do OrÃ§amento:</strong> <?php echo date('d/m/Y H:i', strtotime($orcamento['data_orcamento'])); ?><br>
                     <strong>Valor Total:</strong> <span class="fs-5 fw-bold text-primary">R$ <?php echo number_format($orcamento['valor_total'], 2, ',', '.'); ?></span>
                 </div>
             </div>
@@ -135,7 +135,7 @@ include_once 'includes/header.php';
             <?php if (!empty($orcamento['observacoes'])): ?>
             <div class="row mt-3">
                 <div class="col-md-12">
-                    <strong>Observações:</strong><br>
+                    <strong>ObservaÃ§Ãµes:</strong><br>
                     <p class="mb-0 text-muted"><?php echo nl2br(htmlspecialchars($orcamento['observacoes'])); ?></p>
                 </div>
             </div>
@@ -143,14 +143,14 @@ include_once 'includes/header.php';
         </div>
     </div>
 
-    <h4 class="mb-3"><i class="fas fa-boxes me-2 text-primary"></i> Itens do Orçamento</h4>
+    <h4 class="mb-3"><i class="fas fa-boxes me-2 text-primary"></i> Itens do OrÃ§amento</h4>
     <div class="table-responsive">
         <table class="table table-bordered table-striped">
             <thead>
                 <tr>
                     <th>Produto</th>
                     <th>Quantidade</th>
-                    <th>Preço Unitário</th>
+                    <th>PreÃ§o UnitÃ¡rio</th>
                     <th>Subtotal</th>
                 </tr>
             </thead>
@@ -169,7 +169,7 @@ include_once 'includes/header.php';
                         <?php
                     }
                 } else {
-                    echo '<tr><td colspan="4" class="text-center">Nenhum item encontrado para este orçamento.</td></tr>';
+                    echo '<tr><td colspan="4" class="text-center">Nenhum item encontrado para este orÃ§amento.</td></tr>';
                 }
                 ?>
             </tbody>

@@ -1,7 +1,7 @@
-<?php
-session_start();
+﻿<?php
+require_once 'includes/session_bootstrap.php';
 
-// Verifica se o usuário está logado
+// Verifica se o usuÃ¡rio estÃ¡ logado
 if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
     header("location: index.php");
     exit;
@@ -9,7 +9,7 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
 
 require_once 'includes/db_connect.php';
 
-// Variáveis para o formulário
+// VariÃ¡veis para o formulÃ¡rio
 $id = $nome = $descricao = $sku = $preco_venda = $percentual_lucro = $quantidade_estoque = $estoque_minimo = $fornecedor = $empresa_id = $imagem_produto = "";
 $title = "Cadastrar Novo Produto";
 $submit_button_text = "Cadastrar Produto";
@@ -20,14 +20,14 @@ $message_type = '';
 $sql_empresas = "SELECT id, nome_empresa FROM empresas_representadas WHERE status = 'ativo' ORDER BY nome_empresa ASC";
 $result_empresas = $conn->query($sql_empresas);
 
-// Processar formulário quando enviado
+// Processar formulÃ¡rio quando enviado
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    // Coleta e sanitiza os dados do formulário
+    // Coleta e sanitiza os dados do formulÃ¡rio
     $id = trim($_POST["id"] ?? '');
     $nome = trim($_POST["nome"]);
     $descricao = trim($_POST["descricao"]);
     $sku = trim($_POST["sku"]);
-    // Usar str_replace para converter vírgulas em pontos para valores decimais
+    // Usar str_replace para converter vÃ­rgulas em pontos para valores decimais
     $preco_venda = str_replace(',', '.', trim($_POST["preco_venda"]));
     $percentual_lucro = str_replace(',', '.', trim($_POST["percentual_lucro"]));
     $quantidade_estoque = trim($_POST["quantidade_estoque"]);
@@ -35,16 +35,16 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $fornecedor = trim($_POST["fornecedor"]);
     $empresa_id = trim($_POST["empresa_id"]);
 
-    // Validação dos campos
+    // ValidaÃ§Ã£o dos campos
     if (empty($nome) || empty($empresa_id) || !is_numeric($preco_venda) || !is_numeric($percentual_lucro) || !is_numeric($quantidade_estoque) || !is_numeric($estoque_minimo)) {
-        $message = "Por favor, preencha todos os campos obrigatórios (*) e garanta que os valores numéricos estejam corretos.";
+        $message = "Por favor, preencha todos os campos obrigatÃ³rios (*) e garanta que os valores numÃ©ricos estejam corretos.";
         $message_type = "danger";
     } else {
         if (empty($id)) { // Inserir Novo Produto
-            // O campo `percentual_lucro` já existe na sua tabela, então o SQL está correto.
+            // O campo `percentual_lucro` jÃ¡ existe na sua tabela, entÃ£o o SQL estÃ¡ correto.
             $sql = "INSERT INTO produtos (nome, descricao, sku, preco_venda, percentual_lucro, quantidade_estoque, estoque_minimo, fornecedor, empresa_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
             if ($stmt = $conn->prepare($sql)) {
-                // CORREÇÃO APLICADA: Os tipos de 'preco_venda' e 'percentual_lucro' são 'd' (decimal), para não arredondar.
+                // CORREÃ‡ÃƒO APLICADA: Os tipos de 'preco_venda' e 'percentual_lucro' sÃ£o 'd' (decimal), para nÃ£o arredondar.
                 $stmt->bind_param("sssddiisi", $nome, $descricao, $sku, $preco_venda, $percentual_lucro, $quantidade_estoque, $estoque_minimo, $fornecedor, $empresa_id);
                 if ($stmt->execute()) {
                     $message = "Produto cadastrado com sucesso!";
@@ -59,7 +59,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         } else { // Editar Produto Existente
             $sql = "UPDATE produtos SET nome = ?, descricao = ?, sku = ?, preco_venda = ?, percentual_lucro = ?, quantidade_estoque = ?, estoque_minimo = ?, fornecedor = ?, empresa_id = ? WHERE id = ?";
             if ($stmt = $conn->prepare($sql)) {
-                // CORREÇÃO APLICADA: Os tipos também foram ajustados para 'd' (decimal) na atualização.
+                // CORREÃ‡ÃƒO APLICADA: Os tipos tambÃ©m foram ajustados para 'd' (decimal) na atualizaÃ§Ã£o.
                 $stmt->bind_param("sssddiisii", $nome, $descricao, $sku, $preco_venda, $percentual_lucro, $quantidade_estoque, $estoque_minimo, $fornecedor, $empresa_id, $id);
                 if ($stmt->execute()) {
                     $message = "Produto atualizado com sucesso!";
@@ -74,7 +74,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     }
 }
 
-// Preencher formulário para edição se um ID for passado via GET
+// Preencher formulÃ¡rio para ediÃ§Ã£o se um ID for passado via GET
 if (isset($_GET["id"]) && empty($message)) {
     $id = trim($_GET["id"]);
     $sql_edit = "SELECT id, nome, descricao, sku, preco_venda, percentual_lucro, quantidade_estoque, estoque_minimo, fornecedor, empresa_id, imagem_produto FROM produtos WHERE id = ?";
@@ -97,7 +97,7 @@ if (isset($_GET["id"]) && empty($message)) {
                 $title = "Editar Produto";
                 $submit_button_text = "Atualizar Produto";
             } else {
-                $message = "Produto não encontrado.";
+                $message = "Produto nÃ£o encontrado.";
                 $message_type = "danger";
                 $id = "";
             }
@@ -129,15 +129,15 @@ include_once 'includes/header.php';
         <form action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]); ?>" method="post">
             <input type="hidden" name="id" value="<?php echo htmlspecialchars($id); ?>">
 
-            <!-- Campo de busca rápida para verificar produtos existentes -->
-            <?php if (empty($id)): // Só mostrar na criação de novos produtos ?>
+            <!-- Campo de busca rÃ¡pida para verificar produtos existentes -->
+            <?php if (empty($id)): // SÃ³ mostrar na criaÃ§Ã£o de novos produtos ?>
             <div class="row mb-3">
                 <div class="col-12">
                     <div class="alert alert-info">
                         <i class="fas fa-search me-2"></i>
-                        <strong>Busca Rápida:</strong> Antes de cadastrar, verifique se o produto já existe
+                        <strong>Busca RÃ¡pida:</strong> Antes de cadastrar, verifique se o produto jÃ¡ existe
                         <div class="mt-2">
-                            <input type="text" class="form-control" id="quickSearch" placeholder="Digite o nome, código ou qualquer termo para buscar produtos existentes..." autocomplete="off">
+                            <input type="text" class="form-control" id="quickSearch" placeholder="Digite o nome, cÃ³digo ou qualquer termo para buscar produtos existentes..." autocomplete="off">
                             <div id="quickSearchResults" class="mt-2" style="display: none;">
                                 <div class="card">
                                     <div class="card-body p-2">
@@ -175,7 +175,7 @@ include_once 'includes/header.php';
 
             <div class="row">
                 <div class="col-md-4 mb-3">
-                    <label for="sku" class="form-label">SKU (Código)</label>
+                    <label for="sku" class="form-label">SKU (CÃ³digo)</label>
                     <input type="text" class="form-control" id="sku" name="sku" value="<?php echo htmlspecialchars($sku); ?>">
                 </div>
                 <div class="col-md-8 mb-3">
@@ -185,11 +185,11 @@ include_once 'includes/header.php';
             </div>
 
             <div class="mb-3">
-                <label for="descricao" class="form-label">Descrição</label>
+                <label for="descricao" class="form-label">DescriÃ§Ã£o</label>
                 <textarea class="form-control" id="descricao" name="descricao" rows="3"><?php echo htmlspecialchars($descricao); ?></textarea>
             </div>
 
-            <!-- Seção de Imagem do Produto -->
+            <!-- SeÃ§Ã£o de Imagem do Produto -->
             <?php if ($id): ?>
             <div class="mb-4">
                 <label class="form-label">Imagem do Produto</label>
@@ -215,7 +215,7 @@ include_once 'includes/header.php';
                             <input type="file" class="form-control" id="imagemProduto" accept="image/*">
                             <div class="form-text">
                                 Formatos aceitos: JPEG, PNG, GIF, WebP<br>
-                                Tamanho máximo: 5MB
+                                Tamanho mÃ¡ximo: 5MB
                             </div>
                         </div>
                         <button type="button" class="btn btn-outline-primary" id="uploadImagem" disabled>
@@ -233,7 +233,7 @@ include_once 'includes/header.php';
 
             <div class="row">
                 <div class="col-lg-4 col-md-6 mb-3">
-                    <label for="preco_venda" class="form-label">Preço de Venda (R$) <span class="text-danger">*</span></label>
+                    <label for="preco_venda" class="form-label">PreÃ§o de Venda (R$) <span class="text-danger">*</span></label>
                     <input type="text" class="form-control" id="preco_venda" name="preco_venda" value="<?php echo htmlspecialchars($preco_venda); ?>" required placeholder="0,00">
                 </div>
                 <div class="col-lg-2 col-md-6 mb-3">
@@ -245,7 +245,7 @@ include_once 'includes/header.php';
                     <input type="number" class="form-control" id="quantidade_estoque" name="quantidade_estoque" value="<?php echo htmlspecialchars($quantidade_estoque); ?>" required min="0">
                 </div>
                 <div class="col-lg-3 col-6 mb-3">
-                    <label for="estoque_minimo" class="form-label">Estoque Mínimo <span class="text-danger">*</span></label>
+                    <label for="estoque_minimo" class="form-label">Estoque MÃ­nimo <span class="text-danger">*</span></label>
                     <input type="number" class="form-control" id="estoque_minimo" name="estoque_minimo" value="<?php echo htmlspecialchars($estoque_minimo); ?>" required min="0">
                 </div>
             </div>
@@ -263,7 +263,7 @@ include_once 'includes/header.php';
 </div>
 
 <style>
-/* Estilos para busca rápida */
+/* Estilos para busca rÃ¡pida */
 #quickSearchResults {
     position: relative;
     z-index: 1000;
@@ -289,7 +289,7 @@ include_once 'includes/header.php';
     box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
 }
 
-/* Animação suave para os resultados */
+/* AnimaÃ§Ã£o suave para os resultados */
 #quickSearchResults {
     animation: fadeIn 0.2s ease-in-out;
 }
@@ -342,7 +342,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         <p class="mt-2 mb-0 text-muted small">Imagem atual</p>
                     `;
 
-                    // Mostrar botão de remover se não existir
+                    // Mostrar botÃ£o de remover se nÃ£o existir
                     if (!removerBtn) {
                         const newRemoverBtn = document.createElement('button');
                         newRemoverBtn.type = 'button';
@@ -402,7 +402,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Implementar busca rápida de produtos
+    // Implementar busca rÃ¡pida de produtos
     const quickSearchInput = document.getElementById('quickSearch');
     const quickSearchResults = document.getElementById('quickSearchResults');
     const searchResultsList = document.getElementById('searchResultsList');
@@ -420,7 +420,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 return;
             }
 
-            // Debounce - aguardar 300ms após parar de digitar
+            // Debounce - aguardar 300ms apÃ³s parar de digitar
             searchTimeout = setTimeout(() => {
                 buscarProdutos(termo);
             }, 300);

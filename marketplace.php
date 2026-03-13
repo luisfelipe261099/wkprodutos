@@ -1,12 +1,12 @@
-<?php
-session_start();
+﻿<?php
+require_once 'includes/session_bootstrap.php';
 
 require_once 'includes/db_connect.php'; //
 
 // Verificar token de acesso
 $token = $_GET['token'] ?? '';
 if (empty($token)) {
-    die('Acesso negado. Token inválido.');
+    die('Acesso negado. Token invÃ¡lido.');
 }
 
 // Validar token e buscar dados do cliente
@@ -24,7 +24,7 @@ $stmt_token->execute();
 $result_token = $stmt_token->get_result();
 
 if ($result_token->num_rows === 0) {
-    die('Link inválido, expirado ou desativado.');
+    die('Link invÃ¡lido, expirado ou desativado.');
 }
 
 $link_data = $result_token->fetch_assoc();
@@ -36,7 +36,7 @@ if ($link_data['data_expiracao'] && strtotime($link_data['data_expiracao']) < ti
     die('Link expirado.');
 }
 
-// Atualizar último acesso e contador de acessos do link
+// Atualizar Ãºltimo acesso e contador de acessos do link
 $sql_update_link = "UPDATE marketplace_links SET ultimo_acesso = NOW(), total_acessos = total_acessos + 1 WHERE token_acesso = ?"; //
 $stmt_update_link = $conn->prepare($sql_update_link);
 if ($stmt_update_link) {
@@ -45,7 +45,7 @@ if ($stmt_update_link) {
     $stmt_update_link->close();
 }
 
-// Buscar configurações do marketplace
+// Buscar configuraÃ§Ãµes do marketplace
 $sql_config = "SELECT chave, valor FROM marketplace_configuracoes"; //
 $result_config = $conn->query($sql_config);
 $config_marketplace = [];
@@ -55,9 +55,9 @@ if ($result_config) {
     }
 }
 
-// Verificar se marketplace está ativo
+// Verificar se marketplace estÃ¡ ativo
 if (!isset($config_marketplace['marketplace_ativo']) || $config_marketplace['marketplace_ativo'] != '1') { //
-    die('Marketplace temporariamente indisponível.');
+    die('Marketplace temporariamente indisponÃ­vel.');
 }
 
 // Buscar produtos ativos para marketplace considerando empresas permitidas para o cliente
@@ -66,7 +66,7 @@ $sql_produtos = "SELECT p.*, e.nome_empresa
                  LEFT JOIN empresas_representadas e ON p.empresa_id = e.id
                  WHERE p.ativo_marketplace = 1 AND p.quantidade_estoque > 0";
 
-// Verificar se o cliente tem empresas específicas associadas
+// Verificar se o cliente tem empresas especÃ­ficas associadas
 $sql_check_empresas = "SELECT COUNT(*) as total FROM marketplace_cliente_empresas WHERE cliente_id = ? AND ativo = 1";
 $stmt_check = $conn->prepare($sql_check_empresas);
 $stmt_check->bind_param("i", $cliente_id);
@@ -74,7 +74,7 @@ $stmt_check->execute();
 $empresas_associadas = $stmt_check->get_result()->fetch_assoc()['total'];
 
 if ($empresas_associadas > 0) {
-    // Cliente tem empresas específicas - mostrar apenas produtos dessas empresas
+    // Cliente tem empresas especÃ­ficas - mostrar apenas produtos dessas empresas
     $sql_produtos .= " AND p.empresa_id IN (
                         SELECT empresa_id FROM marketplace_cliente_empresas
                         WHERE cliente_id = ? AND ativo = 1
@@ -123,7 +123,7 @@ foreach($carrinho_itens as $ci) { // Soma as quantidades dos itens
 }
 
 
-// Buscar histórico de pedidos do cliente
+// Buscar histÃ³rico de pedidos do cliente
 $sql_pedidos_hist = "SELECT mp.id, mp.numero_pedido, mp.data_pedido, mp.valor_total, mp.status_pedido,
                            (SELECT COUNT(*) FROM marketplace_itens_pedido mip WHERE mip.pedido_id = mp.id) as qtd_itens
                     FROM marketplace_pedidos mp
@@ -131,7 +131,7 @@ $sql_pedidos_hist = "SELECT mp.id, mp.numero_pedido, mp.data_pedido, mp.valor_to
                     ORDER BY mp.data_pedido DESC"; //
 $stmt_pedidos_hist = $conn->prepare($sql_pedidos_hist);
 if (!$stmt_pedidos_hist) {
-    die("Erro ao preparar consulta de histórico: " . $conn->error);
+    die("Erro ao preparar consulta de histÃ³rico: " . $conn->error);
 }
 $stmt_pedidos_hist->bind_param("i", $cliente_id);
 $stmt_pedidos_hist->execute();
@@ -158,15 +158,15 @@ $stmt_pedidos_hist->close();
     <style>
         :root {
             --primary-color: <?php echo $config_marketplace['cor_primaria'] ?? '#2563eb'; ?>; /* Azul mais vibrante */
-            --secondary-color: <?php echo $config_marketplace['cor_secundaria'] ?? '#334155'; ?>; /* Cinza ardósia escuro */
+            --secondary-color: <?php echo $config_marketplace['cor_secundaria'] ?? '#334155'; ?>; /* Cinza ardÃ³sia escuro */
             --accent-color: <?php echo $config_marketplace['cor_acento'] ?? '#f97316'; ?>; /* Laranja */
             --success-color: #10b981;
             --warning-color: #facc15; /* Amarelo */
             --danger-color: #ef4444;
             --light-gray: #f3f4f6; /* Cinza mais claro para fundo */
             --medium-gray: #d1d5db; /* Cinza para bordas */
-            --dark-gray: #4b5563; /* Cinza para texto secundário */
-            --text-color: #1f2937; /* Cinza ardósia mais escuro para texto principal */
+            --dark-gray: #4b5563; /* Cinza para texto secundÃ¡rio */
+            --text-color: #1f2937; /* Cinza ardÃ³sia mais escuro para texto principal */
             --font-primary: 'Poppins', sans-serif;
             --font-secondary: 'Roboto', sans-serif;
         }
@@ -227,7 +227,7 @@ $stmt_pedidos_hist->close();
         }
         .nav-tabs-marketplace {
             border-bottom: 1px solid var(--medium-gray);
-            margin-bottom: 2.5rem; /* Mais espaço */
+            margin-bottom: 2.5rem; /* Mais espaÃ§o */
         }
 
         .product-card {
@@ -309,7 +309,7 @@ $stmt_pedidos_hist->close();
 
         .cart-sidebar {
             position: fixed;
-            right: -480px; /* Aumentado para mais espaço */
+            right: -480px; /* Aumentado para mais espaÃ§o */
             top: 0;
             width: 480px; /* Aumentado */
             height: 100vh;
@@ -367,7 +367,7 @@ $stmt_pedidos_hist->close();
             width: 65px; /* Aumentado */
             height: 65px; /* Aumentado */
             box-shadow: 0 8px 20px rgba(0,0,0,0.25); /* Sombra mais forte */
-            font-size: 1.3rem; /* Ícone maior */
+            font-size: 1.3rem; /* Ãcone maior */
             background-color: var(--accent-color); /* Usar cor de acento */
             border: none;
         }
@@ -459,7 +459,7 @@ $stmt_pedidos_hist->close();
         }
         .status-badge {
             padding: 0.4em 0.9em; /* Ajustado */
-            font-size: 0.75rem; /* Pequeno, mas legível */
+            font-size: 0.75rem; /* Pequeno, mas legÃ­vel */
             font-weight: 600; /* Mais forte */
             border-radius: 20px;
             text-transform: uppercase;
@@ -480,7 +480,7 @@ $stmt_pedidos_hist->close();
         .modal-body-marketplace h6 { color: var(--primary-color); font-weight: 600; font-size:1.1rem; }
         .modal-footer { border-top: 1px solid var(--medium-gray); }
 
-        /* Estilos para a área de notificação */
+        /* Estilos para a Ã¡rea de notificaÃ§Ã£o */
         #notification-area {
             position: fixed;
             top: 20px;
@@ -549,7 +549,7 @@ $stmt_pedidos_hist->close();
                         <div class="col-lg-7 col-md-6">
                             <div class="input-group">
                                 <span class="input-group-text bg-transparent border-end-0 text-muted"><i class="fas fa-search"></i></span>
-                                <input type="text" class="form-control form-control-filter border-start-0" placeholder="Busque por nome ou código do produto..." id="searchInput">
+                                <input type="text" class="form-control form-control-filter border-start-0" placeholder="Busque por nome ou cÃ³digo do produto..." id="searchInput">
                             </div>
                         </div>
                         <div class="col-lg-3 col-md-4">
@@ -610,7 +610,7 @@ $stmt_pedidos_hist->close();
                                                 <?php endif; ?>
                                                 <h3 class="card-title"><?php echo htmlspecialchars($produto['nome']); ?></h3>
                                                 <p class="small text-muted mb-1">
-                                                    <i class="fas fa-barcode me-1"></i> Cód: <?php echo htmlspecialchars($produto['sku'] ?? 'N/D'); ?>
+                                                    <i class="fas fa-barcode me-1"></i> CÃ³d: <?php echo htmlspecialchars($produto['sku'] ?? 'N/D'); ?>
                                                 </p>
                                                 <?php if ($produto['nome_empresa']): ?>
                                                     <p class="small text-muted mb-2">
@@ -632,7 +632,7 @@ $stmt_pedidos_hist->close();
                                                     </button>
                                                 </div>
                                                 <small class="text-muted d-block text-end mt-1 <?php echo ($produto['quantidade_estoque'] <= ($produto['estoque_minimo'] ?? 0) && $produto['quantidade_estoque'] > 0 ? 'text-danger fw-bold' : ''); ?>">
-                                                    <?php echo ($produto['quantidade_estoque'] > 0 ? "Estoque: " . $produto['quantidade_estoque'] : '<span class="text-danger fw-bold">Indisponível</span>'); ?>
+                                                    <?php echo ($produto['quantidade_estoque'] > 0 ? "Estoque: " . $produto['quantidade_estoque'] : '<span class="text-danger fw-bold">IndisponÃ­vel</span>'); ?>
                                                 </small>
                                             </div>
                                         </div>
@@ -641,7 +641,7 @@ $stmt_pedidos_hist->close();
                                 <?php
                             }
                         } else {
-                            echo '<div class="col-12 text-center py-5"><p class="lead text-muted">Nenhum produto disponível no momento.</p></div>';
+                            echo '<div class="col-12 text-center py-5"><p class="lead text-muted">Nenhum produto disponÃ­vel no momento.</p></div>';
                         }
                         if ($result_produtos) $result_produtos->data_seek(0); // Resetar ponteiro se for usar novamente
                         ?>
@@ -650,20 +650,20 @@ $stmt_pedidos_hist->close();
 
                 <div class="tab-pane fade" id="pedidos-tab-pane" role="tabpanel" aria-labelledby="pedidos-tab" tabindex="0">
                     <div class="data-card">
-                        <h5><i class="fas fa-history me-2"></i>Histórico de Pedidos</h5>
+                        <h5><i class="fas fa-history me-2"></i>HistÃ³rico de Pedidos</h5>
                         <?php if (empty($historico_pedidos)): ?>
-                            <p class="text-muted lead mt-3">Você ainda não realizou nenhum pedido.</p>
+                            <p class="text-muted lead mt-3">VocÃª ainda nÃ£o realizou nenhum pedido.</p>
                         <?php else: ?>
                             <div class="table-responsive">
                                 <table class="table table-hover order-history-table align-middle">
                                     <thead>
                                         <tr>
-                                            <th>Nº Pedido</th>
+                                            <th>NÂº Pedido</th>
                                             <th>Data</th>
                                             <th class="text-center">Itens</th>
                                             <th class="text-end">Valor Total</th>
                                             <th class="text-center">Status</th>
-                                            <th class="text-center">Ações</th>
+                                            <th class="text-center">AÃ§Ãµes</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -697,7 +697,7 @@ $stmt_pedidos_hist->close();
                         <h5><i class="fas fa-id-card me-2"></i>Meus Dados Cadastrais</h5>
                         <div class="row g-4">
                             <div class="col-md-6">
-                                <p class="data-label mb-1">Nome Completo / Razão Social:</p>
+                                <p class="data-label mb-1">Nome Completo / RazÃ£o Social:</p>
                                 <p class="data-value"><?php echo htmlspecialchars($link_data['cliente_nome']); ?></p>
                             </div>
                             <div class="col-md-6">
@@ -706,11 +706,11 @@ $stmt_pedidos_hist->close();
                             </div>
                             <div class="col-md-6">
                                 <p class="data-label mb-1">Telefone:</p>
-                                <p class="data-value"><?php echo htmlspecialchars($link_data['cliente_telefone'] ?? 'Não informado'); ?></p>
+                                <p class="data-value"><?php echo htmlspecialchars($link_data['cliente_telefone'] ?? 'NÃ£o informado'); ?></p>
                             </div>
                              <div class="col-md-6">
                                 <p class="data-label mb-1">Tipo de Pessoa:</p>
-                                <p class="data-value"><?php echo ucfirst(htmlspecialchars($link_data['tipo_pessoa'] ?? 'Não informado')); ?></p>
+                                <p class="data-value"><?php echo ucfirst(htmlspecialchars($link_data['tipo_pessoa'] ?? 'NÃ£o informado')); ?></p>
                             </div>
                             <?php if (!empty($link_data['cpf_cnpj'])): ?>
                             <div class="col-md-6">
@@ -719,21 +719,21 @@ $stmt_pedidos_hist->close();
                             </div>
                             <?php endif; ?>
                             <div class="col-12">
-                                <p class="data-label mb-1">Endereço Principal:</p>
+                                <p class="data-label mb-1">EndereÃ§o Principal:</p>
                                 <p class="data-value">
                                     <?php
                                     $endereco_completo = [];
                                     if (!empty($link_data['cliente_endereco'])) $endereco_completo[] = htmlspecialchars($link_data['cliente_endereco']);
                                     if (!empty($link_data['cliente_cidade'])) $endereco_completo[] = htmlspecialchars($link_data['cliente_cidade']);
                                     if (!empty($link_data['cliente_estado'])) $endereco_completo[] = htmlspecialchars($link_data['cliente_estado']);
-                                    echo !empty($endereco_completo) ? implode(', ', $endereco_completo) : 'Não informado';
+                                    echo !empty($endereco_completo) ? implode(', ', $endereco_completo) : 'NÃ£o informado';
                                     if (!empty($link_data['cliente_cep'])) echo '<br>CEP: ' . htmlspecialchars($link_data['cliente_cep']);
                                     ?>
                                 </p>
                             </div>
                              <div class="col-md-6">
                                 <p class="data-label mb-1">Cliente desde:</p>
-                                <p class="data-value"><?php echo !empty($link_data['data_cadastro']) ? date('d/m/Y', strtotime($link_data['data_cadastro'])) : 'Não informado'; ?></p>
+                                <p class="data-value"><?php echo !empty($link_data['data_cadastro']) ? date('d/m/Y', strtotime($link_data['data_cadastro'])) : 'NÃ£o informado'; ?></p>
                             </div>
                         </div>
                         <p class="mt-4 small text-muted"><i class="fas fa-info-circle me-1"></i> Para alterar seus dados cadastrais, por favor, entre em contato conosco.</p>

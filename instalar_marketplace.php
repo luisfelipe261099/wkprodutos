@@ -1,22 +1,22 @@
-<?php
+﻿<?php
 // Script para instalar as tabelas do marketplace
-session_start();
+require_once 'includes/session_bootstrap.php';
 
-// Verifica se o usuário está logado e é admin
+// Verifica se o usuÃ¡rio estÃ¡ logado e Ã© admin
 if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
     header("location: login.php");
     exit;
 }
 
 if (!isset($_SESSION["nivel_acesso"]) || $_SESSION["nivel_acesso"] !== "admin") {
-    echo "Acesso negado. Apenas administradores podem acessar esta página.";
+    echo "Acesso negado. Apenas administradores podem acessar esta pÃ¡gina.";
     exit;
 }
 
 require_once 'includes/db_connect.php';
 
-echo "<h2>Instalação do Sistema de Marketplace</h2>";
-echo "<p>Este script irá criar as tabelas necessárias para o marketplace.</p>";
+echo "<h2>InstalaÃ§Ã£o do Sistema de Marketplace</h2>";
+echo "<p>Este script irÃ¡ criar as tabelas necessÃ¡rias para o marketplace.</p>";
 
 $errors = [];
 $success = [];
@@ -39,12 +39,12 @@ try {
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci";
     
     if ($conn->query($sql)) {
-        $success[] = "✓ Tabela marketplace_links criada com sucesso";
+        $success[] = "âœ“ Tabela marketplace_links criada com sucesso";
     } else {
-        $errors[] = "✗ Erro ao criar tabela marketplace_links: " . $conn->error;
+        $errors[] = "âœ— Erro ao criar tabela marketplace_links: " . $conn->error;
     }
 
-    // 2. Tabela para carrinho temporário do marketplace
+    // 2. Tabela para carrinho temporÃ¡rio do marketplace
     $sql = "CREATE TABLE IF NOT EXISTS `marketplace_carrinho` (
       `id` int(11) NOT NULL AUTO_INCREMENT,
       `token_acesso` varchar(64) NOT NULL,
@@ -59,9 +59,9 @@ try {
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci";
     
     if ($conn->query($sql)) {
-        $success[] = "✓ Tabela marketplace_carrinho criada com sucesso";
+        $success[] = "âœ“ Tabela marketplace_carrinho criada com sucesso";
     } else {
-        $errors[] = "✗ Erro ao criar tabela marketplace_carrinho: " . $conn->error;
+        $errors[] = "âœ— Erro ao criar tabela marketplace_carrinho: " . $conn->error;
     }
 
     // 3. Tabela para pedidos do marketplace
@@ -93,9 +93,9 @@ try {
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci";
     
     if ($conn->query($sql)) {
-        $success[] = "✓ Tabela marketplace_pedidos criada com sucesso";
+        $success[] = "âœ“ Tabela marketplace_pedidos criada com sucesso";
     } else {
-        $errors[] = "✗ Erro ao criar tabela marketplace_pedidos: " . $conn->error;
+        $errors[] = "âœ— Erro ao criar tabela marketplace_pedidos: " . $conn->error;
     }
 
     // 4. Tabela para itens dos pedidos do marketplace
@@ -114,12 +114,12 @@ try {
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci";
     
     if ($conn->query($sql)) {
-        $success[] = "✓ Tabela marketplace_itens_pedido criada com sucesso";
+        $success[] = "âœ“ Tabela marketplace_itens_pedido criada com sucesso";
     } else {
-        $errors[] = "✗ Erro ao criar tabela marketplace_itens_pedido: " . $conn->error;
+        $errors[] = "âœ— Erro ao criar tabela marketplace_itens_pedido: " . $conn->error;
     }
 
-    // 5. Tabela para configurações do marketplace
+    // 5. Tabela para configuraÃ§Ãµes do marketplace
     $sql = "CREATE TABLE IF NOT EXISTS `marketplace_configuracoes` (
       `id` int(11) NOT NULL AUTO_INCREMENT,
       `chave` varchar(100) NOT NULL UNIQUE,
@@ -131,21 +131,21 @@ try {
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci";
     
     if ($conn->query($sql)) {
-        $success[] = "✓ Tabela marketplace_configuracoes criada com sucesso";
+        $success[] = "âœ“ Tabela marketplace_configuracoes criada com sucesso";
     } else {
-        $errors[] = "✗ Erro ao criar tabela marketplace_configuracoes: " . $conn->error;
+        $errors[] = "âœ— Erro ao criar tabela marketplace_configuracoes: " . $conn->error;
     }
 
-    // 6. Inserir configurações padrão
+    // 6. Inserir configuraÃ§Ãµes padrÃ£o
     $configuracoes = [
         ['marketplace_ativo', '1', 'Marketplace ativo (1) ou inativo (0)'],
-        ['titulo_marketplace', 'Karla Wollinger - Marketplace', 'Título do marketplace'],
-        ['descricao_marketplace', 'Faça seus pedidos online de forma rápida e prática', 'Descrição do marketplace'],
-        ['email_notificacoes', 'contato@karlawollinger.com', 'Email para receber notificações de pedidos'],
-        ['prazo_entrega_padrao', '3', 'Prazo padrão de entrega em dias úteis'],
-        ['valor_minimo_pedido', '0.00', 'Valor mínimo para pedidos'],
-        ['permitir_agendamento', '1', 'Permitir agendamento de entrega (1) ou não (0)'],
-        ['horario_funcionamento', '08:00-18:00', 'Horário de funcionamento para entregas'],
+        ['titulo_marketplace', 'Karla Wollinger - Marketplace', 'TÃ­tulo do marketplace'],
+        ['descricao_marketplace', 'FaÃ§a seus pedidos online de forma rÃ¡pida e prÃ¡tica', 'DescriÃ§Ã£o do marketplace'],
+        ['email_notificacoes', 'contato@karlawollinger.com', 'Email para receber notificaÃ§Ãµes de pedidos'],
+        ['prazo_entrega_padrao', '3', 'Prazo padrÃ£o de entrega em dias Ãºteis'],
+        ['valor_minimo_pedido', '0.00', 'Valor mÃ­nimo para pedidos'],
+        ['permitir_agendamento', '1', 'Permitir agendamento de entrega (1) ou nÃ£o (0)'],
+        ['horario_funcionamento', '08:00-18:00', 'HorÃ¡rio de funcionamento para entregas'],
         ['dias_funcionamento', '1,2,3,4,5', 'Dias da semana que funciona (1=segunda, 7=domingo)']
     ];
 
@@ -155,7 +155,7 @@ try {
         $stmt->bind_param("sss", $config[0], $config[1], $config[2]);
         $stmt->execute();
     }
-    $success[] = "✓ Configurações padrão inseridas";
+    $success[] = "âœ“ ConfiguraÃ§Ãµes padrÃ£o inseridas";
 
     // 7. Adicionar campos extras na tabela produtos para marketplace
     $campos_produtos = [
@@ -169,16 +169,16 @@ try {
     foreach ($campos_produtos as $campo) {
         $sql = "ALTER TABLE produtos $campo";
         if ($conn->query($sql)) {
-            $success[] = "✓ Campo adicionado à tabela produtos: " . explode('`', $campo)[1];
+            $success[] = "âœ“ Campo adicionado Ã  tabela produtos: " . explode('`', $campo)[1];
         } else {
-            // Ignorar erro se campo já existe
+            // Ignorar erro se campo jÃ¡ existe
             if (strpos($conn->error, 'Duplicate column name') === false) {
-                $errors[] = "✗ Erro ao adicionar campo à tabela produtos: " . $conn->error;
+                $errors[] = "âœ— Erro ao adicionar campo Ã  tabela produtos: " . $conn->error;
             }
         }
     }
 
-    // 7.1. Adicionar campos de integração na tabela marketplace_pedidos (se já existir)
+    // 7.1. Adicionar campos de integraÃ§Ã£o na tabela marketplace_pedidos (se jÃ¡ existir)
     $campos_pedidos = [
         "ADD COLUMN `venda_id` int(11) DEFAULT NULL",
         "ADD COLUMN `transacao_financeira_id` int(11) DEFAULT NULL"
@@ -187,16 +187,16 @@ try {
     foreach ($campos_pedidos as $campo) {
         $sql = "ALTER TABLE marketplace_pedidos $campo";
         if ($conn->query($sql)) {
-            $success[] = "✓ Campo de integração adicionado à tabela marketplace_pedidos";
+            $success[] = "âœ“ Campo de integraÃ§Ã£o adicionado Ã  tabela marketplace_pedidos";
         } else {
-            // Ignorar erro se campo já existe
+            // Ignorar erro se campo jÃ¡ existe
             if (strpos($conn->error, 'Duplicate column name') === false) {
-                $errors[] = "✗ Erro ao adicionar campo à tabela marketplace_pedidos: " . $conn->error;
+                $errors[] = "âœ— Erro ao adicionar campo Ã  tabela marketplace_pedidos: " . $conn->error;
             }
         }
     }
 
-    // 7.2. Adicionar foreign keys para integração
+    // 7.2. Adicionar foreign keys para integraÃ§Ã£o
     $foreign_keys = [
         "ADD FOREIGN KEY (`venda_id`) REFERENCES `vendas` (`id`) ON DELETE SET NULL",
         "ADD FOREIGN KEY (`transacao_financeira_id`) REFERENCES `transacoes_financeiras` (`id`) ON DELETE SET NULL"
@@ -205,17 +205,17 @@ try {
     foreach ($foreign_keys as $fk) {
         $sql = "ALTER TABLE marketplace_pedidos $fk";
         if ($conn->query($sql)) {
-            $success[] = "✓ Foreign key de integração adicionada";
+            $success[] = "âœ“ Foreign key de integraÃ§Ã£o adicionada";
         } else {
-            // Ignorar erro se foreign key já existe
+            // Ignorar erro se foreign key jÃ¡ existe
             if (strpos($conn->error, 'Duplicate foreign key constraint name') === false &&
                 strpos($conn->error, 'foreign key constraint fails') === false) {
-                $errors[] = "✗ Erro ao adicionar foreign key: " . $conn->error;
+                $errors[] = "âœ— Erro ao adicionar foreign key: " . $conn->error;
             }
         }
     }
 
-    // 8. Adicionar índices para melhor performance
+    // 8. Adicionar Ã­ndices para melhor performance
     $indices = [
         "ADD INDEX `idx_ativo_marketplace` (`ativo_marketplace`)",
         "ADD INDEX `idx_destaque` (`destaque_marketplace`)",
@@ -225,16 +225,16 @@ try {
     foreach ($indices as $indice) {
         $sql = "ALTER TABLE produtos $indice";
         if ($conn->query($sql)) {
-            $success[] = "✓ Índice adicionado à tabela produtos";
+            $success[] = "âœ“ Ãndice adicionado Ã  tabela produtos";
         } else {
-            // Ignorar erro se índice já existe
+            // Ignorar erro se Ã­ndice jÃ¡ existe
             if (strpos($conn->error, 'Duplicate key name') === false) {
-                $errors[] = "✗ Erro ao adicionar índice à tabela produtos: " . $conn->error;
+                $errors[] = "âœ— Erro ao adicionar Ã­ndice Ã  tabela produtos: " . $conn->error;
             }
         }
     }
 
-    // 9. Criar trigger para gerar número do pedido automaticamente
+    // 9. Criar trigger para gerar nÃºmero do pedido automaticamente
     $sql = "DROP TRIGGER IF EXISTS gerar_numero_pedido";
     $conn->query($sql);
 
@@ -265,12 +265,12 @@ try {
             END";
     
     if ($conn->query($sql)) {
-        $success[] = "✓ Trigger para geração automática de número do pedido criado";
+        $success[] = "âœ“ Trigger para geraÃ§Ã£o automÃ¡tica de nÃºmero do pedido criado";
     } else {
-        $errors[] = "✗ Erro ao criar trigger: " . $conn->error;
+        $errors[] = "âœ— Erro ao criar trigger: " . $conn->error;
     }
 
-    // 10. Criar view para relatórios do marketplace
+    // 10. Criar view para relatÃ³rios do marketplace
     $sql = "DROP VIEW IF EXISTS vw_marketplace_vendas";
     $conn->query($sql);
 
@@ -293,17 +293,17 @@ try {
             GROUP BY mp.id";
     
     if ($conn->query($sql)) {
-        $success[] = "✓ View vw_marketplace_vendas criada";
+        $success[] = "âœ“ View vw_marketplace_vendas criada";
     } else {
-        $errors[] = "✗ Erro ao criar view: " . $conn->error;
+        $errors[] = "âœ— Erro ao criar view: " . $conn->error;
     }
 
 } catch (Exception $e) {
-    $errors[] = "✗ Erro geral: " . $e->getMessage();
+    $errors[] = "âœ— Erro geral: " . $e->getMessage();
 }
 
 // Exibir resultados
-echo "<h3>Resultados da Instalação:</h3>";
+echo "<h3>Resultados da InstalaÃ§Ã£o:</h3>";
 
 if (!empty($success)) {
     echo "<div style='color: green; margin-bottom: 20px;'>";
@@ -323,21 +323,22 @@ if (!empty($errors)) {
 
 if (empty($errors)) {
     echo "<div style='background: #d4edda; border: 1px solid #c3e6cb; color: #155724; padding: 15px; border-radius: 5px; margin: 20px 0;'>";
-    echo "<h4>✓ Instalação Concluída com Sucesso!</h4>";
-    echo "<p>O sistema de marketplace foi instalado e está pronto para uso.</p>";
-    echo "<p><strong>Próximos passos:</strong></p>";
+    echo "<h4>âœ“ InstalaÃ§Ã£o ConcluÃ­da com Sucesso!</h4>";
+    echo "<p>O sistema de marketplace foi instalado e estÃ¡ pronto para uso.</p>";
+    echo "<p><strong>PrÃ³ximos passos:</strong></p>";
     echo "<ul>";
     echo "<li>Acesse <a href='marketplace_admin.php'>Marketplace - Links Exclusivos</a> para gerar links para seus clientes</li>";
-    echo "<li>Configure os produtos que estarão disponíveis no marketplace</li>";
+    echo "<li>Configure os produtos que estarÃ£o disponÃ­veis no marketplace</li>";
     echo "<li>Gerencie os pedidos em <a href='marketplace_pedidos.php'>Pedidos Marketplace</a></li>";
     echo "</ul>";
     echo "</div>";
 } else {
     echo "<div style='background: #f8d7da; border: 1px solid #f5c6cb; color: #721c24; padding: 15px; border-radius: 5px; margin: 20px 0;'>";
-    echo "<h4>⚠ Instalação Concluída com Avisos</h4>";
-    echo "<p>Alguns erros ocorreram durante a instalação. Verifique os detalhes acima.</p>";
+    echo "<h4>âš  InstalaÃ§Ã£o ConcluÃ­da com Avisos</h4>";
+    echo "<p>Alguns erros ocorreram durante a instalaÃ§Ã£o. Verifique os detalhes acima.</p>";
     echo "</div>";
 }
 
 $conn->close();
 ?>
+
