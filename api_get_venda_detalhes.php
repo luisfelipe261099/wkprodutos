@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 // Silencia erros de PHP para nÃ£o quebrar a saÃ­da JSON, mas os registra em log.
 ini_set('display_errors', 0);
 ini_set('log_errors', 1);

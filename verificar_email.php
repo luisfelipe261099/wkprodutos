@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 // VerificaÃ§Ã£o rÃ¡pida de email
 require_once 'includes/session_bootstrap.php';
 

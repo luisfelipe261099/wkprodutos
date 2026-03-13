@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 // Script para instalar as tabelas do marketplace
 require_once 'includes/session_bootstrap.php';
 

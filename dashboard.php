@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 // Inicia a sessÃ£o. Ã‰ o primeiro passo para gerenciar o login do usuÃ¡rio.
 require_once 'includes/session_bootstrap.php';
 

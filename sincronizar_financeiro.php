@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 require_once 'includes/session_bootstrap.php';
 
 // Verifica se o usuÃ¡rio estÃ¡ logado e Ã© admin

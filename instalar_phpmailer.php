@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 // Script para verificar e instalar o PHPMailer
 require_once 'includes/session_bootstrap.php';
 

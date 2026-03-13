@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 /**
  * Script para atualizar estrutura do banco de dados
  * Adiciona 'boleto' e novos tipos de faturamento

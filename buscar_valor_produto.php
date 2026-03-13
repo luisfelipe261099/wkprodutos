@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 require_once 'includes/session_bootstrap.php';
 if (!isset($_SESSION['user_id'])) {
     header('HTTP/1.1 401 Unauthorized');

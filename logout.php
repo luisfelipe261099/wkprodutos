@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 // Inicia a sessÃ£o
 require_once 'includes/session_bootstrap.php';
 

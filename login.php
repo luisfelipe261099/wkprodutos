@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 // Inicia a sessÃ£o no inÃ­cio do script. Isso Ã© fundamental para gerenciar o estado do usuÃ¡rio.
 require_once 'includes/session_bootstrap.php';
 

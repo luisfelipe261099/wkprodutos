@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 // Inicia o output buffering e a sessÃ£o
 ob_start();
 require_once 'includes/session_bootstrap.php';

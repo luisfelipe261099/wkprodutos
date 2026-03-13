@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 //echo "DEBUG: vendas.php - INÃCIO<br>";
 //flush();
 error_reporting(E_ALL);

@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 // Inicia a sessÃ£o para verificar se o usuÃ¡rio estÃ¡ logado
 require_once 'includes/session_bootstrap.php';
 

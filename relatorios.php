@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 // Habilita a exibiÃ§Ã£o de erros
 ini_set('display_errors', 1);
 error_reporting(E_ALL);

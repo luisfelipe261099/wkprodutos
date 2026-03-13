@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 // JÃ PODEMOS REMOVER AS LINHAS DE DEPURAÃ‡ÃƒO
 // ini_set('display_errors', 1);
 // ini_set('display_startup_errors', 1);

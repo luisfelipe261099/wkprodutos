@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 // empresa_logos.php - PÃ¡gina para gerenciar logos das empresas representadas
 require_once 'includes/session_bootstrap.php';
 
