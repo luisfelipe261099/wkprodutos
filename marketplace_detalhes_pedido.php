@@ -1,7 +1,7 @@
 <?php
 require_once 'includes/session_bootstrap.php';
 
-// Verifica se o usuÃ¡rio estÃ¡ logado
+// Verifica se o usuário está logado
 if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
     header("location: index.php");
     exit;
@@ -63,17 +63,17 @@ include_once 'includes/header.php';
         Detalhes do Pedido #<?php echo htmlspecialchars($pedido['numero_pedido']); ?>
     </h1>
     <p class="page-subtitle">
-        InformaÃ§Ãµes completas do pedido do marketplace
+        Informações completas do pedido do marketplace
     </p>
 </div>
 
 <div class="row">
-    <!-- InformaÃ§Ãµes do Pedido -->
+    <!-- Informações do Pedido -->
     <div class="col-lg-8">
         <div class="modern-card fade-in-up mb-4">
             <div class="card-header-modern">
                 <i class="fas fa-info-circle"></i>
-                InformaÃ§Ãµes do Pedido
+                Informações do Pedido
             </div>
             <div class="card-body-modern">
                 <div class="row">
@@ -93,7 +93,7 @@ include_once 'includes/header.php';
                         <p class="mb-2"><?php echo date('d/m/Y H:i', strtotime($pedido['data_pedido'])); ?></p>
                         
                         <?php if ($pedido['data_confirmacao']): ?>
-                            <h6 class="text-muted">Data de ConfirmaÃ§Ã£o:</h6>
+                            <h6 class="text-muted">Data de Confirmação:</h6>
                             <p class="mb-3"><?php echo date('d/m/Y H:i', strtotime($pedido['data_confirmacao'])); ?></p>
                         <?php endif; ?>
                     </div>
@@ -105,7 +105,7 @@ include_once 'includes/header.php';
                         <p class="mb-2">
                             <?php 
                             switch ($pedido['tipo_faturamento']) {
-                                case 'avista': echo 'Ã€ Vista'; break;
+                                case 'avista': echo 'À Vista'; break;
                                 case '15_dias': echo '15 dias'; break;
                                 case '20_dias': echo '20 dias'; break;
                                 case '30_dias': echo '30 dias'; break;
@@ -137,7 +137,7 @@ include_once 'includes/header.php';
                 <?php if ($pedido['endereco_entrega']): ?>
                     <div class="row">
                         <div class="col-12">
-                            <h6 class="text-muted">EndereÃ§o de Entrega:</h6>
+                            <h6 class="text-muted">Endereço de Entrega:</h6>
                             <p class="mb-2"><?php echo htmlspecialchars($pedido['endereco_entrega']); ?></p>
                         </div>
                     </div>
@@ -146,7 +146,7 @@ include_once 'includes/header.php';
                 <?php if ($pedido['observacoes']): ?>
                     <div class="row">
                         <div class="col-12">
-                            <h6 class="text-muted">ObservaÃ§Ãµes:</h6>
+                            <h6 class="text-muted">Observações:</h6>
                             <p class="mb-0"><?php echo htmlspecialchars($pedido['observacoes']); ?></p>
                         </div>
                     </div>
@@ -171,7 +171,7 @@ include_once 'includes/header.php';
                                 <th>Produto</th>
                                 <th>Empresa</th>
                                 <th>Quantidade</th>
-                                <th>PreÃ§o Unit.</th>
+                                <th>Preço Unit.</th>
                                 <th>Subtotal</th>
                             </tr>
                         </thead>
@@ -200,7 +200,7 @@ include_once 'includes/header.php';
         </div>
     </div>
 
-    <!-- Status e IntegraÃ§Ã£o -->
+    <!-- Status e Integração -->
     <div class="col-lg-4">
         <!-- Status do Pedido -->
         <div class="modern-card fade-in-up mb-4">
@@ -237,11 +237,11 @@ include_once 'includes/header.php';
             </div>
         </div>
 
-        <!-- IntegraÃ§Ã£o com Sistema -->
+        <!-- Integração com Sistema -->
         <div class="modern-card fade-in-up mb-4">
             <div class="card-header-modern">
                 <i class="fas fa-link"></i>
-                IntegraÃ§Ã£o com Sistema
+                Integração com Sistema
             </div>
             <div class="card-body-modern">
                 <!-- Venda -->
@@ -256,14 +256,14 @@ include_once 'includes/header.php';
                         </span>
                     <?php else: ?>
                         <span class="badge bg-secondary">
-                            <i class="fas fa-times me-1"></i>NÃ£o criada
+                            <i class="fas fa-times me-1"></i>Não criada
                         </span>
                     <?php endif; ?>
                 </div>
 
-                <!-- TransaÃ§Ã£o Financeira -->
+                <!-- Transação Financeira -->
                 <div class="d-flex justify-content-between align-items-center mb-3">
-                    <span>TransaÃ§Ã£o Financeira:</span>
+                    <span>Transação Financeira:</span>
                     <?php if ($pedido['transacao_id']): ?>
                         <span class="badge bg-success">
                             <i class="fas fa-check me-1"></i>
@@ -273,7 +273,7 @@ include_once 'includes/header.php';
                         </span>
                     <?php else: ?>
                         <span class="badge bg-secondary">
-                            <i class="fas fa-times me-1"></i>NÃ£o criada
+                            <i class="fas fa-times me-1"></i>Não criada
                         </span>
                     <?php endif; ?>
                 </div>
@@ -301,18 +301,18 @@ include_once 'includes/header.php';
                 <?php elseif ($pedido['status_pedido'] == 'confirmado'): ?>
                     <div class="alert alert-warning mt-3 mb-0">
                         <i class="fas fa-exclamation-triangle me-2"></i>
-                        <strong>IntegraÃ§Ã£o Pendente!</strong><br>
-                        Pedido confirmado mas nÃ£o integrado ao sistema.
+                        <strong>Integração Pendente!</strong><br>
+                        Pedido confirmado mas não integrado ao sistema.
                     </div>
                 <?php endif; ?>
             </div>
         </div>
 
-        <!-- AÃ§Ãµes -->
+        <!-- Ações -->
         <div class="modern-card fade-in-up">
             <div class="card-header-modern">
                 <i class="fas fa-cogs"></i>
-                AÃ§Ãµes
+                Ações
             </div>
             <div class="card-body-modern">
                 <div class="d-grid gap-2">
@@ -328,7 +328,7 @@ include_once 'includes/header.php';
                     
                     <?php if ($pedido['transacao_id']): ?>
                         <a href="financeiro.php?id=<?php echo $pedido['transacao_id']; ?>" class="btn btn-success">
-                            <i class="fas fa-dollar-sign me-2"></i>Ver TransaÃ§Ã£o
+                            <i class="fas fa-dollar-sign me-2"></i>Ver Transação
                         </a>
                     <?php endif; ?>
                     

@@ -1,7 +1,7 @@
 <?php
 require_once 'includes/session_bootstrap.php';
 
-// Verifica se o usuÃ¡rio estÃ¡ logado
+// Verifica se o usuário está logado
 if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
     header("location: index.php");
     exit;
@@ -9,7 +9,7 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
 
 require_once 'includes/db_connect.php';
 
-// Processar os parÃ¢metros recebidos via GET
+// Processar os parâmetros recebidos via GET
 $tipo_relatorio = $_GET["tipo_relatorio"] ?? '';
 $data_inicio = $_GET["data_inicio"] ?? '';
 $data_fim = $_GET["data_fim"] ?? '';
@@ -19,10 +19,10 @@ $empresa_id = $_GET["empresa_id"] ?? null;
 $produto_id = $_GET["produto_id"] ?? null;
 
 if (empty($tipo_relatorio) || empty($data_inicio) || empty($data_fim)) {
-    die('ParÃ¢metros insuficientes para gerar o relatÃ³rio.');
+    die('Parâmetros insuficientes para gerar o relatório.');
 }
 
-// FunÃ§Ãµes de geraÃ§Ã£o de relatÃ³rio (reutilizadas do relatorios.php)
+// Funções de geração de relatório (reutilizadas do relatorios.php)
 function gerarRelatorioVendasGeral($conn, $di, $df, $cid, $status, $eid) {
     $sql = "SELECT v.id, v.data_venda, v.valor_total, v.status_venda, c.nome as cliente_nome, c.cpf_cnpj,
                    COALESCE(SUM(iv.quantidade * iv.preco_unitario * (p.percentual_lucro / 100)), 0) as lucro_total
@@ -138,7 +138,7 @@ function gerarRelatorioEmpresas($conn, $di, $df, $eid) {
     return ['dados' => $dados, 'resumo' => ['faturamento_geral' => $faturamento_geral, 'lucro_geral' => $lucro_geral, 'empresas_ativas' => count($dados)]];
 }
 
-// Buscar dados do usuÃ¡rio logado
+// Buscar dados do usuário logado
 $usuario_id = $_SESSION["id"];
 $sql_usuario = "SELECT nome FROM usuarios WHERE id = ?";
 $stmt_usuario = $conn->prepare($sql_usuario);
@@ -147,26 +147,26 @@ $stmt_usuario->execute();
 $result_usuario = $stmt_usuario->get_result();
 $usuario = $result_usuario->fetch_assoc();
 
-// Gerar os dados do relatÃ³rio
+// Gerar os dados do relatório
 switch ($tipo_relatorio) {
     case 'vendas_geral':
         $dados_relatorio = gerarRelatorioVendasGeral($conn, $data_inicio, $data_fim, $cliente_id, $status_filtro, $empresa_id);
-        $titulo_relatorio = "RelatÃ³rio de Vendas Detalhadas";
+        $titulo_relatorio = "Relatório de Vendas Detalhadas";
         break;
     case 'produtos_vendidos':
         $dados_relatorio = gerarRelatorioProdutosVendidos($conn, $data_inicio, $data_fim, $empresa_id, $produto_id);
-        $titulo_relatorio = "RelatÃ³rio de Produtos Vendidos";
+        $titulo_relatorio = "Relatório de Produtos Vendidos";
         break;
     case 'lucro_por_empresa':
         $dados_relatorio = gerarRelatorioEmpresas($conn, $data_inicio, $data_fim, $empresa_id);
-        $titulo_relatorio = "RelatÃ³rio de Lucratividade por Empresa";
+        $titulo_relatorio = "Relatório de Lucratividade por Empresa";
         break;
     default:
-        die('Tipo de relatÃ³rio invÃ¡lido.');
+        die('Tipo de relatório inválido.');
 }
 
 if (empty($dados_relatorio['dados'])) {
-    die('Nenhum dado encontrado para o perÃ­odo selecionado.');
+    die('Nenhum dado encontrado para o período selecionado.');
 }
 
 $periodo = date('d/m/Y', strtotime($data_inicio)) . ' a ' . date('d/m/Y', strtotime($data_fim));
@@ -294,8 +294,8 @@ $periodo = date('d/m/Y', strtotime($data_inicio)) . ' a ' . date('d/m/Y', strtot
 <body>
     <div class="header">
         <h1><?php echo $titulo_relatorio; ?></h1>
-        <h2>RelatÃ³rio Comercial para PrestaÃ§Ã£o de Contas</h2>
-        <p><strong>PerÃ­odo:</strong> <?php echo $periodo; ?></p>
+        <h2>Relatório Comercial para Prestação de Contas</h2>
+        <p><strong>Período:</strong> <?php echo $periodo; ?></p>
         <p><strong>Representante:</strong> <?php echo htmlspecialchars($usuario['nome']); ?></p>
         <p><strong>Gerado em:</strong> <?php echo date('d/m/Y H:i:s'); ?></p>
     </div>
@@ -315,7 +315,7 @@ $periodo = date('d/m/Y', strtotime($data_inicio)) . ' a ' . date('d/m/Y', strtot
                 <div class="value"><?php echo $dados_relatorio['resumo']['empresas_ativas']; ?></div>
             </div>
             <div class="summary-card">
-                <h3>Margem MÃ©dia</h3>
+                <h3>Margem Média</h3>
                 <div class="value"><?php echo number_format($dados_relatorio['resumo']['faturamento_geral'] > 0 ? ($dados_relatorio['resumo']['lucro_geral'] / $dados_relatorio['resumo']['faturamento_geral']) * 100 : 0, 1, ',', '.'); ?>%</div>
             </div>
         <?php elseif ($tipo_relatorio == 'vendas_geral'): ?>
@@ -324,7 +324,7 @@ $periodo = date('d/m/Y', strtotime($data_inicio)) . ' a ' . date('d/m/Y', strtot
                 <div class="value"><?php echo $dados_relatorio['resumo']['total_vendas']; ?></div>
             </div>
             <div class="summary-card">
-                <h3>Faturamento (ConcluÃ­das)</h3>
+                <h3>Faturamento (Concluídas)</h3>
                 <div class="value">R$ <?php echo number_format($dados_relatorio['resumo']['faturamento'], 2, ',', '.'); ?></div>
             </div>
             <div class="summary-card">
@@ -332,7 +332,7 @@ $periodo = date('d/m/Y', strtotime($data_inicio)) . ' a ' . date('d/m/Y', strtot
                 <div class="value">R$ <?php echo number_format($dados_relatorio['resumo']['lucro_bruto'], 2, ',', '.'); ?></div>
             </div>
             <div class="summary-card">
-                <h3>Margem MÃ©dia</h3>
+                <h3>Margem Média</h3>
                 <div class="value"><?php echo number_format($dados_relatorio['resumo']['margem_media'], 1, ',', '.'); ?>%</div>
             </div>
         <?php elseif ($tipo_relatorio == 'produtos_vendidos'): ?>
@@ -361,7 +361,7 @@ $periodo = date('d/m/Y', strtotime($data_inicio)) . ' a ' . date('d/m/Y', strtot
             <tr>
                 <?php if($tipo_relatorio == 'lucro_por_empresa'): ?>
                     <th>Empresa Representada</th>
-                    <th>NÂº de Vendas</th>
+                    <th>Nº de Vendas</th>
                     <th>Itens Vendidos</th>
                     <th>Faturamento</th>
                     <th>Lucro Bruto</th>
@@ -425,7 +425,7 @@ $periodo = date('d/m/Y', strtotime($data_inicio)) . ' a ' . date('d/m/Y', strtot
             
             <?php if($tipo_relatorio == 'vendas_geral' && $total_faturamento > 0): ?>
                 <tr class="total-row">
-                    <td colspan="4" class="text-right"><strong>TOTAIS (Vendas ConcluÃ­das):</strong></td>
+                    <td colspan="4" class="text-right"><strong>TOTAIS (Vendas Concluídas):</strong></td>
                     <td class="text-right"><strong>R$ <?php echo number_format($total_faturamento, 2, ',', '.'); ?></strong></td>
                     <td class="text-right"><strong>R$ <?php echo number_format($total_lucro, 2, ',', '.'); ?></strong></td>
                     <td class="text-center"><strong><?php echo number_format($total_faturamento > 0 ? ($total_lucro / $total_faturamento) * 100 : 0, 1); ?>%</strong></td>
@@ -436,10 +436,10 @@ $periodo = date('d/m/Y', strtotime($data_inicio)) . ' a ' . date('d/m/Y', strtot
     </table>
 
     <div class="commission-info">
-        <h3>INFORMAÃ‡Ã•ES PARA PAGAMENTO DE COMISSÃ•ES</h3>
+        <h3>INFORMAÇÕES PARA PAGAMENTO DE COMISSÕES</h3>
         <div class="info-box">
             <div class="info-row">
-                <strong>PerÃ­odo de ReferÃªncia:</strong>
+                <strong>Período de Referência:</strong>
                 <span><?php echo $periodo; ?></span>
             </div>
             <?php if ($tipo_relatorio == 'lucro_por_empresa'): ?>
@@ -452,12 +452,12 @@ $periodo = date('d/m/Y', strtotime($data_inicio)) . ' a ' . date('d/m/Y', strtot
                     <span>R$ <?php echo number_format($dados_relatorio['resumo']['lucro_geral'], 2, ',', '.'); ?></span>
                 </div>
                 <div class="info-row">
-                    <strong>NÃºmero de Empresas Ativas:</strong>
+                    <strong>Número de Empresas Ativas:</strong>
                     <span><?php echo $dados_relatorio['resumo']['empresas_ativas']; ?></span>
                 </div>
             <?php elseif ($tipo_relatorio == 'vendas_geral'): ?>
                 <div class="info-row">
-                    <strong>Faturamento Total (ConcluÃ­das):</strong>
+                    <strong>Faturamento Total (Concluídas):</strong>
                     <span>R$ <?php echo number_format($dados_relatorio['resumo']['faturamento'], 2, ',', '.'); ?></span>
                 </div>
                 <div class="info-row">
@@ -465,7 +465,7 @@ $periodo = date('d/m/Y', strtotime($data_inicio)) . ' a ' . date('d/m/Y', strtot
                     <span>R$ <?php echo number_format($dados_relatorio['resumo']['lucro_bruto'], 2, ',', '.'); ?></span>
                 </div>
                 <div class="info-row">
-                    <strong>NÃºmero de Vendas:</strong>
+                    <strong>Número de Vendas:</strong>
                     <span><?php echo $dados_relatorio['resumo']['total_vendas']; ?></span>
                 </div>
             <?php elseif ($tipo_relatorio == 'produtos_vendidos'): ?>
@@ -483,25 +483,25 @@ $periodo = date('d/m/Y', strtotime($data_inicio)) . ' a ' . date('d/m/Y', strtot
                 </div>
             <?php endif; ?>
         </div>
-        <p><em><strong>ObservaÃ§Ã£o:</strong> Este relatÃ³rio apresenta todas as vendas realizadas no perÃ­odo para verificaÃ§Ã£o e cÃ¡lculo de comissÃµes conforme acordo comercial estabelecido.</em></p>
+        <p><em><strong>Observação:</strong> Este relatório apresenta todas as vendas realizadas no período para verificação e cálculo de comissões conforme acordo comercial estabelecido.</em></p>
     </div>
 
     <div class="footer">
-        <p><strong>RelatÃ³rio gerado em:</strong> <?php echo date('d/m/Y H:i:s'); ?></p>
-        <p><strong>PÃ¡gina:</strong> 1 de 1</p>
+        <p><strong>Relatório gerado em:</strong> <?php echo date('d/m/Y H:i:s'); ?></p>
+        <p><strong>Página:</strong> 1 de 1</p>
     </div>
 
     <div class="no-print" style="margin-top: 30px; text-align: center;">
         <button onclick="window.print()" style="background-color: #007bff; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; margin-right: 10px;">
-            ðŸ–¨ï¸ Imprimir/Salvar PDF
+            🖨️ Imprimir/Salvar PDF
         </button>
         <button onclick="window.close()" style="background-color: #6c757d; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer;">
-            âŒ Fechar
+            ❌ Fechar
         </button>
     </div>
 
     <script>
-        // Auto-abrir a janela de impressÃ£o quando a pÃ¡gina carregar
+        // Auto-abrir a janela de impressão quando a página carregar
         window.addEventListener('load', function() {
             setTimeout(function() {
                 window.print();

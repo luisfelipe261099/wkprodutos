@@ -1,7 +1,7 @@
 <?php
 require_once 'includes/session_bootstrap.php';
 
-// Verifica se o usuÃ¡rio estÃ¡ logado
+// Verifica se o usuário está logado
 if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
     header("location: index.php");
     exit;
@@ -14,7 +14,7 @@ $message_type = '';
 $empresa_id = isset($_GET['id']) ? $_GET['id'] : null;
 $is_edit = !empty($empresa_id);
 
-// Dados da empresa para ediÃ§Ã£o
+// Dados da empresa para edição
 $empresa_data = [
     'nome_empresa' => '',
     'razao_social' => '',
@@ -35,7 +35,7 @@ $empresa_data = [
     'logo_empresa' => ''
 ];
 
-// Se for ediÃ§Ã£o, buscar dados da empresa
+// Se for edição, buscar dados da empresa
 if ($is_edit) {
     $sql_select = "SELECT * FROM empresas_representadas WHERE id = ?";
     $stmt_select = $conn->prepare($sql_select);
@@ -46,14 +46,14 @@ if ($is_edit) {
     if ($result->num_rows > 0) {
         $empresa_data = $result->fetch_assoc();
     } else {
-        $message = "Empresa nÃ£o encontrada.";
+        $message = "Empresa não encontrada.";
         $message_type = "danger";
         $is_edit = false;
     }
     $stmt_select->close();
 }
 
-// Processar formulÃ¡rio
+// Processar formulário
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $nome_empresa = trim($_POST['nome_empresa']);
     $razao_social = trim($_POST['razao_social']);
@@ -72,15 +72,15 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $status = $_POST['status'];
     $data_inicio_representacao = $_POST['data_inicio_representacao'];
     
-    // Manter logo atual se nÃ£o houver novo upload
+    // Manter logo atual se não houver novo upload
     $logo_empresa = $empresa_data['logo_empresa'];
 
-    // ValidaÃ§Ãµes
+    // Validações
     if (empty($nome_empresa)) {
-        $message = "Nome da empresa Ã© obrigatÃ³rio.";
+        $message = "Nome da empresa é obrigatório.";
         $message_type = "danger";
     } elseif ($comissao_padrao < 0 || $comissao_padrao > 100) {
-        $message = "ComissÃ£o deve estar entre 0% e 100%.";
+        $message = "Comissão deve estar entre 0% e 100%.";
         $message_type = "danger";
     } else {
         // Processar upload da logo se houver
@@ -91,13 +91,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $max_size = 5 * 1024 * 1024; // 5MB
             
             if (!in_array($file_type, $allowed_types)) {
-                $message = "Tipo de arquivo nÃ£o permitido. Use apenas: JPG, PNG, GIF ou WEBP.";
+                $message = "Tipo de arquivo não permitido. Use apenas: JPG, PNG, GIF ou WEBP.";
                 $message_type = "danger";
             } elseif ($file_size > $max_size) {
-                $message = "Arquivo muito grande. Tamanho mÃ¡ximo: 5MB.";
+                $message = "Arquivo muito grande. Tamanho máximo: 5MB.";
                 $message_type = "danger";
             } else {
-                // Criar diretÃ³rio se nÃ£o existir
+                // Criar diretório se não existir
                 $upload_dir = 'uploads/logos_empresas/';
                 if (!is_dir($upload_dir)) {
                     mkdir($upload_dir, 0755, true);
@@ -108,7 +108,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     unlink($empresa_data['logo_empresa']);
                 }
                 
-                // Gerar nome Ãºnico para o arquivo
+                // Gerar nome único para o arquivo
                 $file_extension = pathinfo($_FILES['logo_empresa']['name'], PATHINFO_EXTENSION);
                 $new_filename = 'empresa_' . ($is_edit ? $empresa_id : 'new') . '_' . time() . '.' . $file_extension;
                 $upload_path = $upload_dir . $new_filename;
@@ -122,7 +122,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             }
         }
         
-        // Se nÃ£o houve erro no upload (ou nÃ£o houve upload), continuar com o cadastro/ediÃ§Ã£o
+        // Se não houve erro no upload (ou não houve upload), continuar com o cadastro/edição
         if (empty($message)) {
             if ($is_edit) {
                 // Atualizar empresa
@@ -159,14 +159,14 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 $message = $is_edit ? "Empresa atualizada com sucesso!" : "Empresa cadastrada com sucesso!";
                 $message_type = "success";
                 
-                // Atualizar dados para mostrar a logo recÃ©m-carregada
+                // Atualizar dados para mostrar a logo recém-carregada
                 if (!$is_edit) {
                     $empresa_id = $stmt->insert_id;
                 }
                 $empresa_data['logo_empresa'] = $logo_empresa;
                 
                 if (!$is_edit) {
-                    // Redirecionar para a lista apÃ³s cadastro
+                    // Redirecionar para a lista após cadastro
                     header("Location: empresas_representadas.php");
                     exit;
                 }
@@ -190,7 +190,7 @@ include_once 'includes/header.php';
         <?php echo $is_edit ? 'Editar Empresa' : 'Cadastrar Nova Empresa'; ?>
     </h1>
     <p class="page-subtitle">
-        <?php echo $is_edit ? 'Atualize os dados da empresa representada' : 'Adicione uma nova empresa que vocÃª representa'; ?>
+        <?php echo $is_edit ? 'Atualize os dados da empresa representada' : 'Adicione uma nova empresa que você representa'; ?>
     </p>
 </div>
 
@@ -211,10 +211,10 @@ include_once 'includes/header.php';
     <div class="card-body-modern">
         <form method="POST" action="" enctype="multipart/form-data">
             <div class="row g-4">
-                <!-- InformaÃ§Ãµes BÃ¡sicas -->
+                <!-- Informações Básicas -->
                 <div class="col-12">
                     <h5 class="text-primary mb-3">
-                        <i class="fas fa-info-circle me-2"></i>InformaÃ§Ãµes BÃ¡sicas
+                        <i class="fas fa-info-circle me-2"></i>Informações Básicas
                     </h5>
                 </div>
                 
@@ -225,7 +225,7 @@ include_once 'includes/header.php';
                 </div>
                 
                 <div class="col-md-6">
-                    <label for="razao_social" class="form-label">RazÃ£o Social</label>
+                    <label for="razao_social" class="form-label">Razão Social</label>
                     <input type="text" class="form-control" id="razao_social" name="razao_social" 
                            value="<?php echo htmlspecialchars($empresa_data['razao_social']); ?>">
                 </div>
@@ -238,7 +238,7 @@ include_once 'includes/header.php';
                 </div>
                 
                 <div class="col-md-3">
-                    <label for="comissao_padrao" class="form-label">ComissÃ£o PadrÃ£o (%)</label>
+                    <label for="comissao_padrao" class="form-label">Comissão Padrão (%)</label>
                     <input type="number" class="form-control" id="comissao_padrao" name="comissao_padrao" 
                            value="<?php echo $empresa_data['comissao_padrao']; ?>" 
                            min="0" max="100" step="0.01" required>
@@ -265,8 +265,8 @@ include_once 'includes/header.php';
                            accept="image/*" onchange="previewLogo(this)">
                     <div class="form-text">
                         <i class="fas fa-info-circle"></i> 
-                        Formatos aceitos: JPG, PNG, GIF, WEBP. Tamanho mÃ¡ximo: 5MB.
-                        <br>DimensÃµes recomendadas: 300x200px ou similar.
+                        Formatos aceitos: JPG, PNG, GIF, WEBP. Tamanho máximo: 5MB.
+                        <br>Dimensões recomendadas: 300x200px ou similar.
                     </div>
                 </div>
                 
@@ -301,15 +301,15 @@ include_once 'includes/header.php';
                     <?php endif; ?>
                 </div>
 
-                <!-- EndereÃ§o -->
+                <!-- Endereço -->
                 <div class="col-12">
                     <h5 class="text-primary mb-3 mt-4">
-                        <i class="fas fa-map-marker-alt me-2"></i>EndereÃ§o
+                        <i class="fas fa-map-marker-alt me-2"></i>Endereço
                     </h5>
                 </div>
                 
                 <div class="col-12">
-                    <label for="endereco" class="form-label">EndereÃ§o Completo</label>
+                    <label for="endereco" class="form-label">Endereço Completo</label>
                     <input type="text" class="form-control" id="endereco" name="endereco" 
                            value="<?php echo htmlspecialchars($empresa_data['endereco']); ?>">
                 </div>
@@ -326,29 +326,29 @@ include_once 'includes/header.php';
                         <option value="">Selecione...</option>
                         <option value="AC" <?php echo $empresa_data['estado'] == 'AC' ? 'selected' : ''; ?>>Acre</option>
                         <option value="AL" <?php echo $empresa_data['estado'] == 'AL' ? 'selected' : ''; ?>>Alagoas</option>
-                        <option value="AP" <?php echo $empresa_data['estado'] == 'AP' ? 'selected' : ''; ?>>AmapÃ¡</option>
+                        <option value="AP" <?php echo $empresa_data['estado'] == 'AP' ? 'selected' : ''; ?>>Amapá</option>
                         <option value="AM" <?php echo $empresa_data['estado'] == 'AM' ? 'selected' : ''; ?>>Amazonas</option>
                         <option value="BA" <?php echo $empresa_data['estado'] == 'BA' ? 'selected' : ''; ?>>Bahia</option>
-                        <option value="CE" <?php echo $empresa_data['estado'] == 'CE' ? 'selected' : ''; ?>>CearÃ¡</option>
+                        <option value="CE" <?php echo $empresa_data['estado'] == 'CE' ? 'selected' : ''; ?>>Ceará</option>
                         <option value="DF" <?php echo $empresa_data['estado'] == 'DF' ? 'selected' : ''; ?>>Distrito Federal</option>
-                        <option value="ES" <?php echo $empresa_data['estado'] == 'ES' ? 'selected' : ''; ?>>EspÃ­rito Santo</option>
-                        <option value="GO" <?php echo $empresa_data['estado'] == 'GO' ? 'selected' : ''; ?>>GoiÃ¡s</option>
-                        <option value="MA" <?php echo $empresa_data['estado'] == 'MA' ? 'selected' : ''; ?>>MaranhÃ£o</option>
+                        <option value="ES" <?php echo $empresa_data['estado'] == 'ES' ? 'selected' : ''; ?>>Espírito Santo</option>
+                        <option value="GO" <?php echo $empresa_data['estado'] == 'GO' ? 'selected' : ''; ?>>Goiás</option>
+                        <option value="MA" <?php echo $empresa_data['estado'] == 'MA' ? 'selected' : ''; ?>>Maranhão</option>
                         <option value="MT" <?php echo $empresa_data['estado'] == 'MT' ? 'selected' : ''; ?>>Mato Grosso</option>
                         <option value="MS" <?php echo $empresa_data['estado'] == 'MS' ? 'selected' : ''; ?>>Mato Grosso do Sul</option>
                         <option value="MG" <?php echo $empresa_data['estado'] == 'MG' ? 'selected' : ''; ?>>Minas Gerais</option>
-                        <option value="PA" <?php echo $empresa_data['estado'] == 'PA' ? 'selected' : ''; ?>>ParÃ¡</option>
-                        <option value="PB" <?php echo $empresa_data['estado'] == 'PB' ? 'selected' : ''; ?>>ParaÃ­ba</option>
-                        <option value="PR" <?php echo $empresa_data['estado'] == 'PR' ? 'selected' : ''; ?>>ParanÃ¡</option>
+                        <option value="PA" <?php echo $empresa_data['estado'] == 'PA' ? 'selected' : ''; ?>>Pará</option>
+                        <option value="PB" <?php echo $empresa_data['estado'] == 'PB' ? 'selected' : ''; ?>>Paraíba</option>
+                        <option value="PR" <?php echo $empresa_data['estado'] == 'PR' ? 'selected' : ''; ?>>Paraná</option>
                         <option value="PE" <?php echo $empresa_data['estado'] == 'PE' ? 'selected' : ''; ?>>Pernambuco</option>
-                        <option value="PI" <?php echo $empresa_data['estado'] == 'PI' ? 'selected' : ''; ?>>PiauÃ­</option>
+                        <option value="PI" <?php echo $empresa_data['estado'] == 'PI' ? 'selected' : ''; ?>>Piauí</option>
                         <option value="RJ" <?php echo $empresa_data['estado'] == 'RJ' ? 'selected' : ''; ?>>Rio de Janeiro</option>
                         <option value="RN" <?php echo $empresa_data['estado'] == 'RN' ? 'selected' : ''; ?>>Rio Grande do Norte</option>
                         <option value="RS" <?php echo $empresa_data['estado'] == 'RS' ? 'selected' : ''; ?>>Rio Grande do Sul</option>
-                        <option value="RO" <?php echo $empresa_data['estado'] == 'RO' ? 'selected' : ''; ?>>RondÃ´nia</option>
+                        <option value="RO" <?php echo $empresa_data['estado'] == 'RO' ? 'selected' : ''; ?>>Rondônia</option>
                         <option value="RR" <?php echo $empresa_data['estado'] == 'RR' ? 'selected' : ''; ?>>Roraima</option>
                         <option value="SC" <?php echo $empresa_data['estado'] == 'SC' ? 'selected' : ''; ?>>Santa Catarina</option>
-                        <option value="SP" <?php echo $empresa_data['estado'] == 'SP' ? 'selected' : ''; ?>>SÃ£o Paulo</option>
+                        <option value="SP" <?php echo $empresa_data['estado'] == 'SP' ? 'selected' : ''; ?>>São Paulo</option>
                         <option value="SE" <?php echo $empresa_data['estado'] == 'SE' ? 'selected' : ''; ?>>Sergipe</option>
                         <option value="TO" <?php echo $empresa_data['estado'] == 'TO' ? 'selected' : ''; ?>>Tocantins</option>
                     </select>
@@ -381,52 +381,52 @@ include_once 'includes/header.php';
                            value="<?php echo htmlspecialchars($empresa_data['email']); ?>">
                 </div>
 
-                <!-- Contato ResponsÃ¡vel -->
+                <!-- Contato Responsável -->
                 <div class="col-12">
                     <h5 class="text-primary mb-3 mt-4">
-                        <i class="fas fa-user-tie me-2"></i>Contato ResponsÃ¡vel
+                        <i class="fas fa-user-tie me-2"></i>Contato Responsável
                     </h5>
                 </div>
                 
                 <div class="col-md-4">
-                    <label for="contato_responsavel" class="form-label">Nome do ResponsÃ¡vel</label>
+                    <label for="contato_responsavel" class="form-label">Nome do Responsável</label>
                     <input type="text" class="form-control" id="contato_responsavel" name="contato_responsavel" 
                            value="<?php echo htmlspecialchars($empresa_data['contato_responsavel']); ?>">
                 </div>
                 
                 <div class="col-md-4">
-                    <label for="telefone_responsavel" class="form-label">Telefone do ResponsÃ¡vel</label>
+                    <label for="telefone_responsavel" class="form-label">Telefone do Responsável</label>
                     <input type="text" class="form-control" id="telefone_responsavel" name="telefone_responsavel" 
                            value="<?php echo htmlspecialchars($empresa_data['telefone_responsavel']); ?>" 
                            placeholder="(00) 00000-0000">
                 </div>
                 
                 <div class="col-md-4">
-                    <label for="email_responsavel" class="form-label">Email do ResponsÃ¡vel</label>
+                    <label for="email_responsavel" class="form-label">Email do Responsável</label>
                     <input type="email" class="form-control" id="email_responsavel" name="email_responsavel" 
                            value="<?php echo htmlspecialchars($empresa_data['email_responsavel']); ?>">
                 </div>
 
-                <!-- InformaÃ§Ãµes Adicionais -->
+                <!-- Informações Adicionais -->
                 <div class="col-12">
                     <h5 class="text-primary mb-3 mt-4">
-                        <i class="fas fa-calendar me-2"></i>InformaÃ§Ãµes Adicionais
+                        <i class="fas fa-calendar me-2"></i>Informações Adicionais
                     </h5>
                 </div>
                 
                 <div class="col-md-6">
-                    <label for="data_inicio_representacao" class="form-label">Data de InÃ­cio da RepresentaÃ§Ã£o</label>
+                    <label for="data_inicio_representacao" class="form-label">Data de Início da Representação</label>
                     <input type="date" class="form-control" id="data_inicio_representacao" name="data_inicio_representacao" 
                            value="<?php echo $empresa_data['data_inicio_representacao']; ?>">
                 </div>
                 
                 <div class="col-12">
-                    <label for="observacoes" class="form-label">ObservaÃ§Ãµes</label>
+                    <label for="observacoes" class="form-label">Observações</label>
                     <textarea class="form-control" id="observacoes" name="observacoes" rows="3" 
-                              placeholder="InformaÃ§Ãµes adicionais sobre a empresa..."><?php echo htmlspecialchars($empresa_data['observacoes']); ?></textarea>
+                              placeholder="Informações adicionais sobre a empresa..."><?php echo htmlspecialchars($empresa_data['observacoes']); ?></textarea>
                 </div>
 
-                <!-- BotÃµes -->
+                <!-- Botões -->
                 <div class="col-12">
                     <div class="d-flex gap-2 justify-content-end mt-4">
                         <a href="empresas_representadas.php" class="btn btn-outline-secondary">
@@ -443,7 +443,7 @@ include_once 'includes/header.php';
 </div>
 
 <script>
-// FunÃ§Ã£o para preview da logo
+// Função para preview da logo
 function previewLogo(input) {
     const preview = document.getElementById('logo-preview');
     
@@ -458,7 +458,7 @@ function previewLogo(input) {
     }
 }
 
-// MÃ¡scara para CNPJ
+// Máscara para CNPJ
 document.getElementById('cnpj').addEventListener('input', function(e) {
     let value = e.target.value.replace(/\D/g, '');
     value = value.replace(/^(\d{2})(\d)/, '$1.$2');
@@ -468,14 +468,14 @@ document.getElementById('cnpj').addEventListener('input', function(e) {
     e.target.value = value;
 });
 
-// MÃ¡scara para CEP
+// Máscara para CEP
 document.getElementById('cep').addEventListener('input', function(e) {
     let value = e.target.value.replace(/\D/g, '');
     value = value.replace(/^(\d{5})(\d)/, '$1-$2');
     e.target.value = value;
 });
 
-// MÃ¡scara para telefones
+// Máscara para telefones
 function phoneMask(input) {
     input.addEventListener('input', function(e) {
         let value = e.target.value.replace(/\D/g, '');
@@ -493,7 +493,7 @@ function phoneMask(input) {
 phoneMask(document.getElementById('telefone'));
 phoneMask(document.getElementById('telefone_responsavel'));
 
-// ValidaÃ§Ã£o de arquivo
+// Validação de arquivo
 document.getElementById('logo_empresa').addEventListener('change', function(e) {
     const file = e.target.files[0];
     if (file) {
@@ -501,13 +501,13 @@ document.getElementById('logo_empresa').addEventListener('change', function(e) {
         const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
         
         if (!allowedTypes.includes(file.type)) {
-            alert('Tipo de arquivo nÃ£o permitido. Use apenas: JPG, PNG, GIF ou WEBP.');
+            alert('Tipo de arquivo não permitido. Use apenas: JPG, PNG, GIF ou WEBP.');
             e.target.value = '';
             return;
         }
         
         if (file.size > maxSize) {
-            alert('Arquivo muito grande. Tamanho mÃ¡ximo: 5MB.');
+            alert('Arquivo muito grande. Tamanho máximo: 5MB.');
             e.target.value = '';
             return;
         }

@@ -3,7 +3,7 @@
 ob_start();
 require_once 'includes/session_bootstrap.php';
 
-// Verifica se o usuÃ¡rio estÃ¡ logado
+// Verifica se o usuário está logado
 if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
     if (ob_get_length()) ob_end_clean();
     header("location: index.php");
@@ -13,21 +13,21 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
 require_once 'includes/db_connect.php';
 require_once 'includes/PDFHelper.php';
 
-// Verificar se foi passado o ID do orÃ§amento
+// Verificar se foi passado o ID do orçamento
 $orcamento_id = $_GET['id'] ?? 0;
 
 if (!$orcamento_id) {
-    die('ID do orÃ§amento nÃ£o fornecido.');
+    die('ID do orçamento não fornecido.');
 }
 
 try {
-    // Verificar se FPDF estÃ¡ disponÃ­vel
+    // Verificar se FPDF está disponível
     $fpdf_path = __DIR__ . '/vendor/setasign/fpdf/fpdf.php';
     if (!file_exists($fpdf_path)) {
         throw new Exception("FPDF library not found at: " . $fpdf_path . ". Please install FPDF using: composer install");
     }
 
-    // Buscar dados do orÃ§amento, incluindo CPF/CNPJ e tipo de pessoa do cliente
+    // Buscar dados do orçamento, incluindo CPF/CNPJ e tipo de pessoa do cliente
     $sql_orcamento = "SELECT o.*, c.nome as cliente_nome, c.email as cliente_email, c.telefone, c.inscricao_estadual,
                              c.endereco, c.numero, c.ponto_referencia, c.nome_fantasia, c.cidade, c.estado, c.cep, c.cpf_cnpj, c.tipo_pessoa
                       FROM orcamentos o
@@ -45,12 +45,12 @@ try {
     
     $result_orcamento = $stmt_orcamento->get_result();
     if ($result_orcamento->num_rows === 0) {
-        throw new Exception('OrÃ§amento #' . $orcamento_id . ' nÃ£o encontrado.');
+        throw new Exception('Orçamento #' . $orcamento_id . ' não encontrado.');
     }
 
     $orcamento = $result_orcamento->fetch_assoc();
     
-    // Buscar itens do orÃ§amento com informaÃ§Ãµes da empresa
+    // Buscar itens do orçamento com informações da empresa
     $sql_itens = "SELECT io.*, p.nome as produto_nome, p.sku as codigo, p.descricao, 
                          e.nome_empresa, e.logo_empresa
                   FROM itens_orcamento io
@@ -99,13 +99,13 @@ try {
     gerarPDFModerno($orcamento, $itens, $empresas_logos);
     
 } catch (Exception $e) {
-    error_log("Erro ao gerar PDF do orÃ§amento #$orcamento_id: " . $e->getMessage());
+    error_log("Erro ao gerar PDF do orçamento #$orcamento_id: " . $e->getMessage());
     header('Content-Type: text/html; charset=utf-8');
     echo '<div style="color:#721c24; background-color:#f8d7da; border:1px solid #f5c6cb; border-radius:5px; font-family:Arial,sans-serif; padding:20px; margin:20px; box-shadow:0 0 10px rgba(0,0,0,0.1);">';
     echo '<h1 style="color:#721c24; margin-top:0;">Erro ao gerar o PDF</h1>';
-    echo '<p>Desculpe, ocorreu um erro ao tentar gerar o PDF do orÃ§amento.</p>';
-    echo '<p>Detalhes tÃ©cnicos: ' . htmlspecialchars($e->getMessage()) . '</p>';
-    echo '<p><a href="orcamentos.php" style="background-color:#0275d8; color:white; padding:10px 15px; text-decoration:none; border-radius:3px;">Voltar para a lista de orÃ§amentos</a></p>';
+    echo '<p>Desculpe, ocorreu um erro ao tentar gerar o PDF do orçamento.</p>';
+    echo '<p>Detalhes técnicos: ' . htmlspecialchars($e->getMessage()) . '</p>';
+    echo '<p><a href="orcamentos.php" style="background-color:#0275d8; color:white; padding:10px 15px; text-decoration:none; border-radius:3px;">Voltar para a lista de orçamentos</a></p>';
     echo '</div>';
     exit;
 }
@@ -149,7 +149,7 @@ function gerarPDFModerno($orcamento, $itens, $empresas_logos = []) {
 
                 $this->SetFont('Arial', '', 8);
                 $this->SetXY(15 + $logo_width, 16);
-                $this->Cell(0, 4, $this->convertToLatin1('RepresentaÃ§Ã£o Comercial'), 0, 1, 'L');
+                $this->Cell(0, 4, $this->convertToLatin1('Representação Comercial'), 0, 1, 'L');
 
                 $this->SetFont('Arial', '', 7);
                 $this->SetXY(120, 6);
@@ -213,14 +213,14 @@ function gerarPDFModerno($orcamento, $itens, $empresas_logos = []) {
             
             function ModernTable($headers, $data, $widths) {
                 $start_x = 15;
-                $available_width = 180; // Largura total disponÃ­vel
+                $available_width = 180; // Largura total disponível
 
                 $this->SetFillColor($this->primaryColor[0], $this->primaryColor[1], $this->primaryColor[2]);
                 $this->SetTextColor(255, 255, 255);
                 $this->SetFont('Arial', 'B', 6); // Reduzido de 7 para 6
                 $this->SetDrawColor(255, 255, 255);
 
-                // Desenha o cabeÃ§alho da tabela
+                // Desenha o cabeçalho da tabela
                 $current_x = $start_x;
                 for ($i = 0; $i < count($headers); $i++) {
                     $this->SetXY($current_x, $this->GetY());
@@ -235,7 +235,7 @@ function gerarPDFModerno($orcamento, $itens, $empresas_logos = []) {
                 $fill = false;
 
                 foreach ($data as $row) {
-                    // Calcula a altura necessÃ¡ria para a linha (COMPACTO)
+                    // Calcula a altura necessária para a linha (COMPACTO)
                     $max_cell_height = 4; // Reduzido de 6 para 4
 
                     // Verifica se a coluna de produto tem quebras de linha
@@ -244,7 +244,7 @@ function gerarPDFModerno($orcamento, $itens, $empresas_logos = []) {
                         $max_cell_height = max(4, $lines * 2.5); // Reduzido
                     }
 
-                    // Verifica se a descriÃ§Ã£o Ã© muito longa e precisa quebrar
+                    // Verifica se a descrição é muito longa e precisa quebrar
                     if (isset($row[1])) {
                         $text_width = $this->GetStringWidth($this->convertToLatin1($row[1]));
                         if ($text_width > $widths[1] - 4) {
@@ -253,11 +253,11 @@ function gerarPDFModerno($orcamento, $itens, $empresas_logos = []) {
                         }
                     }
 
-                    // Limita a altura mÃ¡xima da cÃ©lula para evitar cÃ©lulas muito altas
+                    // Limita a altura máxima da célula para evitar células muito altas
                     $max_cell_height = min($max_cell_height, 8); // Reduzido de 12 para 8
 
-                    // NÃƒO quebra pÃ¡gina - forÃ§a tudo em 1 pÃ¡gina
-                    // Removido o AddPage automÃ¡tico
+                    // NÃO quebra página - força tudo em 1 página
+                    // Removido o AddPage automático
 
                     
                     // Alterna a cor de fundo das linhas
@@ -270,7 +270,7 @@ function gerarPDFModerno($orcamento, $itens, $empresas_logos = []) {
                     $start_y = $this->GetY();
                     $current_x = $start_x;
                     
-                    // Desenha cada cÃ©lula da linha
+                    // Desenha cada célula da linha
                     for ($i = 0; $i < count($row); $i++) {
                         $this->SetXY($current_x, $start_y);
                         $align = ($i == 0 || $i == 3) ? 'C' : (($i >= 4) ? 'R' : 'L');
@@ -298,10 +298,10 @@ function gerarPDFModerno($orcamento, $itens, $empresas_logos = []) {
         PDFHelper::startPdfOutput('Proposta_Comercial_' . str_pad($orcamento['id'], 6, '0', STR_PAD_LEFT) . '.pdf');
 
         $pdf = new ModernPDF('P', 'mm', 'A4');
-        $pdf->SetAutoPageBreak(false); // Desabilita quebra automÃ¡tica de pÃ¡gina
-        $pdf->AddPage(); // Apenas 1 pÃ¡gina
+        $pdf->SetAutoPageBreak(false); // Desabilita quebra automática de página
+        $pdf->AddPage(); // Apenas 1 página
 
-        // Ajusta o tamanho da fonte baseado no nÃºmero de itens
+        // Ajusta o tamanho da fonte baseado no número de itens
         $num_itens = count($itens);
         if ($num_itens > 10) {
             $pdf->setTableFontSize(6);
@@ -342,10 +342,10 @@ function gerarPDFModerno($orcamento, $itens, $empresas_logos = []) {
 
         $currentY = $pdf->GetY();
         
-        // --- INÃCIO DA MODIFICAÃ‡ÃƒO ---
+        // --- INÍCIO DA MODIFICAÇÃO ---
 
-        // Dados do cliente - versÃ£o compacta e organizada
-        $cliente_nome = $orcamento['cliente_nome'] ?? 'Cliente nÃ£o especificado';
+        // Dados do cliente - versão compacta e organizada
+        $cliente_nome = $orcamento['cliente_nome'] ?? 'Cliente não especificado';
         $client_details = "Cliente: " . $cliente_nome . "\n";
 
         // CPF/CNPJ na mesma linha do tipo de pessoa
@@ -373,7 +373,7 @@ function gerarPDFModerno($orcamento, $itens, $empresas_logos = []) {
             $client_details .= $contato_linha . "\n";
         }
 
-        // EndereÃ§o completo em formato compacto
+        // Endereço completo em formato compacto
         if (!empty($orcamento['endereco'])) {
             $endereco_completo = $orcamento['endereco'];
             if (!empty($orcamento['numero'])) {
@@ -390,7 +390,7 @@ function gerarPDFModerno($orcamento, $itens, $empresas_logos = []) {
             }
         }
         
-        // Dados do orÃ§amento - versÃ£o compacta
+        // Dados do orçamento - versão compacta
         $data_orcamento = isset($orcamento['data_orcamento']) ? date('d/m/Y', strtotime($orcamento['data_orcamento'])) : date('d/m/Y');
         $status = isset($orcamento['status_orcamento']) ? ucfirst($orcamento['status_orcamento']) : 'Pendente';
 
@@ -438,7 +438,7 @@ function gerarPDFModerno($orcamento, $itens, $empresas_logos = []) {
 
         $budget_details = "Data: " . $data_orcamento . " | Status: " . $status . "\n";
 
-        // Monta a linha de condiÃ§Ãµes de pagamento
+        // Monta a linha de condições de pagamento
         $condicoes = "Pagamento: " . $forma_pagamento_texto;
         if (!empty($tipo_faturamento_texto)) {
             $condicoes .= " - " . $tipo_faturamento_texto;
@@ -453,8 +453,8 @@ function gerarPDFModerno($orcamento, $itens, $empresas_logos = []) {
 
         $budget_details .= "Validade: 30 dias";
 
-        // Criar caixas de informaÃ§Ã£o com altura ajustada dinamicamente (COMPACTO)
-        // Calcula altura necessÃ¡ria baseada no conteÃºdo
+        // Criar caixas de informação com altura ajustada dinamicamente (COMPACTO)
+        // Calcula altura necessária baseada no conteúdo
         $client_lines = substr_count($client_details, "\n") + 1;
         $box_height = max(22, min(28, $client_lines * 3 + 8)); // Reduzido: Entre 22 e 28mm
 
@@ -463,16 +463,16 @@ function gerarPDFModerno($orcamento, $itens, $empresas_logos = []) {
 
         $pdf->SetY($currentY + $box_height + 3); // Reduzido de 5 para 3
 
-        // --- FIM DA MODIFICAÃ‡ÃƒO ---
+        // --- FIM DA MODIFICAÇÃO ---
 
         $pdf->SetFont('Arial', 'B', 10);
         $pdf->SetTextColor(28, 79, 140);
         $pdf->Cell(0, 5, $pdf->convertToLatin1('ITENS DA PROPOSTA'), 0, 1, 'L');
         $pdf->Ln(1);
         
-        // Verifica o nÃºmero de itens para ajustar a fonte se necessÃ¡rio
+        // Verifica o número de itens para ajustar a fonte se necessário
         $num_itens = count($itens);
-        // Sempre usa fonte compacta para caber em 1 pÃ¡gina
+        // Sempre usa fonte compacta para caber em 1 página
         $table_font_size = 6;
         $headers = ['#', 'Produto/Servico', 'Empresa', 'Qtd', 'Vlr Unit.', 'Subtotal'];
         $widths = [10, 70, 35, 12, 25, 28]; // Larguras otimizadas
@@ -504,7 +504,7 @@ function gerarPDFModerno($orcamento, $itens, $empresas_logos = []) {
             $pdf->ModernTable($headers, $table_data, $widths);
         }
         
-        // EspaÃ§amento reduzido para o total
+        // Espaçamento reduzido para o total
         $pdf->Ln(5); // Reduzido de 10 para 5
         $total_y = $pdf->GetY();
         
@@ -534,7 +534,7 @@ function gerarPDFModerno($orcamento, $itens, $empresas_logos = []) {
             $pdf->Ln(15); // Reduzido de 20 para 15
         }
 
-        // SeÃ§Ã£o compacta de contato e assinatura
+        // Seção compacta de contato e assinatura
         $pdf->Ln(1);
         $contact_y = $pdf->GetY();
 
@@ -553,7 +553,7 @@ function gerarPDFModerno($orcamento, $itens, $empresas_logos = []) {
         $pdf->SetLineWidth(0.2);
         $pdf->SetTextColor(0, 0, 0);
 
-        // Garante que sÃ³ hÃ¡ 1 pÃ¡gina
+        // Garante que só há 1 página
         $pdf->SetAutoPageBreak(false);
 
         $filename = 'Proposta_Comercial_' . str_pad($orcamento['id'], 6, '0', STR_PAD_LEFT) . '_' . date('Y-m-d') . '.pdf';
@@ -568,8 +568,8 @@ function gerarPDFModerno($orcamento, $itens, $empresas_logos = []) {
         
         echo '<div style="color:#721c24; background-color:#f8d7da; border:1px solid #f5c6cb; border-radius:5px; font-family:Arial,sans-serif; padding:20px; margin:20px; box-shadow:0 0 10px rgba(0,0,0,0.1);">';
         echo '<h2>Erro ao gerar o PDF</h2>';
-        echo '<p>Ocorreu um erro ao tentar gerar o PDF do orÃ§amento.</p>';
-        echo '<p>Detalhes tÃ©cnicos: ' . htmlspecialchars($e->getMessage()) . '</p>';
+        echo '<p>Ocorreu um erro ao tentar gerar o PDF do orçamento.</p>';
+        echo '<p>Detalhes técnicos: ' . htmlspecialchars($e->getMessage()) . '</p>';
         echo '<p><a href="javascript:history.back()" style="background-color:#0275d8; color:white; padding:10px 15px; text-decoration:none; border-radius:3px;">Voltar</a></p>';
         echo '</div>';
     }

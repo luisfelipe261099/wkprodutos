@@ -1,7 +1,7 @@
 <?php
 require_once 'includes/session_bootstrap.php';
 
-// Verifica se o usuÃ¡rio estÃ¡ logado
+// Verifica se o usuário está logado
 if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
     header("location: index.php");
     exit;
@@ -15,27 +15,27 @@ $submit_button_text = "Agendar Entrega";
 $message = '';
 $message_type = '';
 
-// Buscar clientes, vendas e orÃ§amentos para os campos SELECT
+// Buscar clientes, vendas e orçamentos para os campos SELECT
 $clientes_options = $conn->query("SELECT id, nome FROM clientes ORDER BY nome ASC");
 $vendas_options = $conn->query("SELECT id, cliente_id FROM vendas ORDER BY id DESC");
 $orcamentos_options = $conn->query("SELECT id, cliente_id FROM orcamentos ORDER BY id DESC");
 
-// Processar formulÃ¡rio quando enviado
+// Processar formulário quando enviado
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $agendamento_id = trim($_POST["agendamento_id"] ?? '');
     $venda_id = empty(trim($_POST["venda_id"])) ? NULL : trim($_POST["venda_id"]); // Pode ser NULL
     $orcamento_id = empty(trim($_POST["orcamento_id"])) ? NULL : trim($_POST["orcamento_id"]); // Pode ser NULL
     $cliente_id = trim($_POST["cliente_id"]);
-    $data_entrega = trim($_POST["data_entrega"]); // Data do formulÃ¡rio
-    $hora_entrega = trim($_POST["hora_entrega"]); // Hora do formulÃ¡rio
+    $data_entrega = trim($_POST["data_entrega"]); // Data do formulário
+    $hora_entrega = trim($_POST["hora_entrega"]); // Hora do formulário
     $data_hora_entrega = $data_entrega . ' ' . $hora_entrega . ':00'; // Combina para o formato DATETIME
     $endereco_entrega = trim($_POST["endereco_entrega"]);
     $status_entrega = trim($_POST["status_entrega"]);
     $observacoes = trim($_POST["observacoes"]);
 
-    // ValidaÃ§Ã£o bÃ¡sica
+    // Validação básica
     if (empty($cliente_id) || empty($data_hora_entrega) || empty($endereco_entrega) || empty($status_entrega)) {
-        $message = "Por favor, preencha todos os campos obrigatÃ³rios.";
+        $message = "Por favor, preencha todos os campos obrigatórios.";
         $message_type = "danger";
     } else {
         if (empty($agendamento_id)) { // Novo Agendamento
@@ -45,7 +45,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 if ($stmt->execute()) {
                     $message = "Agendamento registrado com sucesso!";
                     $message_type = "success";
-                    // Limpa os campos apÃ³s o cadastro
+                    // Limpa os campos após o cadastro
                     $venda_id = $orcamento_id = $cliente_id = $data_hora_entrega = $endereco_entrega = $status_entrega = $observacoes = "";
                 } else {
                     $message = "Erro ao registrar agendamento: " . $stmt->error;
@@ -53,7 +53,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 }
                 $stmt->close();
             } else {
-                $message = "Erro na preparaÃ§Ã£o da query de inserÃ§Ã£o: " . $conn->error;
+                $message = "Erro na preparação da query de inserção: " . $conn->error;
                 $message_type = "danger";
             }
         } else { // Editar Agendamento Existente
@@ -69,14 +69,14 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 }
                 $stmt->close();
             } else {
-                $message = "Erro na preparaÃ§Ã£o da query de atualizaÃ§Ã£o: " . $conn->error;
+                $message = "Erro na preparação da query de atualização: " . $conn->error;
                 $message_type = "danger";
             }
         }
     }
 }
 
-// Preencher formulÃ¡rio para ediÃ§Ã£o se um ID for passado via GET
+// Preencher formulário para edição se um ID for passado via GET
 $agendamento_id_get = $_GET["id"] ?? '';
 if (!empty($agendamento_id_get) && empty($message)) {
     $agendamento_id = $agendamento_id_get;
@@ -100,24 +100,24 @@ if (!empty($agendamento_id_get) && empty($message)) {
             $status_entrega = $row_agendamento['status_entrega'];
             $observacoes = $row_agendamento['observacoes'];
         } else {
-            $message = "Agendamento nÃ£o encontrado.";
+            $message = "Agendamento não encontrado.";
             $message_type = "danger";
-            $agendamento_id = ""; // Reset para tratar como novo cadastro se ID nÃ£o encontrado
+            $agendamento_id = ""; // Reset para tratar como novo cadastro se ID não encontrado
             $title = "Agendar Nova Entrega";
             $submit_button_text = "Agendar Entrega";
         }
         $stmt_agendamento->close();
     } else {
-        $message = "Erro ao buscar agendamento para ediÃ§Ã£o: " . $conn->error;
+        $message = "Erro ao buscar agendamento para edição: " . $conn->error;
         $message_type = "danger";
     }
 }
 
-// LÃ³gica para prÃ©-selecionar cliente e/ou venda/orÃ§amento se vier de outra pÃ¡gina
+// Lógica para pré-selecionar cliente e/ou venda/orçamento se vier de outra página
 $from_venda_id = $_GET['from_venda_id'] ?? '';
 $from_orcamento_id = $_GET['from_orcamento_id'] ?? '';
 
-if (!empty($from_venda_id) && empty($agendamento_id) && empty($message)) { // Se veio de Vendas e nÃ£o Ã© ediÃ§Ã£o
+if (!empty($from_venda_id) && empty($agendamento_id) && empty($message)) { // Se veio de Vendas e não é edição
     $venda_id = $from_venda_id;
     $sql_get_cliente = "SELECT cliente_id FROM vendas WHERE id = ?";
     if ($stmt_get_cliente = $conn->prepare($sql_get_cliente)) {
@@ -131,7 +131,7 @@ if (!empty($from_venda_id) && empty($agendamento_id) && empty($message)) { // Se
         }
         $stmt_get_cliente->close();
     }
-} elseif (!empty($from_orcamento_id) && empty($agendamento_id) && empty($message)) { // Se veio de OrÃ§amentos e nÃ£o Ã© ediÃ§Ã£o
+} elseif (!empty($from_orcamento_id) && empty($agendamento_id) && empty($message)) { // Se veio de Orçamentos e não é edição
     $orcamento_id = $from_orcamento_id;
     $sql_get_cliente = "SELECT cliente_id FROM orcamentos WHERE id = ?";
     if ($stmt_get_cliente = $conn->prepare($sql_get_cliente)) {
@@ -140,14 +140,14 @@ if (!empty($from_venda_id) && empty($agendamento_id) && empty($message)) { // Se
         $result_get_cliente = $stmt_get_cliente->get_result();
         if ($row_cliente = $result_get_cliente->fetch_assoc()) {
             $cliente_id = $row_cliente['cliente_id'];
-            $message = "Agendando entrega para OrÃ§amento #" . htmlspecialchars($orcamento_id) . ".";
+            $message = "Agendando entrega para Orçamento #" . htmlspecialchars($orcamento_id) . ".";
             $message_type = "info";
         }
         $stmt_get_cliente->close();
     }
 }
 
-// NÃ£o fechar a conexÃ£o aqui pois ainda vamos usar no HTML
+// Não fechar a conexão aqui pois ainda vamos usar no HTML
 // $conn->close();
 
 include_once 'includes/header.php';
@@ -182,11 +182,11 @@ include_once 'includes/header.php';
         <form action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]); ?>" method="post">
             <input type="hidden" name="agendamento_id" value="<?php echo htmlspecialchars($agendamento_id); ?>">
 
-            <!-- InformaÃ§Ãµes do Cliente -->
+            <!-- Informações do Cliente -->
             <div class="row g-4">
                 <div class="col-12">
                     <h5 class="text-primary mb-3">
-                        <i class="fas fa-user me-2"></i>InformaÃ§Ãµes do Cliente
+                        <i class="fas fa-user me-2"></i>Informações do Cliente
                     </h5>
                 </div>
 
@@ -209,7 +209,7 @@ include_once 'includes/header.php';
                 </div>
 
                 <div class="col-md-3">
-                    <label for="venda_id" class="form-label">Vincular Ã  Venda</label>
+                    <label for="venda_id" class="form-label">Vincular à Venda</label>
                     <select class="form-control" id="venda_id" name="venda_id">
                         <option value="">Nenhuma venda</option>
                         <?php
@@ -237,14 +237,14 @@ include_once 'includes/header.php';
                     </select>
                 </div>
                 <div class="col-md-3">
-                    <label for="orcamento_id" class="form-label">Vincular ao OrÃ§amento</label>
+                    <label for="orcamento_id" class="form-label">Vincular ao Orçamento</label>
                     <select class="form-control" id="orcamento_id" name="orcamento_id">
-                        <option value="">Nenhum orÃ§amento</option>
+                        <option value="">Nenhum orçamento</option>
                         <?php
                         if ($orcamentos_options->num_rows > 0) {
                             $orcamentos_options->data_seek(0); // Reseta o ponteiro
                              while($orcamento = $orcamentos_options->fetch_assoc()) {
-                                // Buscar nome do cliente do orÃ§amento para exibir
+                                // Buscar nome do cliente do orçamento para exibir
                                 $orcamento_cliente_nome = '';
                                 $sql_orcamento_cliente = "SELECT nome FROM clientes WHERE id = ?";
                                 $stmt_orcamento_cliente = $conn->prepare($sql_orcamento_cliente);
@@ -257,7 +257,7 @@ include_once 'includes/header.php';
                                 $stmt_orcamento_cliente->close();
 
                                 $selected = ($orcamento['id'] == $orcamento_id) ? 'selected' : '';
-                                echo '<option value="' . htmlspecialchars($orcamento['id']) . '" ' . $selected . '>OrÃ§amento #' . htmlspecialchars($orcamento['id']) . $orcamento_cliente_nome . '</option>';
+                                echo '<option value="' . htmlspecialchars($orcamento['id']) . '" ' . $selected . '>Orçamento #' . htmlspecialchars($orcamento['id']) . $orcamento_cliente_nome . '</option>';
                             }
                         }
                         ?>
@@ -289,27 +289,27 @@ include_once 'includes/header.php';
                     </select>
                 </div>
 
-                <!-- EndereÃ§o e ObservaÃ§Ãµes -->
+                <!-- Endereço e Observações -->
                 <div class="col-12">
                     <h5 class="text-primary mb-3 mt-4">
-                        <i class="fas fa-map-marker-alt me-2"></i>EndereÃ§o e ObservaÃ§Ãµes
+                        <i class="fas fa-map-marker-alt me-2"></i>Endereço e Observações
                     </h5>
                 </div>
 
                 <div class="col-12">
-                    <label for="endereco_entrega" class="form-label">EndereÃ§o de Entrega *</label>
+                    <label for="endereco_entrega" class="form-label">Endereço de Entrega *</label>
                     <input type="text" class="form-control" id="endereco_entrega" name="endereco_entrega"
                            value="<?php echo htmlspecialchars($endereco_entrega); ?>" required
-                           placeholder="Rua, NÃºmero, Bairro, Cidade, Estado, CEP">
+                           placeholder="Rua, Número, Bairro, Cidade, Estado, CEP">
                 </div>
 
                 <div class="col-12">
-                    <label for="observacoes" class="form-label">ObservaÃ§Ãµes</label>
+                    <label for="observacoes" class="form-label">Observações</label>
                     <textarea class="form-control" id="observacoes" name="observacoes" rows="3"
-                              placeholder="InformaÃ§Ãµes adicionais sobre a entrega..."><?php echo htmlspecialchars($observacoes); ?></textarea>
+                              placeholder="Informações adicionais sobre a entrega..."><?php echo htmlspecialchars($observacoes); ?></textarea>
                 </div>
 
-                <!-- BotÃµes -->
+                <!-- Botões -->
                 <div class="col-12">
                     <div class="d-flex gap-2 justify-content-end mt-4">
                         <a href="agendamentos.php" class="btn btn-outline-secondary">

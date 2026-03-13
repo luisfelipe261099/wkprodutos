@@ -9,9 +9,9 @@
 
 require_once 'includes/session_bootstrap.php';
 
-// Verifica se o usuÃ¡rio estÃ¡ logado (seguranÃ§a)
+// Verifica se o usuário está logado (segurança)
 if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
-    die('Acesso negado. FaÃ§a login primeiro.');
+    die('Acesso negado. Faça login primeiro.');
 }
 
 require_once 'includes/db_connect.php';
@@ -21,7 +21,7 @@ echo '<!DOCTYPE html>
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AtualizaÃ§Ã£o do Banco de Dados</title>
+    <title>Atualização do Banco de Dados</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -93,11 +93,11 @@ echo '<!DOCTYPE html>
 </head>
 <body>
     <div class="container">
-        <h1>ðŸ”§ AtualizaÃ§Ã£o do Banco de Dados</h1>
-        <p>Este script irÃ¡ atualizar a estrutura da tabela <code>orcamentos</code> para suportar:</p>
+        <h1>🔧 Atualização do Banco de Dados</h1>
+        <p>Este script irá atualizar a estrutura da tabela <code>orcamentos</code> para suportar:</p>
         <ul>
-            <li>âœ… Forma de pagamento: <strong>Boleto</strong></li>
-            <li>âœ… Novos tipos de faturamento: 7, 15, 20, 21, 30 dias e parcelamentos</li>
+            <li>✅ Forma de pagamento: <strong>Boleto</strong></li>
+            <li>✅ Novos tipos de faturamento: 7, 15, 20, 21, 30 dias e parcelamentos</li>
         </ul>
 ';
 
@@ -114,7 +114,7 @@ try {
              DEFAULT 'faturamento'";
     
     if ($conn->query($sql1) === TRUE) {
-        echo '<div class="success">âœ… Forma de pagamento atualizada com sucesso! Adicionado: <strong>boleto</strong></div>';
+        echo '<div class="success">✅ Forma de pagamento atualizada com sucesso! Adicionado: <strong>boleto</strong></div>';
         $success[] = 'forma_pagamento';
     } else {
         throw new Exception("Erro ao atualizar forma_pagamento: " . $conn->error);
@@ -151,21 +151,21 @@ try {
              DEFAULT 'avista'";
     
     if ($conn->query($sql2) === TRUE) {
-        echo '<div class="success">âœ… Tipos de faturamento atualizados com sucesso!</div>';
+        echo '<div class="success">✅ Tipos de faturamento atualizados com sucesso!</div>';
         echo '<div class="info"><strong>Novos tipos adicionados:</strong><br>';
-        echo 'â€¢ 7, 15, 20, 21, 30 dias<br>';
-        echo 'â€¢ 15/30, 20/30, 21/30 dias<br>';
-        echo 'â€¢ 20/30/45 dias<br>';
-        echo 'â€¢ 28/35/42, 28/35/42/59, 28/35/45 dias<br>';
-        echo 'â€¢ 30/45/60 dias</div>';
+        echo '• 7, 15, 20, 21, 30 dias<br>';
+        echo '• 15/30, 20/30, 21/30 dias<br>';
+        echo '• 20/30/45 dias<br>';
+        echo '• 28/35/42, 28/35/42/59, 28/35/45 dias<br>';
+        echo '• 30/45/60 dias</div>';
         $success[] = 'tipo_faturamento';
     } else {
         throw new Exception("Erro ao atualizar tipo_faturamento: " . $conn->error);
     }
     echo '</div>';
     
-    // 3. Verificar as alteraÃ§Ãµes
-    echo '<div class="step"><h3>Passo 3: Verificando alteraÃ§Ãµes...</h3>';
+    // 3. Verificar as alterações
+    echo '<div class="step"><h3>Passo 3: Verificando alterações...</h3>';
     
     $result1 = $conn->query("SHOW COLUMNS FROM `orcamentos` LIKE 'forma_pagamento'");
     if ($result1 && $row1 = $result1->fetch_assoc()) {
@@ -180,27 +180,27 @@ try {
     
     // Sucesso final
     echo '<div class="success" style="font-size: 18px; font-weight: bold;">
-            ðŸŽ‰ ATUALIZAÃ‡ÃƒO CONCLUÃDA COM SUCESSO!
+            🎉 ATUALIZAÇÃO CONCLUÍDA COM SUCESSO!
           </div>';
     
     echo '<div class="info">
-            <strong>PrÃ³ximos passos:</strong><br>
-            1. âœ… Banco de dados atualizado<br>
-            2. âœ… Agora vocÃª pode usar "Boleto" nos orÃ§amentos<br>
-            3. âœ… Todos os novos prazos de pagamento estÃ£o disponÃ­veis<br>
-            4. âš ï¸ <strong>IMPORTANTE:</strong> Delete este arquivo (atualizar_banco.php) por seguranÃ§a
+            <strong>Próximos passos:</strong><br>
+            1. ✅ Banco de dados atualizado<br>
+            2. ✅ Agora você pode usar "Boleto" nos orçamentos<br>
+            3. ✅ Todos os novos prazos de pagamento estão disponíveis<br>
+            4. ⚠️ <strong>IMPORTANTE:</strong> Delete este arquivo (atualizar_banco.php) por segurança
           </div>';
     
 } catch (Exception $e) {
-    echo '<div class="error">âŒ <strong>ERRO:</strong> ' . htmlspecialchars($e->getMessage()) . '</div>';
+    echo '<div class="error">❌ <strong>ERRO:</strong> ' . htmlspecialchars($e->getMessage()) . '</div>';
     $errors[] = $e->getMessage();
 }
 
 $conn->close();
 
 echo '
-        <a href="criar_orcamento.php" class="btn">Ir para Criar OrÃ§amento</a>
-        <a href="orcamentos.php" class="btn" style="background-color: #28a745;">Ver OrÃ§amentos</a>
+        <a href="criar_orcamento.php" class="btn">Ir para Criar Orçamento</a>
+        <a href="orcamentos.php" class="btn" style="background-color: #28a745;">Ver Orçamentos</a>
     </div>
 </body>
 </html>';
@@ -208,8 +208,8 @@ echo '
 // Se tudo deu certo, sugerir deletar o arquivo
 if (count($success) == 2 && count($errors) == 0) {
     echo '<script>
-        console.log("âœ… AtualizaÃ§Ã£o concluÃ­da com sucesso!");
-        console.log("âš ï¸ LEMBRE-SE: Delete o arquivo atualizar_banco.php por seguranÃ§a!");
+        console.log("✅ Atualização concluída com sucesso!");
+        console.log("⚠️ LEMBRE-SE: Delete o arquivo atualizar_banco.php por segurança!");
     </script>';
 }
 ?>

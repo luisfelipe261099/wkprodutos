@@ -1,7 +1,7 @@
 <?php
 require_once 'includes/session_bootstrap.php';
 
-// Verifica se o usuÃ¡rio estÃ¡ logado
+// Verifica se o usuário está logado
 if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
     header("location: index.php");
     exit;
@@ -21,8 +21,8 @@ if (!$result_check || $result_check->num_rows == 0) {
 
 $orcamento_id = $cliente_id = $data_orcamento = $valor_total = $status_orcamento = $observacoes = "";
 $forma_pagamento = $tipo_faturamento = $data_vencimento = "";
-$title = "Criar Novo OrÃ§amento";
-$submit_button_text = "Criar OrÃ§amento";
+$title = "Criar Novo Orçamento";
+$submit_button_text = "Criar Orçamento";
 $message = '';
 $message_type = '';
 $itens_do_orcamento = [];
@@ -55,7 +55,7 @@ if ($produtos_result && $produtos_result->num_rows > 0) {
     }
 }
 
-// Processar formulÃ¡rio quando enviado
+// Processar formulário quando enviado
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $orcamento_id = trim($_POST["orcamento_id"] ?? '');
     $cliente_id = trim($_POST["cliente_id"]);
@@ -75,7 +75,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $valor_total = $calculated_valor_total;
 
     if (empty($cliente_id) || empty($status_orcamento) || empty($itens_do_orcamento_post)) {
-        $message = "Por favor, preencha todos os campos obrigatÃ³rios e adicione pelo menos um produto ao orÃ§amento.";
+        $message = "Por favor, preencha todos os campos obrigatórios e adicione pelo menos um produto ao orçamento.";
         $message_type = "danger";
     } else {
         $conn->begin_transaction();
@@ -88,7 +88,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                         $data_vencimento_param = !empty($data_vencimento) ? $data_vencimento : null;
                         $stmt->bind_param("idsssss", $cliente_id, $valor_total, $status_orcamento, $observacoes, $forma_pagamento, $tipo_faturamento, $data_vencimento_param);
                         if (!$stmt->execute()) {
-                            throw new Exception("Erro ao registrar orÃ§amento: " . $stmt->error);
+                            throw new Exception("Erro ao registrar orçamento: " . $stmt->error);
                         }
                         $orcamento_id = $conn->insert_id;
                         $stmt->close();
@@ -98,7 +98,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     if ($stmt = $conn->prepare($sql)) {
                         $stmt->bind_param("idss", $cliente_id, $valor_total, $status_orcamento, $observacoes);
                         if (!$stmt->execute()) {
-                            throw new Exception("Erro ao registrar orÃ§amento: " . $stmt->error);
+                            throw new Exception("Erro ao registrar orçamento: " . $stmt->error);
                         }
                         $orcamento_id = $conn->insert_id;
                         $stmt->close();
@@ -106,7 +106,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 }
             }
 
-            // Inserir itens do orÃ§amento
+            // Inserir itens do orçamento
             $sql_itens = "INSERT INTO itens_orcamento (orcamento_id, produto_id, quantidade, preco_unitario) VALUES (?, ?, ?, ?)";
             if ($stmt_itens = $conn->prepare($sql_itens)) {
                 foreach ($itens_do_orcamento_post as $item) {
@@ -119,7 +119,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             }
 
             $conn->commit();
-            $message = "OrÃ§amento criado com sucesso!";
+            $message = "Orçamento criado com sucesso!";
             $message_type = "success";
             header("refresh:2;url=orcamentos.php");
 
@@ -131,12 +131,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     }
 }
 
-// Carregar orÃ§amento para ediÃ§Ã£o
+// Carregar orçamento para edição
 $orcamento_id_get = $_GET["id"] ?? '';
 if (!empty($orcamento_id_get) && empty($message)) {
     $orcamento_id = $orcamento_id_get;
-    $title = "Editar OrÃ§amento";
-    $submit_button_text = "Atualizar OrÃ§amento";
+    $title = "Editar Orçamento";
+    $submit_button_text = "Atualizar Orçamento";
 
     if ($colunas_pagamento_existem) {
         $sql_orcamento = "SELECT id, cliente_id, valor_total, status_orcamento, observacoes, forma_pagamento, tipo_faturamento, data_vencimento FROM orcamentos WHERE id = ?";
@@ -163,7 +163,7 @@ if (!empty($orcamento_id_get) && empty($message)) {
         }
         $stmt_orcamento->close();
 
-        // Buscar itens do orÃ§amento
+        // Buscar itens do orçamento
         $sql_itens = "SELECT io.produto_id, p.nome AS produto_nome, io.quantidade, io.preco_unitario
                       FROM itens_orcamento io
                       JOIN produtos p ON io.produto_id = p.id
@@ -218,7 +218,7 @@ include_once 'includes/header.php';
 
 <div class="modern-card">
     <div class="card-header-modern">
-        <i class="fas fa-file-invoice-dollar"></i> Dados do OrÃ§amento
+        <i class="fas fa-file-invoice-dollar"></i> Dados do Orçamento
     </div>
     <div class="card-body-modern">
         <form id="formOrcamento" method="post">
@@ -245,7 +245,7 @@ include_once 'includes/header.php';
 
             <div class="row mb-3">
                 <div class="col-md-12">
-                    <label class="form-label">ObservaÃ§Ãµes</label>
+                    <label class="form-label">Observações</label>
                     <textarea name="observacoes" class="form-control" rows="3"><?php echo htmlspecialchars($observacoes); ?></textarea>
                 </div>
             </div>
@@ -279,7 +279,7 @@ include_once 'includes/header.php';
                     <input type="number" class="form-control" id="quantidade_item" value="1" min="1">
                 </div>
                 <div class="col-md-4">
-                    <label class="form-label">PreÃ§o Unit.</label>
+                    <label class="form-label">Preço Unit.</label>
                     <input type="text" class="form-control" id="preco_unitario_item" readonly>
                 </div>
                 <div class="col-md-4">
@@ -290,16 +290,16 @@ include_once 'includes/header.php';
 
             <hr>
 
-            <h5>Itens do OrÃ§amento <span class="badge bg-primary" id="items_count">0</span></h5>
+            <h5>Itens do Orçamento <span class="badge bg-primary" id="items_count">0</span></h5>
             <div class="table-responsive">
                 <table class="table table-hover">
                     <thead class="table-light">
                         <tr>
                             <th>Produto</th>
                             <th>Quantidade</th>
-                            <th>PreÃ§o Unit.</th>
+                            <th>Preço Unit.</th>
                             <th>Subtotal</th>
-                            <th>AÃ§Ãµes</th>
+                            <th>Ações</th>
                         </tr>
                     </thead>
                     <tbody id="tabelaItens">

@@ -1,13 +1,13 @@
 <?php
-// Inicia o output buffering e a sessÃ£o
+// Inicia o output buffering e a sessão
 ob_start();
 require_once 'includes/session_bootstrap.php';
 
-// Habilita a exibiÃ§Ã£o de erros para facilitar a depuraÃ§Ã£o.
+// Habilita a exibição de erros para facilitar a depuração.
 ini_set('display_errors', 1);
 error_reporting(E_ALL);
 
-// DependÃªncias
+// Dependências
 require 'vendor/autoload.php';
 require_once 'includes/db_connect.php';
 require_once __DIR__ . '/vendor/setasign/fpdf/fpdf.php';
@@ -15,16 +15,16 @@ require_once __DIR__ . '/vendor/setasign/fpdf/fpdf.php';
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
 
-// Verifica se o usuÃ¡rio estÃ¡ logado
+// Verifica se o usuário está logado
 if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
     if (ob_get_length()) ob_end_clean();
     header("location: index.php");
     exit;
 }
 
-// Verifica se o ID do orÃ§amento foi fornecido
+// Verifica se o ID do orçamento foi fornecido
 if (!isset($_GET['id']) || !filter_var($_GET['id'], FILTER_VALIDATE_INT)) {
-    $_SESSION['message'] = ['type' => 'danger', 'text' => 'ID do orÃ§amento invÃ¡lido.'];
+    $_SESSION['message'] = ['type' => 'danger', 'text' => 'ID do orçamento inválido.'];
     header('Location: orcamentos.php');
     exit;
 }
@@ -32,12 +32,12 @@ $orcamento_id = intval($_GET['id']);
 
 
 // ===================================================================================
-// 2. DEFINIÃ‡ÃƒO DA CLASSE E FUNÃ‡Ã•ES AUXILIARES
+// 2. DEFINIÇÃO DA CLASSE E FUNÇÕES AUXILIARES
 // ===================================================================================
 
 /**
  * A classe ModernPDF, copiada DIRETAMENTE do seu arquivo 'gerar_pdf_orcamento.php'
- * para garantir que a aparÃªncia seja idÃªntica.
+ * para garantir que a aparência seja idêntica.
  */
 class ModernPDF extends FPDF {
     private $primaryColor = [28, 79, 140];
@@ -65,7 +65,7 @@ class ModernPDF extends FPDF {
         $this->Cell(0, 8, $this->convertToLatin1('Karla Wollinger'), 0, 1, 'L');
         $this->SetFont('Arial', '', 10);
         $this->SetXY(15 + $logo_width, 22);
-        $this->Cell(0, 5, $this->convertToLatin1('RepresentaÃ§Ã£o Comercial'), 0, 1, 'L');
+        $this->Cell(0, 5, $this->convertToLatin1('Representação Comercial'), 0, 1, 'L');
         $this->SetFont('Arial', '', 9);
         $this->SetXY(120, 10);
         $this->Cell(0, 4, 'karlawollinger2@gmail.com', 0, 1, 'R');
@@ -86,7 +86,7 @@ class ModernPDF extends FPDF {
         $this->SetTextColor($this->darkGray[0], $this->darkGray[1], $this->darkGray[2]);
         $this->SetX(15);
         $this->Cell(90, 4, $this->convertToLatin1('karla wollinger - Todos os direitos reservados'), 0, 0, 'L');
-        $this->Cell(90, 4, $this->convertToLatin1('PÃ¡gina ') . $this->PageNo() . ' de {nb}', 0, 1, 'R');
+        $this->Cell(90, 4, $this->convertToLatin1('Página ') . $this->PageNo() . ' de {nb}', 0, 1, 'R');
         $this->Ln(1);
         $this->SetX(15);
         $this->Cell(0, 4, $this->convertToLatin1('Documento gerado em: ') . date('d/m/Y H:i'), 0, 0, 'L');
@@ -155,7 +155,7 @@ class ModernPDF extends FPDF {
 }
 
 /**
- * FunÃ§Ã£o principal que busca dados, constrÃ³i e retorna o PDF como uma string.
+ * Função principal que busca dados, constrói e retorna o PDF como uma string.
  */
 function gerarOrcamentoPDFString($orcamento_id, $conn) {
     try {
@@ -165,7 +165,7 @@ function gerarOrcamentoPDFString($orcamento_id, $conn) {
         $stmt_orcamento->bind_param("i", $orcamento_id);
         $stmt_orcamento->execute();
         $orcamento = $stmt_orcamento->get_result()->fetch_assoc();
-        if (!$orcamento) throw new Exception("OrÃ§amento #{$orcamento_id} nÃ£o encontrado.");
+        if (!$orcamento) throw new Exception("Orçamento #{$orcamento_id} não encontrado.");
 
         $sql_itens = "SELECT io.*, p.nome as produto_nome, p.sku as codigo, p.descricao, e.nome_empresa, e.logo_empresa FROM itens_orcamento io LEFT JOIN produtos p ON io.produto_id = p.id LEFT JOIN empresas_representadas e ON p.empresa_id = e.id WHERE io.orcamento_id = ?";
         $stmt_itens = $conn->prepare($sql_itens);
@@ -183,7 +183,7 @@ function gerarOrcamentoPDFString($orcamento_id, $conn) {
             foreach ($itens as $item) $orcamento['valor_total'] += ($item['quantidade'] ?? 1) * ($item['preco_unitario'] ?? 0);
         }
 
-        // 2. CONSTRUIR PDF (lÃ³gica idÃªntica ao seu script original)
+        // 2. CONSTRUIR PDF (lógica idêntica ao seu script original)
         $pdf = new ModernPDF('P', 'mm', 'A4');
         $pdf->AliasNbPages();
         $pdf->AddPage();
@@ -200,10 +200,10 @@ function gerarOrcamentoPDFString($orcamento_id, $conn) {
         $pdf->Line(80, $pdf->GetY() + 2, 130, $pdf->GetY() + 2);
         $pdf->Ln(15);
 
-        // Caixas de InformaÃ§Ã£o
-        $cliente_nome = $orcamento['cliente_nome'] ?? 'Cliente nÃ£o especificado';
+        // Caixas de Informação
+        $cliente_nome = $orcamento['cliente_nome'] ?? 'Cliente não especificado';
         $client_details = "Cliente: " . $cliente_nome . "\n";
-        if (!empty($orcamento['tipo_pessoa'])) $client_details .= "Tipo: " . ($orcamento['tipo_pessoa'] === 'fisica' ? 'Pessoa FÃ­sica' : 'Pessoa JurÃ­dica') . "\n";
+        if (!empty($orcamento['tipo_pessoa'])) $client_details .= "Tipo: " . ($orcamento['tipo_pessoa'] === 'fisica' ? 'Pessoa Física' : 'Pessoa Jurídica') . "\n";
         if (!empty($orcamento['cpf_cnpj'])) $client_details .= (($orcamento['tipo_pessoa'] === 'juridica') ? 'CNPJ' : 'CPF') . ": " . $orcamento['cpf_cnpj'] . "\n";
         if (!empty($orcamento['cliente_email'])) $client_details .= "Email: " . $orcamento['cliente_email'] . "\n";
         if (!empty($orcamento['telefone'])) $client_details .= "Telefone: " . $orcamento['telefone'] . "\n";
@@ -225,7 +225,7 @@ function gerarOrcamentoPDFString($orcamento_id, $conn) {
         $budget_details .= "Responsavel: Equipe Comercial";
         
         $pdf->ShadowBox(15, $pdf->GetY(), 85, 45, 'DADOS DO CLIENTE', $client_details);
-        $pdf->ShadowBox(110, $pdf->GetY(), 85, 45, 'DADOS DO ORÃ‡AMENTO', $budget_details);
+        $pdf->ShadowBox(110, $pdf->GetY(), 85, 45, 'DADOS DO ORÇAMENTO', $budget_details);
         $pdf->SetY($pdf->GetY() + 55);
 
         // Tabela de Itens
@@ -247,8 +247,8 @@ function gerarOrcamentoPDFString($orcamento_id, $conn) {
         }
         if (!empty($table_data)) $pdf->ModernTable($headers, $table_data, $widths);
         
-        // SeÃ§Ã£o de Total, etc. (copiado do seu script)
-        // ... (cÃ³digo de totais, observaÃ§Ãµes, termos, aceite) ...
+        // Seção de Total, etc. (copiado do seu script)
+        // ... (código de totais, observações, termos, aceite) ...
 
         // 3. RETORNAR PDF COMO STRING
         return $pdf->Output('S');
@@ -260,11 +260,11 @@ function gerarOrcamentoPDFString($orcamento_id, $conn) {
 }
 
 function registrarHistoricoOrcamento($conn, $orcamento_id, $observacoes = '') {
-    // ... (cÃ³digo da funÃ§Ã£o igual)
+    // ... (código da função igual)
 }
 
 // ===================================================================================
-// 3. PROCESSAMENTO DO FORMULÃRIO (POST)
+// 3. PROCESSAMENTO DO FORMULÁRIO (POST)
 // ===================================================================================
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $orcamento_id_post = intval($_POST['orcamento_id']);
@@ -287,33 +287,33 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $mail->Port = 587;
         $mail->CharSet = 'UTF-8';
 
-        $mail->setFrom('faciencia@lfmtecnologia.com', 'Karla Wollinger - RepresentaÃ§Ãµes');
+        $mail->setFrom('faciencia@lfmtecnologia.com', 'Karla Wollinger - Representações');
         $mail->addAddress($destinatario_email);
         $mail->addReplyTo('karlawollinger2@gmail.com', 'Karla Wollinger');
         $mail->addStringAttachment($pdf_content, $nome_arquivo_pdf);
 
         $mail->isHTML(true);
         $mail->Subject = $assunto_email;
-        $mail->Body = $mensagem_html; // Usa o texto do formulÃ¡rio, formatado com quebras de linha
+        $mail->Body = $mensagem_html; // Usa o texto do formulário, formatado com quebras de linha
         $mail->AltBody = strip_tags($_POST['mensagem']);
 
         $mail->send();
         
-        registrarHistoricoOrcamento($conn, $orcamento_id_post, "OrÃ§amento enviado por e-mail para {$destinatario_email}.");
+        registrarHistoricoOrcamento($conn, $orcamento_id_post, "Orçamento enviado por e-mail para {$destinatario_email}.");
         
-        $_SESSION['message'] = ['type' => 'success', 'text' => "âœ… OrÃ§amento #{$orcamento_id_post} enviado com sucesso para {$destinatario_email}!"];
+        $_SESSION['message'] = ['type' => 'success', 'text' => "✅ Orçamento #{$orcamento_id_post} enviado com sucesso para {$destinatario_email}!"];
         header('Location: orcamentos.php');
         exit;
 
     } catch (Exception $e) {
-        $_SESSION['message'] = ['type' => 'danger', 'text' => "âŒ O e-mail nÃ£o pÃ´de ser enviado. Erro: " . $e->getMessage()];
+        $_SESSION['message'] = ['type' => 'danger', 'text' => "❌ O e-mail não pôde ser enviado. Erro: " . $e->getMessage()];
         header('Location: enviar_orcamento.php?id=' . $orcamento_id_post);
         exit;
     }
 }
 
 // ===================================================================================
-// 4. PREPARAÃ‡ÃƒO DOS DADOS E NOVO TEMPLATE DE E-MAIL
+// 4. PREPARAÇÃO DOS DADOS E NOVO TEMPLATE DE E-MAIL
 // ===================================================================================
 $sql_orc = "SELECT c.nome AS nome_cliente, c.email AS email_cliente FROM orcamentos o JOIN clientes c ON o.cliente_id = c.id WHERE o.id = ?";
 $stmt_orc = $conn->prepare($sql_orc);
@@ -321,39 +321,39 @@ $stmt_orc->bind_param("i", $orcamento_id);
 $stmt_orc->execute();
 $orcamento_data = $stmt_orc->get_result()->fetch_assoc();
 if (!$orcamento_data) {
-    $_SESSION['message'] = ['type' => 'danger', 'text' => 'OrÃ§amento nÃ£o encontrado.'];
+    $_SESSION['message'] = ['type' => 'danger', 'text' => 'Orçamento não encontrado.'];
     header('Location: orcamentos.php');
     exit;
 }
 
 $nome_cliente = htmlspecialchars($orcamento_data['nome_cliente']);
-$assunto_padrao = "ðŸ“„ Sua Proposta Comercial | OrÃ§amento #{$orcamento_id}";
+$assunto_padrao = "📄 Sua Proposta Comercial | Orçamento #{$orcamento_id}";
 // --- TEMPLATE DE MENSAGEM MELHORADO ---
 $mensagem_padrao = "
-OlÃ¡, {$nome_cliente}! ðŸ‘‹
+Olá, {$nome_cliente}! 👋
 
 Espero que este e-mail o encontre bem.
 
-Conforme nossa conversa, preparei com muito cuidado a proposta comercial que vocÃª solicitou. Ela estÃ¡ anexada a este e-mail para sua anÃ¡lise. ðŸ“„
+Conforme nossa conversa, preparei com muito cuidado a proposta comercial que você solicitou. Ela está anexada a este e-mail para sua análise. 📄
 
-âœ… **OrÃ§amento Detalhado:** No anexo, vocÃª encontrarÃ¡ todos os detalhes sobre os produtos, valores e condiÃ§Ãµes que combinamos.
+✅ **Orçamento Detalhado:** No anexo, você encontrará todos os detalhes sobre os produtos, valores e condições que combinamos.
 
-ðŸ’¡ **PrÃ³ximos Passos:**
-1.  **Revise a proposta** com atenÃ§Ã£o.
-2.  **Anote qualquer dÃºvida** ou ponto que queira discutir.
-3.  **Me dÃª um retorno** para alinharmos os detalhes ou darmos sequÃªncia!
+💡 **Próximos Passos:**
+1.  **Revise a proposta** com atenção.
+2.  **Anote qualquer dúvida** ou ponto que queira discutir.
+3.  **Me dê um retorno** para alinharmos os detalhes ou darmos sequência!
 
-Estou Ã  sua inteira disposiÃ§Ã£o para qualquer esclarecimento. Podemos agendar uma rÃ¡pida ligaÃ§Ã£o, se preferir.
+Estou à sua inteira disposição para qualquer esclarecimento. Podemos agendar uma rápida ligação, se preferir.
 
-AgradeÃ§o pela oportunidade e confianÃ§a.
+Agradeço pela oportunidade e confiança.
 
 Atenciosamente,
 
 --
 **Karla Wollinger**
-*RepresentaÃ§Ã£o Comercial*
-ðŸ“ž (41) 99859-3242
-ðŸ“§ karlawollinger2@gmail.com
+*Representação Comercial*
+📞 (41) 99859-3242
+📧 karlawollinger2@gmail.com
 ";
 ?>
 <!DOCTYPE html>
@@ -361,7 +361,7 @@ Atenciosamente,
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Enviar OrÃ§amento por E-mail</title>
+    <title>Enviar Orçamento por E-mail</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -374,7 +374,7 @@ Atenciosamente,
     <div class="container">
         <div class="card shadow-sm mb-5">
             <div class="card-header">
-                <h4 class="mb-0"><i class="fa-solid fa-paper-plane"></i> Enviar OrÃ§amento #<?php echo $orcamento_id; ?> por E-mail</h4>
+                <h4 class="mb-0"><i class="fa-solid fa-paper-plane"></i> Enviar Orçamento #<?php echo $orcamento_id; ?> por E-mail</h4>
             </div>
             <div class="card-body p-4">
                 <?php
@@ -387,7 +387,7 @@ Atenciosamente,
                 <form action="enviar_orcamento.php?id=<?php echo $orcamento_id; ?>" method="post">
                     <input type="hidden" name="orcamento_id" value="<?php echo $orcamento_id; ?>">
                     <div class="mb-3">
-                        <label for="destinatario" class="form-label fw-bold">Para (DestinatÃ¡rio):</label>
+                        <label for="destinatario" class="form-label fw-bold">Para (Destinatário):</label>
                         <input type="email" class="form-control" id="destinatario" name="destinatario" value="<?php echo htmlspecialchars($orcamento_data['email_cliente'] ?? ''); ?>" required>
                     </div>
                     <div class="mb-3">

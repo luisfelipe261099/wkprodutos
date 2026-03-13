@@ -1,15 +1,15 @@
 <?php
-// Inicia a sessÃ£o
+// Inicia a sessão
 require_once 'includes/session_bootstrap.php';
 
-// Desfaz todas as variÃ¡veis de sessÃ£o
+// Desfaz todas as variáveis de sessão
 $_SESSION = array();
 
-// Destroi a sessÃ£o.
+// Destroi a sessão.
 session_destroy();
 kw_clear_auth_cookie();
 
-// Redireciona para a pÃ¡gina de login
+// Redireciona para a página de login
 header("location: index.php");
 exit;
 ?>

@@ -1,7 +1,7 @@
 <?php
 require_once 'includes/session_bootstrap.php';
 
-// Verifica se o usuÃ¡rio estÃ¡ logado
+// Verifica se o usuário está logado
 if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
     header("location: index.php");
     exit;
@@ -16,7 +16,7 @@ $message = '';
 $message_type = '';
 $itens_da_venda = [];
 
-// --- LÃ“GICA DE PROCESSAMENTO DO FORMULÃRIO (POST) ---
+// --- LÓGICA DE PROCESSAMENTO DO FORMULÁRIO (POST) ---
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $venda_id_posted = trim($_POST["venda_id"] ?? '');
     $cliente_id = trim($_POST["cliente_id"]);
@@ -32,7 +32,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $valor_total = $calculated_valor_total;
 
     if (empty($cliente_id) || empty($forma_pagamento) || empty($status_venda) || empty($itens_da_venda_post)) {
-        $message = "Por favor, preencha todos os campos obrigatÃ³rios e adicione pelo menos um produto Ã  venda.";
+        $message = "Por favor, preencha todos os campos obrigatórios e adicione pelo menos um produto à venda.";
         $message_type = "danger";
     } else {
         $conn->begin_transaction();
@@ -48,7 +48,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 $current_venda_id = $conn->insert_id;
                 $stmt->close();
             } else {
-                // LÃ³gica para reverter estoque ao editar
+                // Lógica para reverter estoque ao editar
                 $sql_old_items = "SELECT produto_id, quantidade FROM itens_venda WHERE venda_id = ?";
                 $stmt_old_items = $conn->prepare($sql_old_items);
                 $stmt_old_items->bind_param("i", $current_venda_id);
@@ -76,7 +76,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 // Verifica estoque antes de inserir o item e dar baixa
                 $stock_row = $conn->query("SELECT quantidade_estoque FROM produtos WHERE id = {$produto_id}")->fetch_assoc();
                 if ($stock_row['quantidade_estoque'] < $quantidade) {
-                    throw new Exception("Estoque insuficiente para o produto ID {$produto_id}. DisponÃ­vel: {$stock_row['quantidade_estoque']}");
+                    throw new Exception("Estoque insuficiente para o produto ID {$produto_id}. Disponível: {$stock_row['quantidade_estoque']}");
                 }
 
                 $sql_item = "INSERT INTO itens_venda (venda_id, produto_id, quantidade, preco_unitario) VALUES (?, ?, ?, ?)";
@@ -95,7 +95,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     $stmt_transacao = $conn->prepare($sql_transacao);
                     $descricao_transacao = "Receita da Venda #" . $current_venda_id;
                     $stmt_transacao->bind_param("dsi", $valor_total, $descricao_transacao, $current_venda_id);
-                    if (!$stmt_transacao->execute()) throw new Exception("Erro ao registrar transaÃ§Ã£o: " . $stmt_transacao->error);
+                    if (!$stmt_transacao->execute()) throw new Exception("Erro ao registrar transação: " . $stmt_transacao->error);
                 } else {
                     $conn->query("UPDATE transacoes_financeiras SET valor = {$valor_total}, data_transacao = NOW() WHERE referencia_id = {$current_venda_id} AND tabela_referencia = 'vendas'");
                 }
@@ -109,16 +109,16 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             exit;
         } catch (Exception $e) {
             $conn->rollback();
-            $message = "Erro na transaÃ§Ã£o: " . $e->getMessage();
+            $message = "Erro na transação: " . $e->getMessage();
             $message_type = "danger";
         }
     }
 } else {
-    // --- LÃ“GICA DE CARREGAMENTO DE DADOS (GET) ---
+    // --- LÓGICA DE CARREGAMENTO DE DADOS (GET) ---
     $venda_id_get = $_GET["id"] ?? '';
     $from_orcamento_id = $_GET["from_orcamento_id"] ?? '';
 
-    if (!empty($venda_id_get)) { // EdiÃ§Ã£o de Venda
+    if (!empty($venda_id_get)) { // Edição de Venda
         $venda_id = $venda_id_get;
         $title = "Editar Venda #" . htmlspecialchars($venda_id);
         $submit_button_text = "Atualizar Venda";
@@ -143,8 +143,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $itens_da_venda[] = ['id' => $item['produto_id'], 'nome' => $item['nome'], 'quantidade' => $item['quantidade'], 'preco_unitario' => $item['preco_unitario']];
         }
 
-    } elseif (!empty($from_orcamento_id)) { // ConversÃ£o de OrÃ§amento
-        $title = "Registrar Venda (do OrÃ§amento #" . htmlspecialchars($from_orcamento_id) . ")";
+    } elseif (!empty($from_orcamento_id)) { // Conversão de Orçamento
+        $title = "Registrar Venda (do Orçamento #" . htmlspecialchars($from_orcamento_id) . ")";
         $sql = "SELECT o.cliente_id, io.produto_id, p.nome, io.quantidade, io.preco_unitario, p.quantidade_estoque
                 FROM orcamentos o
                 JOIN itens_orcamento io ON o.id = io.orcamento_id
@@ -159,17 +159,17 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         while ($row = $result->fetch_assoc()) {
             if (empty($cliente_id)) {
                 $cliente_id = $row['cliente_id'];
-                // AJUSTE REALIZADO AQUI: O status jÃ¡ comeÃ§a como 'concluida'
+                // AJUSTE REALIZADO AQUI: O status já começa como 'concluida'
                 $status_venda = 'concluida'; 
             }
             if ($row['quantidade_estoque'] < $row['quantidade']) {
                 $estoque_ok = false;
-                $message .= "AtenÃ§Ã£o: Estoque insuficiente para '{$row['nome']}'. Pedido: {$row['quantidade']}, DisponÃ­vel: {$row['quantidade_estoque']}.<br>";
+                $message .= "Atenção: Estoque insuficiente para '{$row['nome']}'. Pedido: {$row['quantidade']}, Disponível: {$row['quantidade_estoque']}.<br>";
             }
             $itens_da_venda[] = ['id' => $row['produto_id'], 'nome' => $row['nome'], 'quantidade' => $row['quantidade'], 'preco_unitario' => $row['preco_unitario']];
         }
         $message_type = $estoque_ok ? "info" : "warning";
-        $message = ($estoque_ok ? "Itens carregados do orÃ§amento. Verifique os dados." : $message);
+        $message = ($estoque_ok ? "Itens carregados do orçamento. Verifique os dados." : $message);
     }
 }
 
@@ -177,7 +177,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 $clientes_options = $conn->query("SELECT id, nome FROM clientes ORDER BY nome ASC");
 $produtos_options = $conn->query("SELECT id, nome, sku, preco_venda, quantidade_estoque FROM produtos WHERE ativo_marketplace = 1 ORDER BY nome ASC");
 
-// Fecha a conexÃ£o com o banco de dados APÃ“S todas as operaÃ§Ãµes de leitura
+// Fecha a conexão com o banco de dados APÓS todas as operações de leitura
 $conn->close();
 
 include_once 'includes/header.php';
@@ -221,7 +221,7 @@ include_once 'includes/header.php';
                     <label for="forma_pagamento" class="form-label">Forma de Pagamento <span class="text-danger">*</span></label>
                     <select class="form-select" id="forma_pagamento" name="forma_pagamento" required>
                         <option value="Pix" <?php echo ($forma_pagamento == 'Pix' ? 'selected' : ''); ?>>Pix</option>
-                        <option value="Cartao_Credito" <?php echo ($forma_pagamento == 'Cartao_Credito' ? 'selected' : ''); ?>>CartÃ£o de CrÃ©dito</option>
+                        <option value="Cartao_Credito" <?php echo ($forma_pagamento == 'Cartao_Credito' ? 'selected' : ''); ?>>Cartão de Crédito</option>
                         <option value="Boleto" <?php echo ($forma_pagamento == 'Boleto' ? 'selected' : ''); ?>>Boleto</option>
                         <option value="Dinheiro" <?php echo ($forma_pagamento == 'Dinheiro' ? 'selected' : ''); ?>>Dinheiro</option>
                         <option value="Outro" <?php echo ($forma_pagamento == 'Outro' ? 'selected' : ''); ?>>Outro</option>
@@ -231,7 +231,7 @@ include_once 'includes/header.php';
                     <label for="status_venda" class="form-label">Status da Venda <span class="text-danger">*</span></label>
                     <select class="form-select" id="status_venda" name="status_venda" required>
                         <option value="pendente" <?php echo ($status_venda == 'pendente' ? 'selected' : ''); ?>>Pendente</option>
-                        <option value="concluida" <?php echo ($status_venda == 'concluida' ? 'selected' : ''); ?>>ConcluÃ­da</option>
+                        <option value="concluida" <?php echo ($status_venda == 'concluida' ? 'selected' : ''); ?>>Concluída</option>
                         <option value="cancelada" <?php echo ($status_venda == 'cancelada' ? 'selected' : ''); ?>>Cancelada</option>
                     </select>
                 </div>
@@ -245,7 +245,7 @@ include_once 'includes/header.php';
                 <div class="col-md-6">
                     <label for="produto_search" class="form-label">Buscar Produto</label>
                     <div class="input-group">
-                        <input type="text" class="form-control" id="produto_search" placeholder="Digite o nome ou cÃ³digo (SKU) do produto...">
+                        <input type="text" class="form-control" id="produto_search" placeholder="Digite o nome ou código (SKU) do produto...">
                         <button class="btn btn-outline-secondary" type="button" id="clearSearchBtn">
                             <i class="fas fa-times"></i>
                         </button>
@@ -276,7 +276,7 @@ include_once 'includes/header.php';
                     <input type="number" class="form-control" id="quantidade_item" value="1" min="1">
                 </div>
                 <div class="col-md-2 mb-3">
-                    <label for="preco_unitario_item" class="form-label">PreÃ§o Unit.</label>
+                    <label for="preco_unitario_item" class="form-label">Preço Unit.</label>
                     <input type="text" class="form-control" id="preco_unitario_item" placeholder="0,00">
                 </div>
                 <div class="col-md-2 mb-3">
@@ -292,9 +292,9 @@ include_once 'includes/header.php';
                         <tr>
                             <th>Produto</th>
                             <th>Quantidade</th>
-                            <th>PreÃ§o Unit.</th>
+                            <th>Preço Unit.</th>
                             <th>Subtotal</th>
-                            <th class="text-center">AÃ§Ãµes</th>
+                            <th class="text-center">Ações</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -354,7 +354,7 @@ document.addEventListener('DOMContentLoaded', function() {
         return parseFloat(valor).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
     }
 
-    // FunÃ§Ã£o para filtrar produtos por busca
+    // Função para filtrar produtos por busca
     function filtrarProdutos() {
         const termoBusca = document.getElementById('produto_search').value.toLowerCase();
 
@@ -393,7 +393,7 @@ document.addEventListener('DOMContentLoaded', function() {
     function renderizarItens() {
         tabelaItensBody.innerHTML = '';
         if(itensDaVenda.length === 0){
-            tabelaItensBody.innerHTML = '<tr><td colspan="5" class="text-center text-muted">Nenhum item adicionado Ã  venda.</td></tr>';
+            tabelaItensBody.innerHTML = '<tr><td colspan="5" class="text-center text-muted">Nenhum item adicionado à venda.</td></tr>';
         } else {
             itensDaVenda.forEach((item, index) => {
                 const subtotal = item.quantidade * item.preco_unitario;
@@ -434,8 +434,8 @@ document.addEventListener('DOMContentLoaded', function() {
         const precoUnitario = parseFloat(precoUnitarioInput.value.replace(/\./g, '').replace(',', '.'));
         const estoqueDisponivel = parseInt(selectedOption.dataset.estoque);
 
-        if (isNaN(quantidade) || quantidade <= 0 || isNaN(precoUnitario) || precoUnitario < 0) { alert('Quantidade e preÃ§o devem ser vÃ¡lidos.'); return; }
-        if (quantidade > estoqueDisponivel) { alert(`Estoque insuficiente para ${produtoNome}. DisponÃ­vel: ${estoqueDisponivel}.`); return; }
+        if (isNaN(quantidade) || quantidade <= 0 || isNaN(precoUnitario) || precoUnitario < 0) { alert('Quantidade e preço devem ser válidos.'); return; }
+        if (quantidade > estoqueDisponivel) { alert(`Estoque insuficiente para ${produtoNome}. Disponível: ${estoqueDisponivel}.`); return; }
 
         const itemExistente = itensDaVenda.find(item => item.id == produtoId);
         if (itemExistente) {

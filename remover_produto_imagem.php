@@ -1,7 +1,7 @@
 <?php
 require_once 'includes/session_bootstrap.php';
 
-// Verifica se o usuÃ¡rio estÃ¡ logado
+// Verifica se o usuário está logado
 if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
     http_response_code(403);
     echo json_encode(['success' => false, 'message' => 'Acesso negado']);
@@ -11,7 +11,7 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
 require_once 'includes/db_connect.php';
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-    echo json_encode(['success' => false, 'message' => 'MÃ©todo nÃ£o permitido']);
+    echo json_encode(['success' => false, 'message' => 'Método não permitido']);
     exit;
 }
 
@@ -19,7 +19,7 @@ $input = json_decode(file_get_contents('php://input'), true);
 $produto_id = intval($input['produto_id'] ?? 0);
 
 if (!$produto_id) {
-    echo json_encode(['success' => false, 'message' => 'ID do produto invÃ¡lido']);
+    echo json_encode(['success' => false, 'message' => 'ID do produto inválido']);
     exit;
 }
 
@@ -31,7 +31,7 @@ try {
     $result = $stmt_get->get_result();
     
     if ($result->num_rows === 0) {
-        echo json_encode(['success' => false, 'message' => 'Produto nÃ£o encontrado']);
+        echo json_encode(['success' => false, 'message' => 'Produto não encontrado']);
         exit;
     }
     
@@ -46,7 +46,7 @@ try {
         throw new Exception('Erro ao atualizar banco de dados');
     }
     
-    // Remover arquivo fÃ­sico se existir
+    // Remover arquivo físico se existir
     if ($imagem_atual && file_exists("uploads/produtos/" . $imagem_atual)) {
         unlink("uploads/produtos/" . $imagem_atual);
     }

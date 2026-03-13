@@ -1,18 +1,18 @@
 <?php
-// JÃ PODEMOS REMOVER AS LINHAS DE DEPURAÃ‡ÃƒO
+// JÁ PODEMOS REMOVER AS LINHAS DE DEPURAÇÃO
 // ini_set('display_errors', 1);
 // ini_set('display_startup_errors', 1);
 // error_reporting(E_ALL);
 
 require_once 'includes/session_bootstrap.php';
 
-// 1. VERIFICAÃ‡ÃƒO DE LOGIN
+// 1. VERIFICAÇÃO DE LOGIN
 if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
     header("location: index.php");
     exit;
 }
 
-// 2. CONEXÃƒO E DECLARAÃ‡ÃƒO DE VARIÃVEIS
+// 2. CONEXÃO E DECLARAÇÃO DE VARIÁVEIS
 require_once 'includes/db_connect.php';
 
 $id = $nome = $nome_fantasia = $tipo_pessoa = $cpf_cnpj = $inscricao_estadual = $email = $telefone = $endereco = $numero = $ponto_referencia = $cidade = $estado = $cep = "";
@@ -21,7 +21,7 @@ $submit_button_text = "Cadastrar Cliente";
 $message = '';
 $message_type = '';
 
-// 3. PROCESSAMENTO DO FORMULÃRIO (MÃ‰TODO POST) - VERSÃƒO FINAL COM TRY/CATCH
+// 3. PROCESSAMENTO DO FORMULÁRIO (MÉTODO POST) - VERSÃO FINAL COM TRY/CATCH
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $id = trim($_POST["id"] ?? '');
     $nome = trim($_POST["nome"]);
@@ -39,16 +39,16 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $cep = preg_replace('/[^0-9]/', '', trim($_POST["cep"]));
 
     if (empty($nome) || empty($tipo_pessoa)) {
-        $message = "Nome e Tipo de Pessoa sÃ£o obrigatÃ³rios.";
+        $message = "Nome e Tipo de Pessoa são obrigatórios.";
         $message_type = "danger";
     } else {
-        if (empty($id)) { // LÃ³gica para INSERIR novo cliente
+        if (empty($id)) { // Lógica para INSERIR novo cliente
             $sql = "INSERT INTO clientes (nome, nome_fantasia, tipo_pessoa, cpf_cnpj, inscricao_estadual, email, telefone, endereco, numero, ponto_referencia, cidade, estado, cep) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
             
             if ($stmt = $conn->prepare($sql)) {
                 $stmt->bind_param("sssssssssssss", $nome, $nome_fantasia, $tipo_pessoa, $cpf_cnpj, $inscricao_estadual, $email, $telefone, $endereco, $numero, $ponto_referencia, $cidade, $estado, $cep);
                 
-                // INÃCIO DO BLOCO TRY...CATCH PARA TRATAMENTO DE ERROS
+                // INÍCIO DO BLOCO TRY...CATCH PARA TRATAMENTO DE ERROS
                 try {
                     if ($stmt->execute()) {
                         $message = "Cliente cadastrado com sucesso!";
@@ -56,9 +56,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                         $id = $nome = $nome_fantasia = $tipo_pessoa = $cpf_cnpj = $inscricao_estadual = $email = $telefone = $endereco = $numero = $ponto_referencia = $cidade = $estado = $cep = "";
                     }
                 } catch (mysqli_sql_exception $e) {
-                    // O cÃ³digo 1062 Ã© especÃ­fico para erro de "Entrada Duplicada"
+                    // O código 1062 é específico para erro de "Entrada Duplicada"
                     if ($e->getCode() == 1062) {
-                        $message = "Este CPF/CNPJ jÃ¡ estÃ¡ cadastrado. Por favor, verifique os dados.";
+                        $message = "Este CPF/CNPJ já está cadastrado. Por favor, verifique os dados.";
                     } else {
                         // Para qualquer outro erro de banco de dados
                         $message = "Erro de banco de dados: " . $e->getMessage();
@@ -69,16 +69,16 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 }
                 // FIM DO BLOCO TRY...CATCH
             } else {
-                 $message = "Erro na preparaÃ§Ã£o da query SQL: " . $conn->error;
+                 $message = "Erro na preparação da query SQL: " . $conn->error;
                  $message_type = "danger";
             }
-        } else { // LÃ³gica para ATUALIZAR cliente existente
+        } else { // Lógica para ATUALIZAR cliente existente
             $sql = "UPDATE clientes SET nome = ?, nome_fantasia = ?, tipo_pessoa = ?, cpf_cnpj = ?, inscricao_estadual = ?, email = ?, telefone = ?, endereco = ?, numero = ?, ponto_referencia = ?, cidade = ?, estado = ?, cep = ? WHERE id = ?";
             
             if ($stmt = $conn->prepare($sql)) {
                 $stmt->bind_param("sssssssssssssi", $nome, $nome_fantasia, $tipo_pessoa, $cpf_cnpj, $inscricao_estadual, $email, $telefone, $endereco, $numero, $ponto_referencia, $cidade, $estado, $cep, $id);
                 
-                // INÃCIO DO BLOCO TRY...CATCH PARA TRATAMENTO DE ERROS
+                // INÍCIO DO BLOCO TRY...CATCH PARA TRATAMENTO DE ERROS
                 try {
                     if ($stmt->execute()) {
                         $_SESSION['flash_message'] = "Cliente atualizado com sucesso!";
@@ -88,7 +88,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     }
                 } catch (mysqli_sql_exception $e) {
                     if ($e->getCode() == 1062) {
-                        $message = "NÃ£o foi possÃ­vel atualizar. O CPF/CNPJ informado jÃ¡ pertence a outro cliente.";
+                        $message = "Não foi possível atualizar. O CPF/CNPJ informado já pertence a outro cliente.";
                     } else {
                         $message = "Erro de banco de dados ao atualizar: " . $e->getMessage();
                     }
@@ -98,14 +98,14 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 }
                 // FIM DO BLOCO TRY...CATCH
             } else {
-                 $message = "Erro na preparaÃ§Ã£o da query SQL de atualizaÃ§Ã£o: " . $conn->error;
+                 $message = "Erro na preparação da query SQL de atualização: " . $conn->error;
                  $message_type = "danger";
             }
         }
     }
 }
 
-// 4. PREENCHER FORMULÃRIO PARA EDIÃ‡ÃƒO (MÃ‰TODO GET)
+// 4. PREENCHER FORMULÁRIO PARA EDIÇÃO (MÉTODO GET)
 if (isset($_GET["id"]) && $_SERVER["REQUEST_METHOD"] !== "POST") {
     $id = trim($_GET["id"]);
     $sql_edit = "SELECT id, nome, nome_fantasia, tipo_pessoa, cpf_cnpj, inscricao_estadual, email, telefone, endereco, numero, ponto_referencia, cidade, estado, cep FROM clientes WHERE id = ?";
@@ -120,7 +120,7 @@ if (isset($_GET["id"]) && $_SERVER["REQUEST_METHOD"] !== "POST") {
                 $title = "Editar Cliente: " . htmlspecialchars($nome);
                 $submit_button_text = "Atualizar Cliente";
             } else {
-                $_SESSION['flash_message'] = "Cliente nÃ£o encontrado.";
+                $_SESSION['flash_message'] = "Cliente não encontrado.";
                 $_SESSION['flash_message_type'] = "danger";
                 header("location: clientes.php");
                 exit();
@@ -154,10 +154,10 @@ include_once 'includes/header.php';
         <form action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]); ?><?php echo !empty($id) ? '?id='.$id : ''; ?>" method="post" id="clientForm" novalidate>
             <input type="hidden" name="id" value="<?php echo htmlspecialchars($id); ?>">
 
-            <h5 class="form-section-title"><i class="fas fa-id-card me-2"></i> IdentificaÃ§Ã£o</h5>
+            <h5 class="form-section-title"><i class="fas fa-id-card me-2"></i> Identificação</h5>
             <div class="row">
                 <div class="col-md-6 mb-3">
-                    <label for="nome" class="form-label">Nome / RazÃ£o Social <span class="text-danger">*</span></label>
+                    <label for="nome" class="form-label">Nome / Razão Social <span class="text-danger">*</span></label>
                     <input type="text" class="form-control" id="nome" name="nome" value="<?php echo htmlspecialchars($nome); ?>" required>
                 </div>
                 <div class="col-md-6 mb-3" id="nome_fantasia_container" style="display: none;">
@@ -170,8 +170,8 @@ include_once 'includes/header.php';
                     <label for="tipo_pessoa" class="form-label">Tipo de Pessoa <span class="text-danger">*</span></label>
                     <select class="form-select" id="tipo_pessoa" name="tipo_pessoa" required>
                         <option value="" disabled <?php echo empty($tipo_pessoa) ? 'selected' : ''; ?>>Selecione...</option>
-                        <option value="fisica" <?php echo ($tipo_pessoa == 'fisica' ? 'selected' : ''); ?>>FÃ­sica</option>
-                        <option value="juridica" <?php echo ($tipo_pessoa == 'juridica' ? 'selected' : ''); ?>>JurÃ­dica</option>
+                        <option value="fisica" <?php echo ($tipo_pessoa == 'fisica' ? 'selected' : ''); ?>>Física</option>
+                        <option value="juridica" <?php echo ($tipo_pessoa == 'juridica' ? 'selected' : ''); ?>>Jurídica</option>
                     </select>
                 </div>
                 <div class="col-md-4 mb-3">
@@ -179,7 +179,7 @@ include_once 'includes/header.php';
                     <input type="text" class="form-control" id="cpf_cnpj" name="cpf_cnpj" value="<?php echo htmlspecialchars($cpf_cnpj); ?>">
                 </div>
                 <div class="col-md-4 mb-3" id="inscricao_estadual_container" style="display: none;">
-                    <label for="inscricao_estadual" class="form-label">InscriÃ§Ã£o Estadual</label>
+                    <label for="inscricao_estadual" class="form-label">Inscrição Estadual</label>
                     <input type="text" class="form-control" id="inscricao_estadual" name="inscricao_estadual" value="<?php echo htmlspecialchars($inscricao_estadual); ?>">
                 </div>
             </div>
@@ -198,7 +198,7 @@ include_once 'includes/header.php';
             </div>
 
             <hr class="my-4">
-            <h5 class="form-section-title"><i class="fas fa-map-marker-alt me-2"></i> EndereÃ§o</h5>
+            <h5 class="form-section-title"><i class="fas fa-map-marker-alt me-2"></i> Endereço</h5>
             <div class="row align-items-center">
                 <div class="col-md-4 mb-3">
                     <label for="cep" class="form-label">CEP</label>
@@ -212,18 +212,18 @@ include_once 'includes/header.php';
                     <div id="cep-helper" class="form-text mt-1"></div>
                 </div>
                 <div class="col-md-8 mb-3">
-                    <label for="endereco" class="form-label">EndereÃ§o (Rua, Bairro)</label>
+                    <label for="endereco" class="form-label">Endereço (Rua, Bairro)</label>
                     <input type="text" class="form-control" id="endereco" name="endereco" value="<?php echo htmlspecialchars($endereco); ?>">
                 </div>
             </div>
             
             <div class="row">
                 <div class="col-md-3 mb-3">
-                    <label for="numero" class="form-label">NÃºmero</label>
+                    <label for="numero" class="form-label">Número</label>
                     <input type="text" class="form-control" id="numero" name="numero" value="<?php echo htmlspecialchars($numero); ?>">
                 </div>
                 <div class="col-md-9 mb-3">
-                    <label for="ponto_referencia" class="form-label">Ponto de ReferÃªncia</label>
+                    <label for="ponto_referencia" class="form-label">Ponto de Referência</label>
                     <input type="text" class="form-control" id="ponto_referencia" name="ponto_referencia" value="<?php echo htmlspecialchars($ponto_referencia); ?>">
                 </div>
             </div>
@@ -252,7 +252,7 @@ include_once 'includes/header.php';
 </div>
 
 <script>
-// Nenhuma alteraÃ§Ã£o Ã© necessÃ¡ria no Javascript.
+// Nenhuma alteração é necessária no Javascript.
 document.addEventListener('DOMContentLoaded', function() {
     const tipoPessoaSelect = document.getElementById('tipo_pessoa');
     const nomeFantasiaContainer = document.getElementById('nome_fantasia_container'); 
@@ -309,7 +309,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (cepAbortController) cepAbortController.abort();
         const cep = cepInput.value.replace(/\D/g, '');
         if (cep.length !== 8) {
-            cepHelper.textContent = 'Digite 8 nÃºmeros para o CEP.';
+            cepHelper.textContent = 'Digite 8 números para o CEP.';
             cepHelper.className = 'form-text mt-1 text-muted';
             return;
         }
@@ -326,13 +326,13 @@ document.addEventListener('DOMContentLoaded', function() {
             if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
             const data = await response.json();
             if (data.erro) {
-                cepHelper.textContent = 'CEP nÃ£o encontrado.';
+                cepHelper.textContent = 'CEP não encontrado.';
                 cepHelper.className = 'form-text mt-1 text-danger';
             } else {
                 enderecoInput.value = `${data.logradouro || ''}, ${data.bairro || ''}`.trim();
                 cidadeInput.value = data.localidade || '';
                 estadoInput.value = data.uf || '';
-                cepHelper.textContent = 'EndereÃ§o preenchido!';
+                cepHelper.textContent = 'Endereço preenchido!';
                 cepHelper.className = 'form-text mt-1 text-success';
             }
         } catch (error) {
@@ -340,7 +340,7 @@ document.addEventListener('DOMContentLoaded', function() {
             if (error.name === 'AbortError' || error.message === 'timeout') {
                 cepHelper.textContent = 'Busca cancelada (tempo esgotado).';
             } else {
-                cepHelper.textContent = 'Falha na comunicaÃ§Ã£o com o serviÃ§o de CEP.';
+                cepHelper.textContent = 'Falha na comunicação com o serviço de CEP.';
             }
             cepHelper.className = 'form-text mt-1 text-danger';
         } finally {

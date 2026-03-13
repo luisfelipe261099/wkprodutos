@@ -1,13 +1,13 @@
 <?php
 require_once 'includes/session_bootstrap.php';
 
-// Verifica se o usuÃ¡rio estÃ¡ logado
+// Verifica se o usuário está logado
 if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
     header("location: index.php");
     exit;
 }
 
-// Ativar exibiÃ§Ã£o de erros para debug
+// Ativar exibição de erros para debug
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
@@ -22,11 +22,11 @@ if (!$result_check || $result_check->num_rows == 0) {
 
 $orcamento_id = $cliente_id = $data_orcamento = $valor_total = $status_orcamento = $observacoes = "";
 $forma_pagamento = $tipo_faturamento = $data_vencimento = "";
-$title = "Criar Novo OrÃ§amento";
-$submit_button_text = "Criar OrÃ§amento";
+$title = "Criar Novo Orçamento";
+$submit_button_text = "Criar Orçamento";
 $message = '';
 $message_type = '';
-$itens_do_orcamento = []; // Array para armazenar os produtos do orÃ§amento (para ediÃ§Ã£o)
+$itens_do_orcamento = []; // Array para armazenar os produtos do orçamento (para edição)
 
 // Buscar todos os clientes para o campo SELECT
 $clientes_options = $conn->query("SELECT id, nome FROM clientes ORDER BY nome ASC");
@@ -34,13 +34,13 @@ $clientes_options = $conn->query("SELECT id, nome FROM clientes ORDER BY nome AS
 // Buscar todas as empresas para o filtro
 $empresas_options = $conn->query("SELECT id, nome_empresa FROM empresas_representadas ORDER BY nome_empresa ASC");
 
-// Buscar todos os produtos para o campo SELECT na adiÃ§Ã£o de itens (incluindo empresa e SKU)
+// Buscar todos os produtos para o campo SELECT na adição de itens (incluindo empresa e SKU)
 $produtos_options = $conn->query("SELECT p.id, p.nome, p.sku, p.preco_venda, p.empresa_id, e.nome_empresa
                                    FROM produtos p
                                    LEFT JOIN empresas_representadas e ON p.empresa_id = e.id
                                    ORDER BY e.nome_empresa ASC, p.nome ASC");
 
-// Processar formulÃ¡rio quando enviado
+// Processar formulário quando enviado
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $orcamento_id = trim($_POST["orcamento_id"] ?? '');
     $cliente_id = trim($_POST["cliente_id"]);
@@ -49,93 +49,93 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $forma_pagamento = trim($_POST["forma_pagamento"] ?? '');
     $tipo_faturamento = trim($_POST["tipo_faturamento"] ?? '');
     $data_vencimento = trim($_POST["data_vencimento"] ?? '');
-    $itens_selecionados_json = $_POST["itens_selecionados_json"] ?? '[]'; // Itens do orÃ§amento em JSON
+    $itens_selecionados_json = $_POST["itens_selecionados_json"] ?? '[]'; // Itens do orçamento em JSON
 
     // Decodifica os itens selecionados
     $itens_do_orcamento_post = json_decode($itens_selecionados_json, true);
 
-    // Recalcula o valor total com base nos itens enviados (seguranÃ§a)
+    // Recalcula o valor total com base nos itens enviados (segurança)
     $calculated_valor_total = 0;
     foreach ($itens_do_orcamento_post as $item) {
         $calculated_valor_total += ($item['preco_unitario'] * $item['quantidade']);
     }
     $valor_total = $calculated_valor_total; // Usamos o valor recalculado
 
-    // ValidaÃ§Ã£o bÃ¡sica
+    // Validação básica
     if (empty($cliente_id) || empty($status_orcamento) || empty($itens_do_orcamento_post)) {
-        $message = "Por favor, preencha todos os campos obrigatÃ³rios e adicione pelo menos um produto ao orÃ§amento.";
+        $message = "Por favor, preencha todos os campos obrigatórios e adicione pelo menos um produto ao orçamento.";
         $message_type = "danger";
     } else {
-        $conn->begin_transaction(); // Inicia transaÃ§Ã£o
+        $conn->begin_transaction(); // Inicia transação
 
         try {
-            if (empty($orcamento_id)) { // Novo OrÃ§amento
+            if (empty($orcamento_id)) { // Novo Orçamento
                 if ($colunas_pagamento_existem) {
                     $sql = "INSERT INTO orcamentos (cliente_id, valor_total, status_orcamento, observacoes, forma_pagamento, tipo_faturamento, data_vencimento, data_orcamento) VALUES (?, ?, ?, ?, ?, ?, ?, NOW())";
                     if ($stmt = $conn->prepare($sql)) {
                         $data_vencimento_param = !empty($data_vencimento) ? $data_vencimento : null;
                         $stmt->bind_param("idsssss", $cliente_id, $valor_total, $status_orcamento, $observacoes, $forma_pagamento, $tipo_faturamento, $data_vencimento_param);
                         if (!$stmt->execute()) {
-                            throw new Exception("Erro ao registrar orÃ§amento: " . $stmt->error);
+                            throw new Exception("Erro ao registrar orçamento: " . $stmt->error);
                         }
                         $orcamento_id = $conn->insert_id;
                         $stmt->close();
                     } else {
-                        throw new Exception("Erro na preparaÃ§Ã£o da query de inserÃ§Ã£o do orÃ§amento: " . $conn->error);
+                        throw new Exception("Erro na preparação da query de inserção do orçamento: " . $conn->error);
                     }
                 } else {
-                    // VersÃ£o sem colunas de pagamento
+                    // Versão sem colunas de pagamento
                     $sql = "INSERT INTO orcamentos (cliente_id, valor_total, status_orcamento, observacoes, data_orcamento) VALUES (?, ?, ?, ?, NOW())";
                     if ($stmt = $conn->prepare($sql)) {
                         $stmt->bind_param("idss", $cliente_id, $valor_total, $status_orcamento, $observacoes);
                         if (!$stmt->execute()) {
-                            throw new Exception("Erro ao registrar orÃ§amento: " . $stmt->error);
+                            throw new Exception("Erro ao registrar orçamento: " . $stmt->error);
                         }
                         $orcamento_id = $conn->insert_id;
                         $stmt->close();
                     } else {
-                        throw new Exception("Erro na preparaÃ§Ã£o da query de inserÃ§Ã£o do orÃ§amento: " . $conn->error);
+                        throw new Exception("Erro na preparação da query de inserção do orçamento: " . $conn->error);
                     }
                 }
-            } else { // Editar OrÃ§amento Existente
-                // Exclui os itens antigos do orÃ§amento para inserir os novos
+            } else { // Editar Orçamento Existente
+                // Exclui os itens antigos do orçamento para inserir os novos
                 $sql_delete_old_items = "DELETE FROM itens_orcamento WHERE orcamento_id = ?";
                 $stmt_delete_old_items = $conn->prepare($sql_delete_old_items);
                 $stmt_delete_old_items->bind_param("i", $orcamento_id);
                 if (!$stmt_delete_old_items->execute()) {
-                    throw new Exception("Erro ao deletar itens antigos do orÃ§amento: " . $stmt_delete_old_items->error);
+                    throw new Exception("Erro ao deletar itens antigos do orçamento: " . $stmt_delete_old_items->error);
                 }
                 $stmt_delete_old_items->close();
 
-                // Atualiza os dados do orÃ§amento
+                // Atualiza os dados do orçamento
                 if ($colunas_pagamento_existem) {
                     $sql = "UPDATE orcamentos SET cliente_id = ?, valor_total = ?, status_orcamento = ?, observacoes = ?, forma_pagamento = ?, tipo_faturamento = ?, data_vencimento = ? WHERE id = ?";
                     if ($stmt = $conn->prepare($sql)) {
                         $data_vencimento_param = !empty($data_vencimento) ? $data_vencimento : null;
                         $stmt->bind_param("idsssssi", $cliente_id, $valor_total, $status_orcamento, $observacoes, $forma_pagamento, $tipo_faturamento, $data_vencimento_param, $orcamento_id);
                         if (!$stmt->execute()) {
-                            throw new Exception("Erro ao atualizar orÃ§amento: " . $stmt->error);
+                            throw new Exception("Erro ao atualizar orçamento: " . $stmt->error);
                         }
                         $stmt->close();
                     } else {
-                        throw new Exception("Erro na preparaÃ§Ã£o da query de atualizaÃ§Ã£o do orÃ§amento: " . $conn->error);
+                        throw new Exception("Erro na preparação da query de atualização do orçamento: " . $conn->error);
                     }
                 } else {
-                    // VersÃ£o sem colunas de pagamento
+                    // Versão sem colunas de pagamento
                     $sql = "UPDATE orcamentos SET cliente_id = ?, valor_total = ?, status_orcamento = ?, observacoes = ? WHERE id = ?";
                     if ($stmt = $conn->prepare($sql)) {
                         $stmt->bind_param("idssi", $cliente_id, $valor_total, $status_orcamento, $observacoes, $orcamento_id);
                         if (!$stmt->execute()) {
-                            throw new Exception("Erro ao atualizar orÃ§amento: " . $stmt->error);
+                            throw new Exception("Erro ao atualizar orçamento: " . $stmt->error);
                         }
                         $stmt->close();
                     } else {
-                        throw new Exception("Erro na preparaÃ§Ã£o da query de atualizaÃ§Ã£o do orÃ§amento: " . $conn->error);
+                        throw new Exception("Erro na preparação da query de atualização do orçamento: " . $conn->error);
                     }
                 }
             }
 
-            // Inserir/Atualizar Itens do OrÃ§amento
+            // Inserir/Atualizar Itens do Orçamento
             foreach ($itens_do_orcamento_post as $item) {
                 $produto_id = $item['id'];
                 $quantidade = $item['quantidade'];
@@ -145,36 +145,36 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 if ($stmt_item = $conn->prepare($sql_item)) {
                     $stmt_item->bind_param("iiid", $orcamento_id, $produto_id, $quantidade, $preco_unitario);
                     if (!$stmt_item->execute()) {
-                        throw new Exception("Erro ao inserir item do orÃ§amento: " . $stmt_item->error);
+                        throw new Exception("Erro ao inserir item do orçamento: " . $stmt_item->error);
                     }
                     $stmt_item->close();
                 } else {
-                    throw new Exception("Erro na preparaÃ§Ã£o da query de item do orÃ§amento: " . $conn->error);
+                    throw new Exception("Erro na preparação da query de item do orçamento: " . $conn->error);
                 }
             }
 
-            $conn->commit(); // Confirma todas as operaÃ§Ãµes
-            $message = (empty($_POST["orcamento_id"]) ? "OrÃ§amento criado com sucesso!" : "OrÃ§amento atualizado com sucesso!");
+            $conn->commit(); // Confirma todas as operações
+            $message = (empty($_POST["orcamento_id"]) ? "Orçamento criado com sucesso!" : "Orçamento atualizado com sucesso!");
             $message_type = "success";
             header("location: orcamentos.php?message=" . urlencode($message) . "&type=" . $message_type);
             exit;
 
         } catch (Exception $e) {
-            $conn->rollback(); // Reverte todas as operaÃ§Ãµes em caso de erro
-            $message = "Erro na transaÃ§Ã£o: " . $e->getMessage();
+            $conn->rollback(); // Reverte todas as operações em caso de erro
+            $message = "Erro na transação: " . $e->getMessage();
             $message_type = "danger";
         }
     }
 }
 
-// Preencher formulÃ¡rio para ediÃ§Ã£o se um ID for passado via GET
+// Preencher formulário para edição se um ID for passado via GET
 $orcamento_id_get = $_GET["id"] ?? '';
 if (!empty($orcamento_id_get) && empty($message)) {
     $orcamento_id = $orcamento_id_get;
-    $title = "Editar OrÃ§amento";
-    $submit_button_text = "Atualizar OrÃ§amento";
+    $title = "Editar Orçamento";
+    $submit_button_text = "Atualizar Orçamento";
 
-    // Busca os dados do orÃ§amento principal
+    // Busca os dados do orçamento principal
     if ($colunas_pagamento_existem) {
         $sql_orcamento = "SELECT id, cliente_id, valor_total, status_orcamento, observacoes, forma_pagamento, tipo_faturamento, data_vencimento FROM orcamentos WHERE id = ?";
     } else {
@@ -198,19 +198,19 @@ if (!empty($orcamento_id_get) && empty($message)) {
                 $data_vencimento = $row_orcamento['data_vencimento'] ?? '';
             }
         } else {
-            $message = "OrÃ§amento nÃ£o encontrado.";
+            $message = "Orçamento não encontrado.";
             $message_type = "danger";
             $orcamento_id = "";
-            $title = "Criar Novo OrÃ§amento";
-            $submit_button_text = "Criar OrÃ§amento";
+            $title = "Criar Novo Orçamento";
+            $submit_button_text = "Criar Orçamento";
         }
         $stmt_orcamento->close();
     } else {
-        $message = "Erro ao buscar orÃ§amento para ediÃ§Ã£o: " . $conn->error;
+        $message = "Erro ao buscar orçamento para edição: " . $conn->error;
         $message_type = "danger";
     }
 
-    // Busca os itens do orÃ§amento
+    // Busca os itens do orçamento
     $sql_itens = "SELECT io.produto_id, p.nome AS produto_nome, io.quantidade, io.preco_unitario
                     FROM itens_orcamento io
                     JOIN produtos p ON io.produto_id = p.id
@@ -230,10 +230,10 @@ if (!empty($orcamento_id_get) && empty($message)) {
         $stmt_itens->close();
 
         // Debug: verificar quantos itens foram carregados
-        error_log("Itens carregados para orÃ§amento $orcamento_id: " . count($itens_do_orcamento));
+        error_log("Itens carregados para orçamento $orcamento_id: " . count($itens_do_orcamento));
         error_log("Itens JSON: " . json_encode($itens_do_orcamento));
     } else {
-        $message = "Erro ao buscar itens do orÃ§amento: " . $conn->error;
+        $message = "Erro ao buscar itens do orçamento: " . $conn->error;
         $message_type = "danger";
     }
 }
@@ -272,7 +272,7 @@ include_once 'includes/header.php';
     background-color: #e9ecef;
 }
 
-/* Estilos especÃ­ficos para busca de produtos */
+/* Estilos específicos para busca de produtos */
 #produto_select {
     max-height: 200px;
     overflow-y: auto;
@@ -309,9 +309,9 @@ include_once 'includes/header.php';
     color: white;
 }
 
-/* Melhorias especÃ­ficas para iPad Air */
+/* Melhorias específicas para iPad Air */
 @media (min-width: 768px) and (max-width: 1180px) {
-    /* BotÃµes de aÃ§Ã£o principais mais visÃ­veis */
+    /* Botões de ação principais mais visíveis */
     .d-flex.gap-2.justify-content-end {
         flex-wrap: wrap;
         gap: 1rem !important;
@@ -334,7 +334,7 @@ include_once 'includes/header.php';
         box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
     }
 
-    /* BotÃµes de adicionar produto */
+    /* Botões de adicionar produto */
     .btn-add-item {
         min-height: 44px !important;
         font-weight: 500 !important;
@@ -349,7 +349,7 @@ include_once 'includes/header.php';
         box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
     }
 
-    /* BotÃµes de editar/remover itens */
+    /* Botões de editar/remover itens */
     .editar-item-btn,
     .remover-item-btn {
         min-width: 36px !important;
@@ -370,7 +370,7 @@ include_once 'includes/header.php';
         box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
     }
 
-    /* Container dos botÃµes de aÃ§Ã£o */
+    /* Container dos botões de ação */
     .btn-group-actions {
         display: flex !important;
         gap: 0.25rem !important;
@@ -389,7 +389,7 @@ include_once 'includes/header.php';
         border-color: #ffeaa7 !important;
     }
 
-    /* BotÃ£o cancelar ediÃ§Ã£o */
+    /* Botão cancelar edição */
     #cancelEditBtn {
         font-size: 0.9rem !important;
         padding: 0.5rem 1rem !important;
@@ -437,7 +437,7 @@ include_once 'includes/header.php';
     }
 
     .table {
-        min-width: 700px !important; /* ForÃ§a largura mÃ­nima para mostrar scroll */
+        min-width: 700px !important; /* Força largura mínima para mostrar scroll */
         margin-bottom: 0 !important;
     }
 
@@ -449,7 +449,7 @@ include_once 'includes/header.php';
         font-size: 0.9rem;
     }
 
-    /* Coluna de aÃ§Ãµes com largura fixa */
+    /* Coluna de ações com largura fixa */
     .table th:last-child,
     .table td:last-child {
         width: 120px !important;
@@ -462,7 +462,7 @@ include_once 'includes/header.php';
         z-index: 10;
     }
 
-    /* CabeÃ§alho sticky tambÃ©m */
+    /* Cabeçalho sticky também */
     .table thead th:last-child {
         background: #f8f9fa;
         font-weight: 600;
@@ -475,13 +475,13 @@ include_once 'includes/header.php';
         font-size: 1rem;
     }
 
-    /* Melhorar Ã¡rea de busca de produtos */
+    /* Melhorar área de busca de produtos */
     .produtos-search-container {
         padding: 1.5rem;
         margin-bottom: 1.5rem;
     }
 
-    /* BotÃµes de filtro */
+    /* Botões de filtro */
     #clearFiltersBtn,
     #clearSearchBtn {
         min-height: 44px;
@@ -494,12 +494,12 @@ include_once 'includes/header.php';
         line-height: 1.4;
     }
 
-    /* Cards de informaÃ§Ã£o */
+    /* Cards de informação */
     .card-body-modern {
         padding: 1.5rem;
     }
 
-    /* Alertas mais visÃ­veis */
+    /* Alertas mais visíveis */
     .alert {
         padding: 1rem 1.5rem;
         font-size: 0.95rem;
@@ -508,7 +508,7 @@ include_once 'includes/header.php';
 
 
 
-/* Ajustes especÃ­ficos para orientaÃ§Ã£o paisagem do iPad */
+/* Ajustes específicos para orientação paisagem do iPad */
 @media (min-width: 1024px) and (max-width: 1180px) and (orientation: landscape) {
     .d-flex.gap-2.justify-content-end {
         justify-content: flex-end !important;
@@ -609,7 +609,7 @@ include_once 'includes/header.php';
         <?php echo $title; ?>
     </h1>
     <p class="page-subtitle">
-        <?php echo $orcamento_id ? 'Atualize os dados do orÃ§amento' : 'Crie um novo orÃ§amento para seus clientes'; ?>
+        <?php echo $orcamento_id ? 'Atualize os dados do orçamento' : 'Crie um novo orçamento para seus clientes'; ?>
     </p>
 </div>
 
@@ -624,7 +624,7 @@ include_once 'includes/header.php';
 <div class="modern-card fade-in-up">
     <div class="card-header-modern">
         <i class="fas fa-file-invoice-dollar"></i>
-        Dados do OrÃ§amento
+        Dados do Orçamento
     </div>
     <div class="card-body-modern">
         <form id="formOrcamento" action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]); ?>" method="post">
@@ -641,14 +641,14 @@ include_once 'includes/header.php';
             <?php endif; ?>
 
             <script>
-                // Definir itens do orÃ§amento diretamente no JavaScript
+                // Definir itens do orçamento diretamente no JavaScript
                 window.itensDoOrcamentoCarregados = <?php echo json_encode($itens_do_orcamento); ?>;
             </script>
 
             <div class="row g-4">
                 <div class="col-12">
                     <h5 class="text-primary mb-3">
-                        <i class="fas fa-info-circle me-2"></i>InformaÃ§Ãµes BÃ¡sicas
+                        <i class="fas fa-info-circle me-2"></i>Informações Básicas
                     </h5>
                 </div>
 
@@ -658,7 +658,7 @@ include_once 'includes/header.php';
                         <input type="text" class="form-control" id="cliente_search" placeholder="Digite o nome do cliente..." autocomplete="off" required>
                         <input type="hidden" id="cliente_id" name="cliente_id" value="<?php echo htmlspecialchars($cliente_id); ?>">
                         <div id="cliente_dropdown" class="position-absolute w-100 bg-white border border-top-0 rounded-bottom shadow-sm" style="display: none; max-height: 300px; overflow-y: auto; z-index: 1000; top: 100%;">
-                            <!-- Resultados da busca serÃ£o inseridos aqui -->
+                            <!-- Resultados da busca serão inseridos aqui -->
                         </div>
                     </div>
                     <small id="cliente_selecionado" class="text-muted d-block mt-2" style="display: none;">
@@ -667,7 +667,7 @@ include_once 'includes/header.php';
                 </div>
 
                 <div class="col-md-6">
-                    <label for="status_orcamento" class="form-label">Status do OrÃ§amento *</label>
+                    <label for="status_orcamento" class="form-label">Status do Orçamento *</label>
                     <select class="form-control" id="status_orcamento" name="status_orcamento" required>
                         <option value="pendente" <?php echo ($status_orcamento == 'pendente' ? 'selected' : ''); ?>>Pendente</option>
                         <option value="aprovado" <?php echo ($status_orcamento == 'aprovado' ? 'selected' : ''); ?>>Aprovado</option>
@@ -679,7 +679,7 @@ include_once 'includes/header.php';
                 <?php if ($colunas_pagamento_existem): ?>
                 <div class="col-12">
                     <h5 class="text-primary mb-3 mt-4">
-                        <i class="fas fa-credit-card me-2"></i>InformaÃ§Ãµes de Pagamento
+                        <i class="fas fa-credit-card me-2"></i>Informações de Pagamento
                     </h5>
                 </div>
 
@@ -688,8 +688,8 @@ include_once 'includes/header.php';
                     <select class="form-control" id="forma_pagamento" name="forma_pagamento" required>
                         <option value="faturamento" <?php echo ($forma_pagamento == 'faturamento' ? 'selected' : ''); ?>>Faturamento</option>
                         <option value="pix" <?php echo ($forma_pagamento == 'pix' ? 'selected' : ''); ?>>PIX</option>
-                        <option value="debito" <?php echo ($forma_pagamento == 'debito' ? 'selected' : ''); ?>>CartÃ£o de DÃ©bito</option>
-                        <option value="credito" <?php echo ($forma_pagamento == 'credito' ? 'selected' : ''); ?>>CartÃ£o de CrÃ©dito</option>
+                        <option value="debito" <?php echo ($forma_pagamento == 'debito' ? 'selected' : ''); ?>>Cartão de Débito</option>
+                        <option value="credito" <?php echo ($forma_pagamento == 'credito' ? 'selected' : ''); ?>>Cartão de Crédito</option>
                         <option value="dinheiro" <?php echo ($forma_pagamento == 'dinheiro' ? 'selected' : ''); ?>>Dinheiro</option>
                     </select>
                 </div>
@@ -697,7 +697,7 @@ include_once 'includes/header.php';
                 <div class="col-md-4" id="tipo_faturamento_container">
                     <label for="tipo_faturamento" class="form-label">Tipo de Faturamento</label>
                     <select class="form-control" id="tipo_faturamento" name="tipo_faturamento">
-                        <option value="avista" <?php echo ($tipo_faturamento == 'avista' ? 'selected' : ''); ?>>Ã€ Vista</option>
+                        <option value="avista" <?php echo ($tipo_faturamento == 'avista' ? 'selected' : ''); ?>>À Vista</option>
                         <option value="7_dias" <?php echo ($tipo_faturamento == '7_dias' ? 'selected' : ''); ?>>7 dias</option>
                         <option value="15_dias" <?php echo ($tipo_faturamento == '15_dias' ? 'selected' : ''); ?>>15 dias</option>
                         <option value="20_dias" <?php echo ($tipo_faturamento == '20_dias' ? 'selected' : ''); ?>>20 dias</option>
@@ -726,7 +726,7 @@ include_once 'includes/header.php';
                 <div class="col-12">
                     <div class="alert alert-info">
                         <i class="fas fa-info-circle me-2"></i>
-                        <strong>Funcionalidades de Pagamento:</strong> Para habilitar as opÃ§Ãµes de forma de pagamento (PIX, dÃ©bito, crÃ©dito, faturamento),
+                        <strong>Funcionalidades de Pagamento:</strong> Para habilitar as opções de forma de pagamento (PIX, débito, crédito, faturamento),
                         execute o arquivo <code>alteracoes_banco_melhorias.sql</code> no seu banco de dados.
                         <br><br>
                         <a href="verificar_estrutura_banco.php" class="btn btn-sm btn-primary">
@@ -737,14 +737,14 @@ include_once 'includes/header.php';
                 <?php endif; ?>
 
                 <div class="col-12">
-                    <label for="observacoes" class="form-label">ObservaÃ§Ãµes</label>
+                    <label for="observacoes" class="form-label">Observações</label>
                     <textarea class="form-control" id="observacoes" name="observacoes" rows="3"
-                              placeholder="InformaÃ§Ãµes adicionais sobre o orÃ§amento..."><?php echo htmlspecialchars($observacoes); ?></textarea>
+                              placeholder="Informações adicionais sobre o orçamento..."><?php echo htmlspecialchars($observacoes); ?></textarea>
                 </div>
 
                 <div class="col-12">
                     <h5 class="text-primary mb-3 mt-4">
-                        <i class="fas fa-boxes me-2"></i>Itens do OrÃ§amento
+                        <i class="fas fa-boxes me-2"></i>Itens do Orçamento
                     </h5>
                 </div>
             </div>
@@ -830,7 +830,7 @@ include_once 'includes/header.php';
                         </div>
                     </div>
 
-                    <!-- Painel de SeleÃ§Ã£o RÃ¡pida -->
+                    <!-- Painel de Seleção Rápida -->
                     <div class="row g-3 align-items-end" id="painel_selecao" style="display: none; background: #f8f9fa; padding: 1.5rem; border-radius: 0.5rem; border-left: 4px solid #007bff;">
                         <div class="col-md-5">
                             <label class="form-label fw-bold">Produto Selecionado</label>
@@ -848,7 +848,7 @@ include_once 'includes/header.php';
                         </div>
 
                         <div class="col-md-2">
-                            <label for="preco_unitario_item_novo" class="form-label fw-bold">PreÃ§o Unit.</label>
+                            <label for="preco_unitario_item_novo" class="form-label fw-bold">Preço Unit.</label>
                             <input type="text" class="form-control form-control-lg" id="preco_unitario_item_novo"
                                    value="0,00" placeholder="0,00" style="border-radius: 0.5rem; padding: 0.75rem 1rem; text-align: center; font-size: 1.1rem;">
                         </div>
@@ -868,7 +868,7 @@ include_once 'includes/header.php';
             <div class="modern-card mt-4">
                 <div class="card-header-modern">
                     <i class="fas fa-list"></i>
-                    Itens do OrÃ§amento
+                    Itens do Orçamento
                     <div class="ms-auto">
                         <span class="badge bg-primary" id="totalItens">0 itens</span>
                     </div>
@@ -876,7 +876,7 @@ include_once 'includes/header.php';
                 <div class="card-body-modern">
                     <div class="alert alert-info d-block d-lg-none mb-3">
                         <i class="fas fa-arrows-alt-h me-2"></i>
-                        <small>Deslize horizontalmente para ver todas as colunas e botÃµes de aÃ§Ã£o</small>
+                        <small>Deslize horizontalmente para ver todas as colunas e botões de ação</small>
                     </div>
                     <div class="table-responsive">
                         <table class="table table-hover mb-0" id="tabelaItens">
@@ -884,16 +884,16 @@ include_once 'includes/header.php';
                                 <tr>
                                     <th>Produto</th>
                                     <th>Quantidade</th>
-                                    <th>PreÃ§o Unit.</th>
+                                    <th>Preço Unit.</th>
                                     <th>Subtotal</th>
-                                    <th class="text-center">AÃ§Ãµes</th>
+                                    <th class="text-center">Ações</th>
                                 </tr>
                             </thead>
                             <tbody>
                             </tbody>
                             <tfoot>
                                 <tr class="table-primary">
-                                    <th colspan="3" class="text-end">Total do OrÃ§amento:</th>
+                                    <th colspan="3" class="text-end">Total do Orçamento:</th>
                                     <th id="valor_total_display">R$ 0,00</th>
                                     <th></th>
                                 </tr>
@@ -937,9 +937,9 @@ include_once 'includes/footer.php';
         const produtoSelectElement = document.getElementById('produto_select_novo');
 
         if (!produtoSelectElement) {
-            console.error('âŒ ERRO: Elemento produto_select_novo nÃ£o encontrado!');
+            console.error('❌ ERRO: Elemento produto_select_novo não encontrado!');
         } else {
-            console.log('âœ… Elemento produto_select_novo encontrado');
+            console.log('✅ Elemento produto_select_novo encontrado');
             console.log('Total de options:', produtoSelectElement.options.length);
 
             Array.from(produtoSelectElement.options).forEach((option, index) => {
@@ -960,7 +960,7 @@ include_once 'includes/footer.php';
                 }
             });
 
-            console.log('âœ… Total de produtos carregados:', todosProdutosNovo.length);
+            console.log('✅ Total de produtos carregados:', todosProdutosNovo.length);
         }
 
         function formatarMoedaNovo(valor) {
@@ -1030,7 +1030,7 @@ include_once 'includes/footer.php';
             produtosSelecionadosNovo.sku = sku;
             produtosSelecionadosNovo.preco = preco;
 
-            // Atualizar painel de seleÃ§Ã£o
+            // Atualizar painel de seleção
             document.getElementById('produto_selecionado_nome').textContent = nome;
             document.getElementById('produto_selecionado_preco').textContent = formatarMoedaNovo(preco);
 
@@ -1038,7 +1038,7 @@ include_once 'includes/footer.php';
             if (sku) infoText += `<strong>SKU:</strong> ${sku}`;
             document.getElementById('produto_selecionado_info').innerHTML = infoText;
 
-            // Preencher preÃ§o
+            // Preencher preço
             precoUnitarioItemNovo.value = preco.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
             quantidadeItemNovo.value = 1;
 
@@ -1084,7 +1084,7 @@ include_once 'includes/footer.php';
 
         // ========== FIM NOVA INTERFACE ==========
 
-        // Elementos do formulÃ¡rio
+        // Elementos do formulário
         const clienteSearch = document.getElementById('cliente_search');
         const clienteIdInput = document.getElementById('cliente_id');
         const clienteDropdown = document.getElementById('cliente_dropdown');
@@ -1110,7 +1110,7 @@ include_once 'includes/footer.php';
         ?>;
         todosClientes = clientesData;
 
-        // FunÃ§Ã£o para filtrar e exibir clientes
+        // Função para filtrar e exibir clientes
         function filtrarClientes() {
             const termo = clienteSearch.value.toLowerCase().trim();
             const dropdown = clienteDropdown;
@@ -1148,7 +1148,7 @@ include_once 'includes/footer.php';
                     clienteSearch.value = nome;
                     clienteDropdown.style.display = 'none';
 
-                    // Mostrar confirmaÃ§Ã£o
+                    // Mostrar confirmação
                     clienteNomeSelecionado.textContent = nome;
                     clienteSelecionado.style.display = 'block';
                 });
@@ -1173,7 +1173,7 @@ include_once 'includes/footer.php';
             });
         }
 
-        // Se jÃ¡ tem cliente selecionado (modo ediÃ§Ã£o), mostrar confirmaÃ§Ã£o
+        // Se já tem cliente selecionado (modo edição), mostrar confirmação
         if (clienteIdInput.value) {
             const clienteSelecionadoObj = todosClientes.find(c => c.id == clienteIdInput.value);
             if (clienteSelecionadoObj) {
@@ -1197,19 +1197,19 @@ include_once 'includes/footer.php';
         const dataVencimentoContainer = document.getElementById('data_vencimento_container');
         const colunasPagamentoExistem = <?php echo $colunas_pagamento_existem ? 'true' : 'false'; ?>;
 
-        // Carregar itens do orÃ§amento da variÃ¡vel global ou do input hidden
+        // Carregar itens do orçamento da variável global ou do input hidden
         let itensDoOrcamento = [];
         if (window.itensDoOrcamentoCarregados && window.itensDoOrcamentoCarregados.length > 0) {
             itensDoOrcamento = window.itensDoOrcamentoCarregados;
-            console.log('Itens carregados da variÃ¡vel global:', itensDoOrcamento);
+            console.log('Itens carregados da variável global:', itensDoOrcamento);
         } else if (itensSelecionadosJsonInput && itensSelecionadosJsonInput.value) {
             itensDoOrcamento = JSON.parse(itensSelecionadosJsonInput.value || '[]');
             console.log('Itens carregados do input hidden:', itensDoOrcamento);
         } else {
-            console.log('Nenhum item carregado - novo orÃ§amento');
+            console.log('Nenhum item carregado - novo orçamento');
         }
         let todosProdutos = []; // Array para armazenar todos os produtos
-        let itemEditandoIndex = -1; // Ãndice do item sendo editado (-1 = nÃ£o estÃ¡ editando)
+        let itemEditandoIndex = -1; // Índice do item sendo editado (-1 = não está editando)
 
         // Carregar todos os produtos no array
         Array.from(produtoSelect.options).forEach(option => {
@@ -1229,7 +1229,7 @@ include_once 'includes/footer.php';
             return parseFloat(valor).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
         }
 
-        // FunÃ§Ã£o para controlar visibilidade dos campos de pagamento
+        // Função para controlar visibilidade dos campos de pagamento
         function controlarCamposPagamento() {
             if (!colunasPagamentoExistem || !formaPagamentoSelect) return;
             const formaPagamento = formaPagamentoSelect.value;
@@ -1242,7 +1242,7 @@ include_once 'includes/footer.php';
             }
         }
 
-        // FunÃ§Ã£o para filtrar produtos por empresa e busca
+        // Função para filtrar produtos por empresa e busca
         function filtrarProdutos() {
             const empresaSelecionada = empresaFilter.value;
             const termoBusca = document.getElementById('produto_search').value.toLowerCase().trim();
@@ -1278,7 +1278,7 @@ include_once 'includes/footer.php';
 
             // Se houver apenas um produto filtrado, selecionar automaticamente
             if (produtosFiltrados === 1 && termoBusca) {
-                produtoSelect.selectedIndex = 1; // 0 Ã© a opÃ§Ã£o vazia
+                produtoSelect.selectedIndex = 1; // 0 é a opção vazia
                 produtoSelect.dispatchEvent(new Event('change'));
             }
         }
@@ -1342,7 +1342,7 @@ include_once 'includes/footer.php';
             const quantidade = parseInt(quantidadeItemNovo.value);
             const precoUnitario = parseFloat(precoUnitarioItemNovo.value.replace('.', '').replace(',', '.'));
 
-            // ValidaÃ§Ãµes detalhadas
+            // Validações detalhadas
             if (!produtoId) {
                 alert('Por favor, selecione um produto digitando o nome.');
                 produtoSearchNovo.focus();
@@ -1350,30 +1350,30 @@ include_once 'includes/footer.php';
             }
 
             if (isNaN(quantidade) || quantidade <= 0) {
-                alert('Por favor, insira uma quantidade vÃ¡lida (maior que 0).');
+                alert('Por favor, insira uma quantidade válida (maior que 0).');
                 quantidadeItemNovo.focus();
                 return;
             }
 
             if (isNaN(precoUnitario) || precoUnitario < 0) {
-                alert('Por favor, insira um preÃ§o vÃ¡lido.');
+                alert('Por favor, insira um preço válido.');
                 precoUnitarioItemNovo.focus();
                 return;
             }
 
-            // Se estÃ¡ editando um item existente
+            // Se está editando um item existente
             if (itemEditandoIndex >= 0) {
-                // Atualiza o item na posiÃ§Ã£o original
+                // Atualiza o item na posição original
                 itensDoOrcamento[itemEditandoIndex] = {
                     id: produtoId,
                     nome: produtoNome,
                     quantidade: quantidade,
                     preco_unitario: precoUnitario
                 };
-                itemEditandoIndex = -1; // Reset do Ã­ndice de ediÃ§Ã£o
-                addItemBtn.innerHTML = '<i class="fas fa-plus-circle me-2"></i>Adicionar'; // Volta o texto do botÃ£o
+                itemEditandoIndex = -1; // Reset do índice de edição
+                addItemBtn.innerHTML = '<i class="fas fa-plus-circle me-2"></i>Adicionar'; // Volta o texto do botão
             } else {
-                // Verifica se jÃ¡ existe o produto (para somar quantidades)
+                // Verifica se já existe o produto (para somar quantidades)
                 let itemExistente = itensDoOrcamento.find(item => item.id == produtoId);
                 if (itemExistente) {
                     itemExistente.quantidade += quantidade;
@@ -1393,7 +1393,7 @@ include_once 'includes/footer.php';
             limparFormularioItemNovo();
         });
 
-        // FunÃ§Ã£o para limpar o formulÃ¡rio de item (nova interface)
+        // Função para limpar o formulário de item (nova interface)
         function limparFormularioItemNovo() {
             produtoSearchNovo.value = '';
             quantidadeItemNovo.value = '1';
@@ -1408,7 +1408,7 @@ include_once 'includes/footer.php';
             produtoSearchNovo.focus();
         }
 
-        // FunÃ§Ã£o para limpar o formulÃ¡rio de item (interface antiga - mantida para compatibilidade)
+        // Função para limpar o formulário de item (interface antiga - mantida para compatibilidade)
         function limparFormularioItem() {
             produtoSelect.value = '';
             quantidadeInput.value = '1';
@@ -1418,7 +1418,7 @@ include_once 'includes/footer.php';
             cancelEditBtn.style.display = 'none';
         }
 
-        // BotÃ£o cancelar ediÃ§Ã£o
+        // Botão cancelar edição
         cancelEditBtn.addEventListener('click', function() {
             limparFormularioItem();
             renderizarItens(); // Remove o destaque da linha
@@ -1438,10 +1438,10 @@ include_once 'includes/footer.php';
                 const indexToEdit = parseInt(editBtn.dataset.index);
                 const itemParaEditar = itensDoOrcamento[indexToEdit];
 
-                // Armazena o Ã­ndice do item sendo editado
+                // Armazena o índice do item sendo editado
                 itemEditandoIndex = indexToEdit;
 
-                // Preenche os campos do formulÃ¡rio (nova interface)
+                // Preenche os campos do formulário (nova interface)
                 produtosSelecionadosNovo.id = itemParaEditar.id;
                 produtosSelecionadosNovo.nome = itemParaEditar.nome;
                 produtosSelecionadosNovo.preco = itemParaEditar.preco_unitario;
@@ -1450,12 +1450,12 @@ include_once 'includes/footer.php';
                 quantidadeItemNovo.value = itemParaEditar.quantidade;
                 precoUnitarioItemNovo.value = parseFloat(itemParaEditar.preco_unitario).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
-                // Atualizar painel de seleÃ§Ã£o
+                // Atualizar painel de seleção
                 document.getElementById('produto_selecionado_nome').textContent = itemParaEditar.nome;
                 document.getElementById('produto_selecionado_preco').textContent = formatarMoedaNovo(itemParaEditar.preco_unitario);
                 painelSelecao.style.display = 'block';
 
-                // Muda o texto do botÃ£o para indicar que estÃ¡ editando
+                // Muda o texto do botão para indicar que está editando
                 addItemBtn.innerHTML = '<i class="fas fa-save me-2"></i>Atualizar Item';
                 cancelEditBtn.style.display = 'block';
 
@@ -1481,7 +1481,7 @@ include_once 'includes/footer.php';
 
             // Validar itens
             if (itensDoOrcamento.length === 0) {
-                alert('Por favor, adicione pelo menos um produto ao orÃ§amento.');
+                alert('Por favor, adicione pelo menos um produto ao orçamento.');
                 event.preventDefault();
                 return;
             }
@@ -1541,7 +1541,7 @@ include_once 'includes/footer.php';
         console.log('Itens carregados do banco:', itensDoOrcamento);
         console.log('Total de itens:', itensDoOrcamento.length);
 
-        // Renderizar itens carregados do banco de dados (modo ediÃ§Ã£o)
+        // Renderizar itens carregados do banco de dados (modo edição)
         // Sempre chamar renderizarItens para atualizar a tabela
         renderizarItens();
     });

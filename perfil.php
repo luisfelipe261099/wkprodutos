@@ -1,7 +1,7 @@
 <?php
 require_once 'includes/session_bootstrap.php';
 
-// Verifica se o usuÃ¡rio estÃ¡ logado
+// Verifica se o usuário está logado
 if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
     header("location: login.php");
     exit;
@@ -13,7 +13,7 @@ $message = '';
 $message_type = '';
 $user_id = $_SESSION['id'];
 
-// Buscar dados do usuÃ¡rio
+// Buscar dados do usuário
 $sql_select = "SELECT * FROM usuarios WHERE id = ?";
 $stmt_select = $conn->prepare($sql_select);
 $stmt_select->bind_param("i", $user_id);
@@ -22,7 +22,7 @@ $result = $stmt_select->get_result();
 $user_data = $result->fetch_assoc();
 $stmt_select->close();
 
-// Processar formulÃ¡rio
+// Processar formulário
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $action = $_POST['action'];
 
@@ -31,15 +31,15 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $nome = trim($_POST['nome']);
         $email = trim($_POST['email']);
 
-        // ValidaÃ§Ãµes
+        // Validações
         if (empty($nome) || empty($email)) {
-            $message = "Nome e email sÃ£o obrigatÃ³rios.";
+            $message = "Nome e email são obrigatórios.";
             $message_type = "danger";
         } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-            $message = "Email invÃ¡lido.";
+            $message = "Email inválido.";
             $message_type = "danger";
         } else {
-            // Verificar se email jÃ¡ existe (exceto para o prÃ³prio usuÃ¡rio)
+            // Verificar se email já existe (exceto para o próprio usuário)
             $sql_check = "SELECT id FROM usuarios WHERE email = ? AND id != ?";
             $stmt_check = $conn->prepare($sql_check);
             $stmt_check->bind_param("si", $email, $user_id);
@@ -47,7 +47,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $result_check = $stmt_check->get_result();
 
             if ($result_check->num_rows > 0) {
-                $message = "Este email jÃ¡ estÃ¡ sendo usado por outro usuÃ¡rio.";
+                $message = "Este email já está sendo usado por outro usuário.";
                 $message_type = "danger";
             } else {
                 // Atualizar dados
@@ -59,7 +59,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     $message = "Perfil atualizado com sucesso!";
                     $message_type = "success";
 
-                    // Atualizar dados na sessÃ£o
+                    // Atualizar dados na sessão
                     $_SESSION['nome'] = $nome;
                     $_SESSION['email'] = $email;
 
@@ -80,12 +80,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $nova_senha = $_POST['nova_senha'];
         $confirmar_senha = $_POST['confirmar_senha'];
 
-        // ValidaÃ§Ãµes
+        // Validações
         if (empty($senha_atual) || empty($nova_senha) || empty($confirmar_senha)) {
-            $message = "Todos os campos de senha sÃ£o obrigatÃ³rios.";
+            $message = "Todos os campos de senha são obrigatórios.";
             $message_type = "danger";
         } elseif ($nova_senha !== $confirmar_senha) {
-            $message = "A nova senha e a confirmaÃ§Ã£o nÃ£o coincidem.";
+            $message = "A nova senha e a confirmação não coincidem.";
             $message_type = "danger";
         } elseif (strlen($nova_senha) < 6) {
             $message = "A nova senha deve ter pelo menos 6 caracteres.";
@@ -125,7 +125,7 @@ include_once 'includes/header.php';
         <i class="fas fa-user-circle"></i>
         Meu Perfil
     </h1>
-    <p class="page-subtitle">Gerencie suas informaÃ§Ãµes pessoais e configuraÃ§Ãµes</p>
+    <p class="page-subtitle">Gerencie suas informações pessoais e configurações</p>
 </div>
 
 <?php if (!empty($message)): ?>
@@ -137,7 +137,7 @@ include_once 'includes/header.php';
 <?php endif; ?>
 
 <div class="row g-4">
-    <!-- InformaÃ§Ãµes do Perfil -->
+    <!-- Informações do Perfil -->
     <div class="col-lg-4">
         <div class="modern-card fade-in-up">
             <div class="card-body-modern text-center">
@@ -168,13 +168,13 @@ include_once 'includes/header.php';
         </div>
     </div>
 
-    <!-- FormulÃ¡rios -->
+    <!-- Formulários -->
     <div class="col-lg-8">
         <!-- Atualizar Perfil -->
         <div class="modern-card fade-in-up mb-4">
             <div class="card-header-modern">
                 <i class="fas fa-user-edit"></i>
-                InformaÃ§Ãµes Pessoais
+                Informações Pessoais
             </div>
             <div class="card-body-modern">
                 <form method="POST" action="">
@@ -192,7 +192,7 @@ include_once 'includes/header.php';
                         </div>
                         <div class="col-12">
                             <button type="submit" class="btn btn-primary">
-                                <i class="fas fa-save me-2"></i>Salvar AlteraÃ§Ãµes
+                                <i class="fas fa-save me-2"></i>Salvar Alterações
                             </button>
                         </div>
                     </div>
@@ -228,7 +228,7 @@ include_once 'includes/header.php';
                                     <i class="fas fa-eye" id="nova_senha-icon"></i>
                                 </button>
                             </div>
-                            <small class="text-muted">MÃ­nimo 6 caracteres</small>
+                            <small class="text-muted">Mínimo 6 caracteres</small>
                         </div>
                         <div class="col-md-6">
                             <label for="confirmar_senha" class="form-label">Confirmar Nova Senha *</label>
@@ -257,14 +257,14 @@ include_once 'includes/header.php';
 <div class="modern-card fade-in-up mt-4">
     <div class="card-header-modern">
         <i class="fas fa-chart-line"></i>
-        Acesso RÃ¡pido - Administrador
+        Acesso Rápido - Administrador
     </div>
     <div class="card-body-modern">
         <div class="row g-3">
             <div class="col-md-3">
                 <a href="usuarios.php" class="btn btn-outline-primary w-100">
                     <i class="fas fa-users-cog d-block mb-2"></i>
-                    Gerenciar UsuÃ¡rios
+                    Gerenciar Usuários
                 </a>
             </div>
             <div class="col-md-3">
@@ -306,13 +306,13 @@ function togglePassword(fieldId) {
     }
 }
 
-// ValidaÃ§Ã£o de senhas em tempo real
+// Validação de senhas em tempo real
 document.getElementById('confirmar_senha').addEventListener('input', function() {
     const novaSenha = document.getElementById('nova_senha').value;
     const confirmarSenha = this.value;
 
     if (novaSenha !== confirmarSenha && confirmarSenha.length > 0) {
-        this.setCustomValidity('As senhas nÃ£o coincidem');
+        this.setCustomValidity('As senhas não coincidem');
         this.classList.add('is-invalid');
     } else {
         this.setCustomValidity('');
@@ -327,7 +327,7 @@ document.getElementById('nova_senha').addEventListener('input', function() {
     }
 });
 
-// Limpar formulÃ¡rio de senha apÃ³s envio bem-sucedido
+// Limpar formulário de senha após envio bem-sucedido
 <?php if ($message_type == 'success' && strpos($message, 'Senha') !== false): ?>
 document.getElementById('passwordForm').reset();
 <?php endif; ?>

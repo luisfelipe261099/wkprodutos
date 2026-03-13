@@ -1,7 +1,7 @@
 <?php
 require_once 'includes/session_bootstrap.php';
 
-// Verifica se o usuÃ¡rio estÃ¡ logado
+// Verifica se o usuário está logado
 if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
     header("location: index.php");
     exit;
@@ -27,9 +27,9 @@ if (!$result_check || $result_check->num_rows == 0) {
 
 $orcamento_id = $cliente_id = $data_orcamento = $valor_total = $status_orcamento = $observacoes = "";
 $forma_pagamento = $tipo_faturamento = $data_vencimento = "";
-$cliente_nome_display = ""; // usado para preencher o input visÃ­vel do cliente em modo ediÃ§Ã£o
-$title = "Criar Novo OrÃ§amento";
-$submit_button_text = "Criar OrÃ§amento";
+$cliente_nome_display = ""; // usado para preencher o input visível do cliente em modo edição
+$title = "Criar Novo Orçamento";
+$submit_button_text = "Criar Orçamento";
 $message = '';
 $message_type = '';
 $itens_do_orcamento = [];
@@ -71,7 +71,7 @@ if ($produtos_result && $produtos_result->num_rows > 0) {
     }
 }
 
-// Processar formulÃ¡rio quando enviado
+// Processar formulário quando enviado
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $orcamento_id = trim($_POST["orcamento_id"] ?? '');
     $cliente_id = trim($_POST["cliente_id"]);
@@ -91,21 +91,21 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $valor_total = $calculated_valor_total;
 
     if (empty($cliente_id) || empty($status_orcamento) || empty($itens_do_orcamento_post)) {
-        $message = "Por favor, preencha todos os campos obrigatÃ³rios e adicione pelo menos um produto ao orÃ§amento.";
+        $message = "Por favor, preencha todos os campos obrigatórios e adicione pelo menos um produto ao orçamento.";
         $message_type = "danger";
     } else {
         $conn->begin_transaction();
 
         try {
             if (empty($orcamento_id)) {
-                // CRIAR NOVO ORÃ‡AMENTO
+                // CRIAR NOVO ORÇAMENTO
                 if ($colunas_pagamento_existem) {
                     $sql = "INSERT INTO orcamentos (cliente_id, valor_total, status_orcamento, observacoes, forma_pagamento, tipo_faturamento, data_vencimento, data_orcamento) VALUES (?, ?, ?, ?, ?, ?, ?, NOW())";
                     if ($stmt = $conn->prepare($sql)) {
                         $data_vencimento_param = !empty($data_vencimento) ? $data_vencimento : null;
                         $stmt->bind_param("idsssss", $cliente_id, $valor_total, $status_orcamento, $observacoes, $forma_pagamento, $tipo_faturamento, $data_vencimento_param);
                         if (!$stmt->execute()) {
-                            throw new Exception("Erro ao registrar orÃ§amento: " . $stmt->error);
+                            throw new Exception("Erro ao registrar orçamento: " . $stmt->error);
                         }
                         $orcamento_id = $conn->insert_id;
                         $stmt->close();
@@ -115,21 +115,21 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     if ($stmt = $conn->prepare($sql)) {
                         $stmt->bind_param("idss", $cliente_id, $valor_total, $status_orcamento, $observacoes);
                         if (!$stmt->execute()) {
-                            throw new Exception("Erro ao registrar orÃ§amento: " . $stmt->error);
+                            throw new Exception("Erro ao registrar orçamento: " . $stmt->error);
                         }
                         $orcamento_id = $conn->insert_id;
                         $stmt->close();
                     }
                 }
             } else {
-                // ATUALIZAR ORÃ‡AMENTO EXISTENTE
+                // ATUALIZAR ORÇAMENTO EXISTENTE
                 if ($colunas_pagamento_existem) {
                     $sql = "UPDATE orcamentos SET cliente_id = ?, valor_total = ?, status_orcamento = ?, observacoes = ?, forma_pagamento = ?, tipo_faturamento = ?, data_vencimento = ?, data_atualizacao = NOW() WHERE id = ?";
                     if ($stmt = $conn->prepare($sql)) {
                         $data_vencimento_param = !empty($data_vencimento) ? $data_vencimento : null;
                         $stmt->bind_param("idsssssi", $cliente_id, $valor_total, $status_orcamento, $observacoes, $forma_pagamento, $tipo_faturamento, $data_vencimento_param, $orcamento_id);
                         if (!$stmt->execute()) {
-                            throw new Exception("Erro ao atualizar orÃ§amento: " . $stmt->error);
+                            throw new Exception("Erro ao atualizar orçamento: " . $stmt->error);
                         }
                         $stmt->close();
                     }
@@ -138,13 +138,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     if ($stmt = $conn->prepare($sql)) {
                         $stmt->bind_param("idssi", $cliente_id, $valor_total, $status_orcamento, $observacoes, $orcamento_id);
                         if (!$stmt->execute()) {
-                            throw new Exception("Erro ao atualizar orÃ§amento: " . $stmt->error);
+                            throw new Exception("Erro ao atualizar orçamento: " . $stmt->error);
                         }
                         $stmt->close();
                     }
                 }
 
-                // Remover itens antigos do orÃ§amento
+                // Remover itens antigos do orçamento
                 $sql_delete = "DELETE FROM itens_orcamento WHERE orcamento_id = ?";
                 if ($stmt_delete = $conn->prepare($sql_delete)) {
                     $stmt_delete->bind_param("i", $orcamento_id);
@@ -155,7 +155,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 }
             }
 
-            // Inserir itens do orÃ§amento (novos ou atualizados)
+            // Inserir itens do orçamento (novos ou atualizados)
             $sql_itens = "INSERT INTO itens_orcamento (orcamento_id, produto_id, quantidade, preco_unitario) VALUES (?, ?, ?, ?)";
             if ($stmt_itens = $conn->prepare($sql_itens)) {
                 foreach ($itens_do_orcamento_post as $item) {
@@ -168,7 +168,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             }
 
             $conn->commit();
-            $message = empty($_POST["orcamento_id"]) ? "OrÃ§amento criado com sucesso!" : "OrÃ§amento atualizado com sucesso!";
+            $message = empty($_POST["orcamento_id"]) ? "Orçamento criado com sucesso!" : "Orçamento atualizado com sucesso!";
             $message_type = "success";
             header("refresh:2;url=orcamentos.php");
 
@@ -180,12 +180,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     }
 }
 
-// Carregar orÃ§amento para ediÃ§Ã£o
+// Carregar orçamento para edição
 $orcamento_id_get = $_GET["id"] ?? '';
 if (!empty($orcamento_id_get) && empty($message)) {
     $orcamento_id = $orcamento_id_get;
-    $title = "Editar OrÃ§amento";
-    $submit_button_text = "Atualizar OrÃ§amento";
+    $title = "Editar Orçamento";
+    $submit_button_text = "Atualizar Orçamento";
 
     if ($colunas_pagamento_existem) {
         $sql_orcamento = "SELECT id, cliente_id, valor_total, status_orcamento, observacoes, forma_pagamento, tipo_faturamento, data_vencimento FROM orcamentos WHERE id = ?";
@@ -210,7 +210,7 @@ if (!empty($orcamento_id_get) && empty($message)) {
                 $data_vencimento = $row_orcamento['data_vencimento'] ?? '';
             }
 
-            // Buscar nome do cliente para exibiÃ§Ã£o imediata no input visÃ­vel (compatÃ­vel sem mysqlnd)
+            // Buscar nome do cliente para exibição imediata no input visível (compatível sem mysqlnd)
             if (!empty($cliente_id)) {
                 if ($stmt_cli = $conn->prepare("SELECT nome FROM clientes WHERE id = ?")) {
                     $stmt_cli->bind_param("i", $cliente_id);
@@ -225,7 +225,7 @@ if (!empty($orcamento_id_get) && empty($message)) {
         }
         $stmt_orcamento->close();
 
-        // Buscar itens do orÃ§amento
+        // Buscar itens do orçamento
         $sql_itens = "SELECT io.produto_id, p.nome AS produto_nome, io.quantidade, io.preco_unitario
                       FROM itens_orcamento io
                       JOIN produtos p ON io.produto_id = p.id
@@ -322,7 +322,7 @@ include_once 'includes/header.php';
 
 <div class="modern-card">
     <div class="card-header-modern">
-        <i class="fas fa-file-invoice-dollar"></i> Dados do OrÃ§amento
+        <i class="fas fa-file-invoice-dollar"></i> Dados do Orçamento
     </div>
     <div class="card-body-modern">
         <form id="formOrcamento" method="post">
@@ -349,7 +349,7 @@ include_once 'includes/header.php';
 
             <div class="row mb-3">
                 <div class="col-md-12">
-                    <label class="form-label">ObservaÃ§Ãµes</label>
+                    <label class="form-label">Observações</label>
                     <textarea name="observacoes" class="form-control" rows="3"><?php echo htmlspecialchars($observacoes); ?></textarea>
                 </div>
             </div>
@@ -359,10 +359,10 @@ include_once 'includes/header.php';
                 <div class="col-md-4">
                     <label class="form-label">Forma de Pagamento</label>
                     <select name="forma_pagamento" id="forma_pagamento" class="form-control">
-                        <option value="faturamento" <?php echo $forma_pagamento === 'faturamento' ? 'selected' : ''; ?>>Faturamento (padrÃ£o)</option>
+                        <option value="faturamento" <?php echo $forma_pagamento === 'faturamento' ? 'selected' : ''; ?>>Faturamento (padrão)</option>
                         <option value="pix" <?php echo $forma_pagamento === 'pix' ? 'selected' : ''; ?>>PIX</option>
-                        <option value="debito" <?php echo $forma_pagamento === 'debito' ? 'selected' : ''; ?>>DÃ©bito (CartÃ£o de DÃ©bito)</option>
-                        <option value="credito" <?php echo $forma_pagamento === 'credito' ? 'selected' : ''; ?>>CrÃ©dito (CartÃ£o de CrÃ©dito)</option>
+                        <option value="debito" <?php echo $forma_pagamento === 'debito' ? 'selected' : ''; ?>>Débito (Cartão de Débito)</option>
+                        <option value="credito" <?php echo $forma_pagamento === 'credito' ? 'selected' : ''; ?>>Crédito (Cartão de Crédito)</option>
                         <option value="dinheiro" <?php echo $forma_pagamento === 'dinheiro' ? 'selected' : ''; ?>>Dinheiro</option>
                         <option value="boleto" <?php echo $forma_pagamento === 'boleto' ? 'selected' : ''; ?>>Boleto</option>
                     </select>
@@ -370,7 +370,7 @@ include_once 'includes/header.php';
                 <div class="col-md-4">
                     <label class="form-label">Tipo de Faturamento</label>
                     <select name="tipo_faturamento" class="form-control">
-                        <option value="avista" <?php echo $tipo_faturamento === 'avista' ? 'selected' : ''; ?>>Ã€ vista</option>
+                        <option value="avista" <?php echo $tipo_faturamento === 'avista' ? 'selected' : ''; ?>>À vista</option>
                         <option value="7" <?php echo $tipo_faturamento === '7' ? 'selected' : ''; ?>>7 dias</option>
                         <option value="15" <?php echo $tipo_faturamento === '15' ? 'selected' : ''; ?>>15 dias</option>
                         <option value="15_dias" <?php echo $tipo_faturamento === '15_dias' ? 'selected' : ''; ?>>15 dias (antigo)</option>
@@ -393,7 +393,7 @@ include_once 'includes/header.php';
                     </select>
                 </div>
                 <div class="col-md-4">
-                    <label class="form-label">Data de Vencimento <span id="label_boleto" style="display:none; color: #dc3545;">(ObrigatÃ³rio para Boleto)</span></label>
+                    <label class="form-label">Data de Vencimento <span id="label_boleto" style="display:none; color: #dc3545;">(Obrigatório para Boleto)</span></label>
                     <input type="date" name="data_vencimento" id="data_vencimento" class="form-control" value="<?php echo htmlspecialchars($data_vencimento); ?>">
                 </div>
             </div>
@@ -428,7 +428,7 @@ include_once 'includes/header.php';
                     <input type="number" class="form-control" id="quantidade_item" value="1" min="1">
                 </div>
                 <div class="col-md-4">
-                    <label class="form-label">PreÃ§o Unit.</label>
+                    <label class="form-label">Preço Unit.</label>
                     <input type="text" class="form-control" id="preco_unitario_item" readonly>
                 </div>
                 <div class="col-md-4">
@@ -439,7 +439,7 @@ include_once 'includes/header.php';
 
             <hr>
 
-            <h5>Itens do OrÃ§amento <span class="badge bg-primary" id="items_count">0</span></h5>
+            <h5>Itens do Orçamento <span class="badge bg-primary" id="items_count">0</span></h5>
 
             <!-- Tabela com Rolagem -->
             <div class="table-container">
@@ -448,9 +448,9 @@ include_once 'includes/header.php';
                         <tr>
                             <th style="width: 40%;">Produto</th>
                             <th style="width: 12%;">Quantidade</th>
-                            <th style="width: 15%;">PreÃ§o Unit.</th>
+                            <th style="width: 15%;">Preço Unit.</th>
                             <th style="width: 15%;">Subtotal</th>
-                            <th style="width: 18%;">AÃ§Ãµes</th>
+                            <th style="width: 18%;">Ações</th>
                         </tr>
                     </thead>
                     <tbody id="tabelaItens">
@@ -462,7 +462,7 @@ include_once 'includes/header.php';
             <div class="mt-3 p-3 bg-light rounded">
                 <div class="row">
                     <div class="col-md-9 text-end">
-                        <strong style="font-size: 1.1rem;">Total do OrÃ§amento:</strong>
+                        <strong style="font-size: 1.1rem;">Total do Orçamento:</strong>
                     </div>
                     <div class="col-md-3">
                         <strong style="font-size: 1.2rem; color: #007bff;" id="valor_total_display">R$ 0,00</strong>
@@ -502,7 +502,7 @@ include_once 'includes/header.php';
                     <input type="number" class="form-control" id="modal_quantidade_nova" min="1" value="1">
                 </div>
                 <div class="mb-3">
-                    <label class="form-label">PreÃ§o UnitÃ¡rio *</label>
+                    <label class="form-label">Preço Unitário *</label>
                     <input type="number" class="form-control" id="modal_preco_unitario" min="0" step="0.01" placeholder="0.00">
                 </div>
                 <div class="alert alert-info">
@@ -511,7 +511,7 @@ include_once 'includes/header.php';
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                <button type="button" class="btn btn-primary" id="btn_salvar_edicao">Salvar AlteraÃ§Ãµes</button>
+                <button type="button" class="btn btn-primary" id="btn_salvar_edicao">Salvar Alterações</button>
             </div>
         </div>
     </div>
@@ -522,21 +522,21 @@ const produtosData = <?php echo json_encode($produtos_json); ?>;
 const itensCarregados = <?php echo json_encode($itens_do_orcamento); ?>;
 const clientesData = <?php echo json_encode($clientes_json); ?>;
 
-console.log('ðŸ†• criar_orcamento.js versÃ£o: 2025-11-05-b');
-console.log('âœ… Produtos carregados:', produtosData.length);
-console.log('âœ… Clientes carregados:', clientesData.length);
-console.log('ðŸ“‹ Primeiros 3 clientes:', clientesData.slice(0, 3));
-console.log('ðŸ“‹ Primeiros 3 produtos:', produtosData.slice(0, 3));
+console.log('🆕 criar_orcamento.js versão: 2025-11-05-b');
+console.log('✅ Produtos carregados:', produtosData.length);
+console.log('✅ Clientes carregados:', clientesData.length);
+console.log('📋 Primeiros 3 clientes:', clientesData.slice(0, 3));
+console.log('📋 Primeiros 3 produtos:', produtosData.slice(0, 3));
 
-// Se nÃ£o houver clientes, mostrar erro
+// Se não houver clientes, mostrar erro
 if (clientesData.length === 0) {
-    console.error('âŒ ERRO: Nenhum cliente foi carregado do servidor!');
+    console.error('❌ ERRO: Nenhum cliente foi carregado do servidor!');
     console.error('clientesData:', clientesData);
 }
 
-// Se nÃ£o houver produtos, mostrar erro
+// Se não houver produtos, mostrar erro
 if (produtosData.length === 0) {
-    console.error('âŒ ERRO: Nenhum produto foi carregado do servidor!');
+    console.error('❌ ERRO: Nenhum produto foi carregado do servidor!');
     console.error('produtosData:', produtosData);
 }
 
@@ -564,9 +564,9 @@ const clienteIdInput = document.getElementById('cliente_id');
 const formOrcamento = document.getElementById('formOrcamento');
 const itensSelecionadosJson = document.getElementById('itens_selecionados_json');
 
-console.log('âœ… Elementos DOM carregados');
+console.log('✅ Elementos DOM carregados');
 
-// Renderizar tabela de itens ao carregar a pÃ¡gina (ÃšNICA CHAMADA)
+// Renderizar tabela de itens ao carregar a página (ÚNICA CHAMADA)
 renderizarTabela();
 
 // Buscar produtos
@@ -666,7 +666,7 @@ function renderizarTabela() {
         const subtotal = item.quantidade * item.preco_unitario;
         total += subtotal;
 
-        // Usar UUID se disponÃ­vel, senÃ£o usar Ã­ndice (para compatibilidade com dados antigos)
+        // Usar UUID se disponível, senão usar índice (para compatibilidade com dados antigos)
         const itemId = item._uuid || idx;
 
         const tr = document.createElement('tr');
@@ -691,11 +691,11 @@ function renderizarTabela() {
     itemsCount.textContent = itensOrcamento.length;
 }
 
-// VariÃ¡vel para armazenar o ID do item sendo editado
+// Variável para armazenar o ID do item sendo editado
 let itemEmEdicaoIndex = null;
 
 // Elementos do modal
-let modalEditarItem = null; // serÃ¡ inicializado sob demanda
+let modalEditarItem = null; // será inicializado sob demanda
 const modalProdutoNome = document.getElementById('modal_produto_nome');
 const modalQuantidadeAtual = document.getElementById('modal_quantidade_atual');
 const modalQuantidadeNova = document.getElementById('modal_quantidade_nova');
@@ -704,18 +704,18 @@ const modalNovoSubtotal = document.getElementById('modal_novo_subtotal');
 const btnSalvarEdicao = document.getElementById('btn_salvar_edicao');
 
 
-// FunÃ§Ã£o para abrir modal de ediÃ§Ã£o
+// Função para abrir modal de edição
 function abrirModalEditar(itemIndex) {
     const item = itensOrcamento[itemIndex];
     if (!item) return;
 
-    // Se Bootstrap nÃ£o estiver disponÃ­vel, usa fallback com prompt
+    // Se Bootstrap não estiver disponível, usa fallback com prompt
     if (!window.bootstrap || typeof bootstrap.Modal !== 'function') {
         const entrada = prompt('Informe a nova quantidade:', item.quantidade);
         if (entrada === null) return; // cancelado
         const novaQtd = parseInt(entrada, 10);
         if (!Number.isFinite(novaQtd) || novaQtd < 1) {
-            alert('Quantidade invÃ¡lida');
+            alert('Quantidade inválida');
             return;
         }
         item.quantidade = novaQtd;
@@ -742,13 +742,13 @@ function abrirModalEditar(itemIndex) {
 }
 
 
-// Prefill do cliente (ediÃ§Ã£o de orÃ§amento) - robusto: usa servidor e sÃ³ usa dataset como fallback
+// Prefill do cliente (edição de orçamento) - robusto: usa servidor e só usa dataset como fallback
 (function prefillClienteEdicao(){
     const clienteIdInicial = <?php echo json_encode($cliente_id); ?>;
     const clienteNomeServidor = <?php echo json_encode($cliente_nome_display); ?>;
     if (clienteSearch && !clienteSearch.value && clienteNomeServidor) {
         clienteSearch.value = clienteNomeServidor;
-        console.log('ðŸ‘¤ Cliente preenchido via servidor:', clienteNomeServidor);
+        console.log('👤 Cliente preenchido via servidor:', clienteNomeServidor);
     }
     if (clienteIdInput && !clienteIdInput.value && clienteIdInicial) {
         clienteIdInput.value = clienteIdInicial;
@@ -759,12 +759,12 @@ function abrirModalEditar(itemIndex) {
         if (clienteInicial) {
             if (!clienteSearch.value) clienteSearch.value = clienteInicial.nome;
             if (!clienteIdInput.value) clienteIdInput.value = clienteInicial.id;
-            console.log('ðŸ‘¤ Cliente preenchido via dataset:', clienteInicial);
+            console.log('👤 Cliente preenchido via dataset:', clienteInicial);
         }
     }
 })();
 
-// FunÃ§Ã£o para atualizar subtotal no modal
+// Função para atualizar subtotal no modal
 function atualizarSubtotalModal() {
     const quantidade = parseInt(modalQuantidadeNova.value) || 1;
     const preco = parseFloat(modalPrecoUnitario.value) || 0;
@@ -772,11 +772,11 @@ function atualizarSubtotalModal() {
     modalNovoSubtotal.textContent = 'R$ ' + subtotal.toFixed(2).replace('.', ',');
 }
 
-// Event listeners para atualizar subtotal quando quantidade ou preÃ§o mudam
+// Event listeners para atualizar subtotal quando quantidade ou preço mudam
 document.getElementById('modal_quantidade_nova').addEventListener('input', atualizarSubtotalModal);
 document.getElementById('modal_preco_unitario').addEventListener('input', atualizarSubtotalModal);
 
-// FunÃ§Ã£o para salvar ediÃ§Ã£o
+// Função para salvar edição
 function salvarEdicao() {
     if (itemEmEdicaoIndex === null || itemEmEdicaoIndex === undefined) return;
 
@@ -789,14 +789,14 @@ function salvarEdicao() {
     }
 
     if (novoPreco < 0) {
-        alert('PreÃ§o nÃ£o pode ser negativo');
+        alert('Preço não pode ser negativo');
         return;
     }
 
     const item = itensOrcamento[itemEmEdicaoIndex];
     if (!item) return;
 
-    // Atualiza quantidade e preÃ§o unitÃ¡rio do item
+    // Atualiza quantidade e preço unitário do item
     item.quantidade = novaQuantidade;
     item.preco_unitario = novoPreco;
 
@@ -807,7 +807,7 @@ function salvarEdicao() {
     itemEmEdicaoIndex = null;
 }
 
-// Event listener para botÃ£o salvar
+// Event listener para botão salvar
 btnSalvarEdicao.addEventListener('click', salvarEdicao);
 
 // Event listeners
@@ -815,7 +815,7 @@ produtoSearch.addEventListener('input', buscarProdutos);
 empresaFilter.addEventListener('change', buscarProdutos);
 addItemBtn.addEventListener('click', adicionarItem);
 
-// Controle de exibiÃ§Ã£o do campo de data de vencimento para boleto
+// Controle de exibição do campo de data de vencimento para boleto
 const formaPagamentoSelect = document.getElementById('forma_pagamento');
 const dataVencimentoInput = document.getElementById('data_vencimento');
 const labelBoleto = document.getElementById('label_boleto');
@@ -831,7 +831,7 @@ if (formaPagamentoSelect && dataVencimentoInput && labelBoleto) {
         }
     });
 
-    // Verifica no carregamento da pÃ¡gina
+    // Verifica no carregamento da página
     if (formaPagamentoSelect.value === 'boleto') {
         labelBoleto.style.display = 'inline';
         dataVencimentoInput.required = true;
@@ -862,12 +862,12 @@ clienteSearch.addEventListener('input', function() {
         return;
     }
 
-    console.log('ðŸ” Buscando por:', termo);
-    console.log('ðŸ“Š Total de clientes disponÃ­veis:', clientesData.length);
-    console.log('ðŸ“‹ Clientes:', clientesData);
+    console.log('🔍 Buscando por:', termo);
+    console.log('📊 Total de clientes disponíveis:', clientesData.length);
+    console.log('📋 Clientes:', clientesData);
 
     const resultados = clientesData.filter(c => c.nome.toLowerCase().includes(termo)).slice(0, 10);
-    console.log('âœ… Resultados encontrados:', resultados.length);
+    console.log('✅ Resultados encontrados:', resultados.length);
 
     if (resultados.length === 0) {
         clienteDropdown.innerHTML = '<div class="dropdown-item text-muted">Nenhum cliente encontrado</div>';

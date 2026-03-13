@@ -1,7 +1,7 @@
 <?php
 require_once 'includes/session_bootstrap.php';
 
-// Verifica se o usuÃ¡rio estÃ¡ logado
+// Verifica se o usuário está logado
 if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
     header("location: index.php");
     exit;
@@ -12,11 +12,11 @@ require_once 'includes/db_connect.php';
 $message = '';
 $message_type = '';
 
-// --- LÃ³gica para ExclusÃ£o de Empresa ---
+// --- Lógica para Exclusão de Empresa ---
 if (isset($_GET['action']) && $_GET['action'] == 'delete' && isset($_GET['id'])) {
     $empresa_id = $_GET['id'];
 
-    // Verificar se hÃ¡ produtos vinculados
+    // Verificar se há produtos vinculados
     $sql_check = "SELECT COUNT(*) as total FROM produtos WHERE empresa_id = ?";
     $stmt_check = $conn->prepare($sql_check);
     $stmt_check->bind_param("i", $empresa_id);
@@ -25,14 +25,14 @@ if (isset($_GET['action']) && $_GET['action'] == 'delete' && isset($_GET['id']))
     $row_check = $result_check->fetch_assoc();
 
     if ($row_check['total'] > 0) {
-        $message = "NÃ£o Ã© possÃ­vel excluir esta empresa pois hÃ¡ {$row_check['total']} produto(s) vinculado(s) a ela.";
+        $message = "Não é possível excluir esta empresa pois há {$row_check['total']} produto(s) vinculado(s) a ela.";
         $message_type = "warning";
     } else {
         $sql_delete = "DELETE FROM empresas_representadas WHERE id = ?";
         if ($stmt_delete = $conn->prepare($sql_delete)) {
             $stmt_delete->bind_param("i", $empresa_id);
             if ($stmt_delete->execute()) {
-                $message = "Empresa excluÃ­da com sucesso!";
+                $message = "Empresa excluída com sucesso!";
                 $message_type = "success";
             } else {
                 $message = "Erro ao excluir a empresa: " . $stmt_delete->error;
@@ -57,14 +57,14 @@ LEFT JOIN vendas v ON e.id = v.empresa_id AND v.status_venda = 'concluida'
 GROUP BY e.id
 ORDER BY e.nome_empresa ASC";
 
-// EstatÃ­sticas gerais (query separada â€” independente de paginaÃ§Ã£o)
+// Estatísticas gerais (query separada — independente de paginação)
 $stats_emp = $conn->query("SELECT COUNT(*) as total, SUM(status='ativo') as ativas, SUM(status!='ativo') as inativas, AVG(comissao_padrao) as comissao_media FROM empresas_representadas")->fetch_assoc();
 $total_empresas    = (int)$stats_emp['total'];
 $empresas_ativas   = (int)$stats_emp['ativas'];
 $empresas_inativas = (int)$stats_emp['inativas'];
 $comissao_media    = (float)($stats_emp['comissao_media'] ?? 0);
 
-// PaginaÃ§Ã£o
+// Paginação
 $emp_por_pag   = 20;
 $emp_pag_atual = max(1, (int)($_GET['page'] ?? 1));
 $emp_offset    = ($emp_pag_atual - 1) * $emp_por_pag;
@@ -82,9 +82,9 @@ include_once 'includes/header.php';
 ?>
 
 <style>
-/* Melhorias especÃ­ficas para iPad Air */
+/* Melhorias específicas para iPad Air */
 @media (min-width: 768px) and (max-width: 1180px) {
-    /* BotÃµes de aÃ§Ã£o mais visÃ­veis */
+    /* Botões de ação mais visíveis */
     .btn-group .btn {
         min-width: 40px !important;
         min-height: 40px !important;
@@ -124,7 +124,7 @@ include_once 'includes/header.php';
         font-size: 1rem !important;
     }
 
-    /* Cards de estatÃ­sticas */
+    /* Cards de estatísticas */
     .stats-card {
         padding: 1.5rem !important;
         margin-bottom: 1rem;
@@ -140,7 +140,7 @@ include_once 'includes/header.php';
         padding: 0.5rem 0.75rem !important;
     }
 
-    /* CabeÃ§alho do card */
+    /* Cabeçalho do card */
     .card-header-modern {
         padding: 1.25rem !important;
         flex-wrap: wrap;
@@ -156,7 +156,7 @@ include_once 'includes/header.php';
 
 
 
-/* Ajustes para orientaÃ§Ã£o paisagem do iPad */
+/* Ajustes para orientação paisagem do iPad */
 @media (min-width: 1024px) and (max-width: 1180px) and (orientation: landscape) {
     .container-fluid {
         padding-left: 2rem;
@@ -176,7 +176,7 @@ include_once 'includes/header.php';
         <i class="fas fa-building"></i>
         Empresas Representadas
     </h1>
-    <p class="page-subtitle">Gerencie as empresas que vocÃª representa</p>
+    <p class="page-subtitle">Gerencie as empresas que você representa</p>
 </div>
 
 <?php if (!empty($message)): ?>
@@ -225,7 +225,7 @@ include_once 'includes/header.php';
                 <i class="fas fa-percentage"></i>
             </div>
             <div class="stats-value"><?php echo number_format($comissao_media, 1); ?>%</div>
-            <div class="stats-label">ComissÃ£o MÃ©dia</div>
+            <div class="stats-label">Comissão Média</div>
         </div>
     </div>
 </div>
@@ -276,11 +276,11 @@ include_once 'includes/header.php';
                         <tr>
                             <th>Empresa</th>
                             <th>Contato</th>
-                            <th>ComissÃ£o</th>
+                            <th>Comissão</th>
                             <th>Produtos</th>
                             <th>Vendas</th>
                             <th>Status</th>
-                            <th class="text-center">AÃ§Ãµes</th>
+                            <th class="text-center">Ações</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -295,7 +295,7 @@ include_once 'includes/header.php';
                                         </div>
                                         <div>
                                             <div class="fw-semibold"><?php echo htmlspecialchars($row['nome_empresa']); ?></div>
-                                            <small class="text-muted"><?php echo htmlspecialchars($row['cnpj'] ?: 'CNPJ nÃ£o informado'); ?></small>
+                                            <small class="text-muted"><?php echo htmlspecialchars($row['cnpj'] ?: 'CNPJ não informado'); ?></small>
                                         </div>
                                     </div>
                                 </td>
@@ -317,7 +317,7 @@ include_once 'includes/header.php';
                                         <span class="fw-semibold"><?php echo $row['total_produtos'] ?: 0; ?></span>
                                         <?php if ($row['produtos_criticos'] > 0): ?>
                                             <small class="text-warning d-block">
-                                                <i class="fas fa-exclamation-triangle"></i> <?php echo $row['produtos_criticos']; ?> crÃ­ticos
+                                                <i class="fas fa-exclamation-triangle"></i> <?php echo $row['produtos_criticos']; ?> críticos
                                             </small>
                                         <?php endif; ?>
                                     </div>
@@ -342,7 +342,7 @@ include_once 'includes/header.php';
                                             <i class="fas fa-edit"></i>
                                         </a>
                                         <a href="relatorio_empresa.php?id=<?php echo $row['id']; ?>"
-                                           class="btn btn-outline-info btn-sm" title="RelatÃ³rio">
+                                           class="btn btn-outline-info btn-sm" title="Relatório">
                                             <i class="fas fa-chart-bar"></i>
                                         </a>
                                         <button class="btn btn-outline-danger btn-sm"
@@ -363,7 +363,7 @@ include_once 'includes/header.php';
                     <i class="fas fa-building"></i>
                 </div>
                 <h5 class="text-muted mb-2">Nenhuma empresa cadastrada</h5>
-                <p class="text-muted">Comece adicionando as empresas que vocÃª representa.</p>
+                <p class="text-muted">Comece adicionando as empresas que você representa.</p>
                 <a href="cadastro_empresa.php" class="btn btn-primary">
                     <i class="fas fa-plus me-2"></i> Cadastrar Primeira Empresa
                 </a>
@@ -374,7 +374,7 @@ include_once 'includes/header.php';
 
 <script>
 function confirmDelete(id) {
-    if (confirm('Tem certeza que deseja excluir esta empresa? Verifique se nÃ£o hÃ¡ produtos vinculados.')) {
+    if (confirm('Tem certeza que deseja excluir esta empresa? Verifique se não há produtos vinculados.')) {
         window.location.href = `empresas_representadas.php?action=delete&id=${id}`;
     }
 }

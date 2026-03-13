@@ -1,25 +1,25 @@
 <?php
-// Silencia erros de PHP para nÃ£o quebrar a saÃ­da JSON, mas os registra em log.
+// Silencia erros de PHP para não quebrar a saída JSON, mas os registra em log.
 ini_set('display_errors', 0);
 ini_set('log_errors', 1);
-// error_log("API chamada", 3, "/path/to/your/debug.log"); // Descomente para debug avanÃ§ado
+// error_log("API chamada", 3, "/path/to/your/debug.log"); // Descomente para debug avançado
 
 require_once 'includes/session_bootstrap.php';
 require_once 'includes/db_connect.php';
 
 header('Content-Type: application/json');
 
-// Apenas usuÃ¡rios logados podem acessar
+// Apenas usuários logados podem acessar
 if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
     http_response_code(401); // Unauthorized
-    echo json_encode(['error' => 'Acesso nÃ£o autorizado.']);
+    echo json_encode(['error' => 'Acesso não autorizado.']);
     exit;
 }
 
 // Garante que o ID da venda foi recebido
 if (!isset($_GET['venda_id']) || !is_numeric($_GET['venda_id'])) {
     http_response_code(400); // Bad Request
-    echo json_encode(['error' => 'ID da venda invÃ¡lido ou nÃ£o fornecido.']);
+    echo json_encode(['error' => 'ID da venda inválido ou não fornecido.']);
     exit;
 }
 

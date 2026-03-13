@@ -1,7 +1,7 @@
 <?php
 require_once 'includes/session_bootstrap.php';
 
-// Verifica se o usuÃ¡rio estÃ¡ logado
+// Verifica se o usuário está logado
 if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
     header("location: index.php");
     exit;
@@ -12,7 +12,7 @@ require_once 'includes/db_connect.php';
 $message = '';
 $message_type = '';
 
-// Processar aÃ§Ãµes
+// Processar ações
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $acao = $_POST['acao'] ?? '';
     
@@ -21,10 +21,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $cliente_id = (int)$_POST['cliente_id'];
             $data_expiracao = !empty($_POST['data_expiracao']) ? $_POST['data_expiracao'] : null;
             
-            // Gerar token Ãºnico
+            // Gerar token único
             $token = bin2hex(random_bytes(32));
             
-            // Verificar se jÃ¡ existe link ativo para este cliente
+            // Verificar se já existe link ativo para este cliente
             $sql_check = "SELECT id FROM marketplace_links WHERE cliente_id = ? AND ativo = 1";
             $stmt_check = $conn->prepare($sql_check);
             $stmt_check->bind_param("i", $cliente_id);
@@ -32,7 +32,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $result_check = $stmt_check->get_result();
             
             if ($result_check->num_rows > 0) {
-                $message = "Cliente jÃ¡ possui um link ativo. Desative o link atual antes de gerar um novo.";
+                $message = "Cliente já possui um link ativo. Desative o link atual antes de gerar um novo.";
                 $message_type = "warning";
             } else {
                 // Inserir novo link
@@ -89,11 +89,11 @@ $sql_links = "SELECT ml.*, c.nome as cliente_nome, c.email as cliente_email
               ORDER BY ml.data_criacao DESC";
 $result_links = $conn->query($sql_links);
 
-// Buscar clientes para o formulÃ¡rio
+// Buscar clientes para o formulário
 $sql_clientes = "SELECT id, nome, email FROM clientes ORDER BY nome ASC";
 $result_clientes = $conn->query($sql_clientes);
 
-// EstatÃ­sticas
+// Estatísticas
 $sql_stats = "SELECT 
     COUNT(*) as total_links,
     SUM(CASE WHEN ativo = 1 THEN 1 ELSE 0 END) as links_ativos,
@@ -157,7 +157,7 @@ include_once 'includes/header.php';
     </div>
 </div>
 
-<!-- FormulÃ¡rio para Gerar Novo Link -->
+<!-- Formulário para Gerar Novo Link -->
 <div class="modern-card fade-in-up mb-4">
     <div class="card-header-modern">
         <i class="fas fa-plus"></i>
@@ -183,7 +183,7 @@ include_once 'includes/header.php';
                 </div>
                 
                 <div class="col-md-4">
-                    <label for="data_expiracao" class="form-label">Data de ExpiraÃ§Ã£o (Opcional)</label>
+                    <label for="data_expiracao" class="form-label">Data de Expiração (Opcional)</label>
                     <input type="date" class="form-control" id="data_expiracao" name="data_expiracao" min="<?php echo date('Y-m-d'); ?>">
                 </div>
                 
@@ -217,8 +217,8 @@ include_once 'includes/header.php';
                         <th>Acessos</th>
                         <th>Criado em</th>
                         <th>Expira em</th>
-                        <th>Ãšltimo Acesso</th>
-                        <th class="text-center">AÃ§Ãµes</th>
+                        <th>Último Acesso</th>
+                        <th class="text-center">Ações</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -260,7 +260,7 @@ include_once 'includes/header.php';
                                     if ($link['data_expiracao']) {
                                         echo date('d/m/Y', strtotime($link['data_expiracao']));
                                     } else {
-                                        echo '<span class="text-muted">Sem expiraÃ§Ã£o</span>';
+                                        echo '<span class="text-muted">Sem expiração</span>';
                                     }
                                     ?>
                                 </td>

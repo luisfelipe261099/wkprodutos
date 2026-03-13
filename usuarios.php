@@ -1,13 +1,13 @@
 <?php
 require_once 'includes/session_bootstrap.php';
 
-// Verifica se o usuÃ¡rio estÃ¡ logado e Ã© admin
+// Verifica se o usuário está logado e é admin
 if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
     header("location: login.php");
     exit;
 }
 
-// Verificar se Ã© admin
+// Verificar se é admin
 if ($_SESSION["nivel_acesso"] !== "admin") {
     header("location: dashboard.php");
     exit;
@@ -18,23 +18,23 @@ require_once 'includes/db_connect.php';
 $message = '';
 $message_type = '';
 
-// --- LÃ³gica para ExclusÃ£o de UsuÃ¡rio ---
+// --- Lógica para Exclusão de Usuário ---
 if (isset($_GET['action']) && $_GET['action'] == 'delete' && isset($_GET['id'])) {
     $user_id = $_GET['id'];
 
-    // NÃ£o permitir excluir o prÃ³prio usuÃ¡rio
+    // Não permitir excluir o próprio usuário
     if ($user_id == $_SESSION['id']) {
-        $message = "VocÃª nÃ£o pode excluir seu prÃ³prio usuÃ¡rio.";
+        $message = "Você não pode excluir seu próprio usuário.";
         $message_type = "warning";
     } else {
         $sql_delete = "DELETE FROM usuarios WHERE id = ?";
         if ($stmt_delete = $conn->prepare($sql_delete)) {
             $stmt_delete->bind_param("i", $user_id);
             if ($stmt_delete->execute()) {
-                $message = "UsuÃ¡rio excluÃ­do com sucesso!";
+                $message = "Usuário excluído com sucesso!";
                 $message_type = "success";
             } else {
-                $message = "Erro ao excluir usuÃ¡rio: " . $stmt_delete->error;
+                $message = "Erro ao excluir usuário: " . $stmt_delete->error;
                 $message_type = "danger";
             }
             $stmt_delete->close();
@@ -42,14 +42,14 @@ if (isset($_GET['action']) && $_GET['action'] == 'delete' && isset($_GET['id']))
     }
 }
 
-// --- Buscar todos os usuÃ¡rios ---
-// EstatÃ­sticas gerais (query separada â€” independente de paginaÃ§Ã£o)
+// --- Buscar todos os usuários ---
+// Estatísticas gerais (query separada — independente de paginação)
 $stats_usr = $conn->query("SELECT COUNT(*) as total, SUM(nivel_acesso='admin') as admins, SUM(nivel_acesso!='admin') as normais FROM usuarios")->fetch_assoc();
 $total_usuarios  = (int)$stats_usr['total'];
 $admins          = (int)$stats_usr['admins'];
 $usuarios_normais = (int)$stats_usr['normais'];
 
-// PaginaÃ§Ã£o
+// Paginação
 $usr_por_pag   = 20;
 $usr_pag_atual = max(1, (int)($_GET['page'] ?? 1));
 $usr_offset    = ($usr_pag_atual - 1) * $usr_por_pag;
@@ -68,9 +68,9 @@ include_once 'includes/header.php';
 ?>
 
 <style>
-/* Melhorias especÃ­ficas para iPad Air */
+/* Melhorias específicas para iPad Air */
 @media (min-width: 768px) and (max-width: 1180px) {
-    /* BotÃµes de aÃ§Ã£o mais visÃ­veis */
+    /* Botões de ação mais visíveis */
     .btn-group .btn {
         min-width: 40px !important;
         min-height: 40px !important;
@@ -110,7 +110,7 @@ include_once 'includes/header.php';
         font-size: 1rem !important;
     }
 
-    /* Cards de estatÃ­sticas */
+    /* Cards de estatísticas */
     .stats-card {
         padding: 1.5rem !important;
         margin-bottom: 1rem;
@@ -126,14 +126,14 @@ include_once 'includes/header.php';
         padding: 0.5rem 0.75rem !important;
     }
 
-    /* CabeÃ§alho do card */
+    /* Cabeçalho do card */
     .card-header-modern {
         padding: 1.25rem !important;
         flex-wrap: wrap;
         gap: 1rem;
     }
 
-    /* BotÃ£o de novo usuÃ¡rio */
+    /* Botão de novo usuário */
     .btn-primary {
         min-height: 44px !important;
         padding: 0.75rem 1.5rem !important;
@@ -141,7 +141,7 @@ include_once 'includes/header.php';
     }
 }
 
-/* Ajustes para orientaÃ§Ã£o paisagem do iPad */
+/* Ajustes para orientação paisagem do iPad */
 @media (min-width: 1024px) and (max-width: 1180px) and (orientation: landscape) {
     .container-fluid {
         padding-left: 2rem;
@@ -159,9 +159,9 @@ include_once 'includes/header.php';
 <div class="page-header fade-in-up">
     <h1 class="page-title">
         <i class="fas fa-users-cog"></i>
-        GestÃ£o de UsuÃ¡rios
+        Gestão de Usuários
     </h1>
-    <p class="page-subtitle">Gerencie os usuÃ¡rios do sistema</p>
+    <p class="page-subtitle">Gerencie os usuários do sistema</p>
 </div>
 
 <?php if (!empty($message)): ?>
@@ -180,7 +180,7 @@ include_once 'includes/header.php';
                 <i class="fas fa-users"></i>
             </div>
             <div class="stats-value"><?php echo $total_usuarios; ?></div>
-            <div class="stats-label">Total de UsuÃ¡rios</div>
+            <div class="stats-label">Total de Usuários</div>
         </div>
     </div>
 
@@ -223,7 +223,7 @@ include_once 'includes/header.php';
                 <div class="d-flex flex-column flex-md-row gap-3 justify-content-between align-items-md-center">
                     <div class="d-flex flex-column flex-sm-row gap-2">
                         <a href="cadastro_usuario.php" class="btn btn-primary">
-                            <i class="fas fa-user-plus me-2"></i> Novo UsuÃ¡rio
+                            <i class="fas fa-user-plus me-2"></i> Novo Usuário
                         </a>
                         <a href="perfil.php" class="btn btn-outline-primary">
                             <i class="fas fa-user-edit me-2"></i> Meu Perfil
@@ -231,7 +231,7 @@ include_once 'includes/header.php';
                     </div>
                     <div class="d-flex gap-2 flex-grow-1 flex-md-grow-0">
                         <div class="input-group" style="max-width: 300px;">
-                            <input type="text" class="form-control" placeholder="Buscar usuÃ¡rios..." id="searchInput">
+                            <input type="text" class="form-control" placeholder="Buscar usuários..." id="searchInput">
                             <button class="btn btn-outline-primary" type="button">
                                 <i class="fas fa-search"></i>
                             </button>
@@ -247,9 +247,9 @@ include_once 'includes/header.php';
 <div class="modern-card fade-in-up">
     <div class="card-header-modern">
         <i class="fas fa-list"></i>
-        Lista de UsuÃ¡rios
+        Lista de Usuários
         <div class="ms-auto">
-            <span class="badge bg-primary"><?php echo $total_usuarios; ?> usuÃ¡rios</span>
+            <span class="badge bg-primary"><?php echo $total_usuarios; ?> usuários</span>
         </div>
     </div>
     <div class="card-body-modern">
@@ -259,12 +259,12 @@ include_once 'includes/header.php';
                 <table class="table table-hover mb-0" id="usuariosTable">
                     <thead>
                         <tr>
-                            <th>UsuÃ¡rio</th>
+                            <th>Usuário</th>
                             <th>Email</th>
-                            <th>NÃ­vel</th>
+                            <th>Nível</th>
                             <th>Cadastro</th>
                             <th>Status</th>
-                            <th class="text-center">AÃ§Ãµes</th>
+                            <th class="text-center">Ações</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -284,7 +284,7 @@ include_once 'includes/header.php';
                                             <div class="fw-semibold">
                                                 <?php echo htmlspecialchars($row['nome']); ?>
                                                 <?php if ($is_current_user): ?>
-                                                    <span class="badge bg-info ms-2">VocÃª</span>
+                                                    <span class="badge bg-info ms-2">Você</span>
                                                 <?php endif; ?>
                                             </div>
                                             <small class="text-muted">#<?php echo $row['id']; ?></small>
@@ -345,7 +345,7 @@ include_once 'includes/header.php';
                                 <h6 class="mb-1">
                                     <?php echo htmlspecialchars($row['nome']); ?>
                                     <?php if ($is_current_user): ?>
-                                        <span class="badge bg-info ms-2">VocÃª</span>
+                                        <span class="badge bg-info ms-2">Você</span>
                                     <?php endif; ?>
                                 </h6>
                                 <div class="d-flex justify-content-between align-items-center">
@@ -400,10 +400,10 @@ include_once 'includes/header.php';
                 <div class="stats-icon primary mx-auto mb-3">
                     <i class="fas fa-users"></i>
                 </div>
-                <h5 class="text-muted mb-2">Nenhum usuÃ¡rio encontrado</h5>
-                <p class="text-muted">Adicione usuÃ¡rios ao sistema.</p>
+                <h5 class="text-muted mb-2">Nenhum usuário encontrado</h5>
+                <p class="text-muted">Adicione usuários ao sistema.</p>
                 <a href="cadastro_usuario.php" class="btn btn-primary">
-                    <i class="fas fa-user-plus me-2"></i> Adicionar Primeiro UsuÃ¡rio
+                    <i class="fas fa-user-plus me-2"></i> Adicionar Primeiro Usuário
                 </a>
             </div>
         <?php endif; ?>
@@ -413,7 +413,7 @@ include_once 'includes/header.php';
 
 <script>
 function confirmDelete(id) {
-    if (confirm('Tem certeza que deseja excluir este usuÃ¡rio? Esta aÃ§Ã£o nÃ£o pode ser desfeita.')) {
+    if (confirm('Tem certeza que deseja excluir este usuário? Esta ação não pode ser desfeita.')) {
         window.location.href = `usuarios.php?action=delete&id=${id}`;
     }
 }

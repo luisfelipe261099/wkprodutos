@@ -1,7 +1,7 @@
 <?php
 require_once 'includes/session_bootstrap.php';
 
-// Verifica se o usuÃ¡rio estÃ¡ logado
+// Verifica se o usuário está logado
 if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
     header("location: index.php");
     exit;
@@ -28,7 +28,7 @@ if ($agendamento_id) {
         if ($result_agendamento->num_rows == 1) {
             $agendamento = $result_agendamento->fetch_assoc();
         } else {
-            $message = "Agendamento nÃ£o encontrado.";
+            $message = "Agendamento não encontrado.";
             $message_type = "danger";
         }
         $stmt_agendamento->close();
@@ -37,7 +37,7 @@ if ($agendamento_id) {
         $message_type = "danger";
     }
 } else {
-    $message = "ID do agendamento nÃ£o especificado.";
+    $message = "ID do agendamento não especificado.";
     $message_type = "danger";
 }
 
@@ -77,7 +77,7 @@ include_once 'includes/header.php';
     ?>
     <div class="card shadow-sm mb-4">
         <div class="card-header bg-white d-flex justify-content-between align-items-center">
-            <h5>InformaÃ§Ãµes do Agendamento</h5>
+            <h5>Informações do Agendamento</h5>
             <div>
                 <a href="agendar_entrega.php?id=<?php echo htmlspecialchars($agendamento['id']); ?>" class="btn btn-primary btn-sm me-2" title="Editar Agendamento">
                     <i class="fas fa-edit me-1"></i> Editar Agendamento
@@ -96,17 +96,17 @@ include_once 'includes/header.php';
                 <div class="col-md-6 text-md-end">
                     <strong>Data/Hora da Entrega:</strong> <?php echo date('d/m/Y H:i', strtotime($agendamento['data_hora_entrega'])); ?><br>
                     <?php if ($agendamento['venda_id']): ?>
-                        <strong>VÃ­nculo:</strong> <a href="detalhes_venda.php?id=<?php echo htmlspecialchars($agendamento['venda_id']); ?>" class="text-decoration-none">Venda #<?php echo htmlspecialchars($agendamento['venda_id']); ?></a><br>
+                        <strong>Vínculo:</strong> <a href="detalhes_venda.php?id=<?php echo htmlspecialchars($agendamento['venda_id']); ?>" class="text-decoration-none">Venda #<?php echo htmlspecialchars($agendamento['venda_id']); ?></a><br>
                     <?php elseif ($agendamento['orcamento_id']): ?>
-                        <strong>VÃ­nculo:</strong> <a href="detalhes_orcamento.php?id=<?php echo htmlspecialchars($agendamento['orcamento_id']); ?>" class="text-decoration-none">OrÃ§amento #<?php echo htmlspecialchars($agendamento['orcamento_id']); ?></a><br>
+                        <strong>Vínculo:</strong> <a href="detalhes_orcamento.php?id=<?php echo htmlspecialchars($agendamento['orcamento_id']); ?>" class="text-decoration-none">Orçamento #<?php echo htmlspecialchars($agendamento['orcamento_id']); ?></a><br>
                     <?php else: ?>
-                        <strong>VÃ­nculo:</strong> <span class="text-muted">Nenhum</span><br>
+                        <strong>Vínculo:</strong> <span class="text-muted">Nenhum</span><br>
                     <?php endif; ?>
                 </div>
             </div>
             <div class="row">
                 <div class="col-md-8">
-                    <strong>EndereÃ§o de Entrega:</strong> <?php echo htmlspecialchars($agendamento['endereco_entrega']); ?>
+                    <strong>Endereço de Entrega:</strong> <?php echo htmlspecialchars($agendamento['endereco_entrega']); ?>
                 </div>
                 <div class="col-md-4 text-md-end">
                     <strong>Status:</strong> <span class="badge <?php echo $status_class; ?> fs-6"><?php echo htmlspecialchars(ucfirst(str_replace('_', ' ', $agendamento['status_entrega']))); ?></span>
@@ -115,7 +115,7 @@ include_once 'includes/header.php';
             <?php if (!empty($agendamento['observacoes'])): ?>
             <div class="row mt-3">
                 <div class="col-md-12">
-                    <strong>ObservaÃ§Ãµes:</strong><br>
+                    <strong>Observações:</strong><br>
                     <p class="mb-0 text-muted"><?php echo nl2br(htmlspecialchars($agendamento['observacoes'])); ?></p>
                 </div>
             </div>

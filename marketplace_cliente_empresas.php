@@ -1,7 +1,7 @@
 <?php
 require_once 'includes/session_bootstrap.php';
 
-// Verifica se o usuÃ¡rio estÃ¡ logado
+// Verifica se o usuário está logado
 if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
     header("location: index.php");
     exit;
@@ -12,7 +12,7 @@ require_once 'includes/db_connect.php';
 $message = '';
 $message_type = '';
 
-// Processar aÃ§Ãµes
+// Processar ações
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $action = $_POST['action'] ?? '';
     
@@ -23,12 +23,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         try {
             $conn->begin_transaction();
             
-            // Remover todas as associaÃ§Ãµes existentes do cliente
+            // Remover todas as associações existentes do cliente
             $stmt_delete = $conn->prepare("DELETE FROM marketplace_cliente_empresas WHERE cliente_id = ?");
             $stmt_delete->bind_param("i", $cliente_id);
             $stmt_delete->execute();
             
-            // Inserir novas associaÃ§Ãµes
+            // Inserir novas associações
             if (!empty($empresas_selecionadas)) {
                 $stmt_insert = $conn->prepare("INSERT INTO marketplace_cliente_empresas (cliente_id, empresa_id) VALUES (?, ?)");
                 foreach ($empresas_selecionadas as $empresa_id) {
@@ -109,7 +109,7 @@ include_once 'includes/header.php';
                         <th>Email</th>
                         <th>Empresas Associadas</th>
                         <th>Qtd. Empresas</th>
-                        <th class="text-center">AÃ§Ãµes</th>
+                        <th class="text-center">Ações</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -174,7 +174,7 @@ include_once 'includes/header.php';
                     
                     <div class="alert alert-info">
                         <i class="fas fa-info-circle me-2"></i>
-                        <strong>Importante:</strong> Se nenhuma empresa for selecionada, o cliente poderÃ¡ ver produtos de todas as empresas no marketplace.
+                        <strong>Importante:</strong> Se nenhuma empresa for selecionada, o cliente poderá ver produtos de todas as empresas no marketplace.
                     </div>
                     
                     <div class="row">
@@ -206,7 +206,7 @@ include_once 'includes/header.php';
                         <i class="fas fa-times me-2"></i>Cancelar
                     </button>
                     <button type="submit" class="btn btn-primary">
-                        <i class="fas fa-save me-2"></i>Salvar ConfiguraÃ§Ãµes
+                        <i class="fas fa-save me-2"></i>Salvar Configurações
                     </button>
                 </div>
             </form>

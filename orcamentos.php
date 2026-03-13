@@ -4,21 +4,21 @@ ob_start();
 require_once 'includes/session_bootstrap.php';
 
 // ===================================================================================
-// 1. SETUP INICIAL E INCLUSÃƒO DE BIBLIOTECAS
+// 1. SETUP INICIAL E INCLUSÃO DE BIBLIOTECAS
 // ===================================================================================
 
-// Habilita exibiÃ§Ã£o de erros para depuraÃ§Ã£o (remover em produÃ§Ã£o)
+// Habilita exibição de erros para depuração (remover em produção)
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
-// Verifica se o usuÃ¡rio estÃ¡ logado
+// Verifica se o usuário está logado
 if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
     if (ob_get_length()) ob_end_clean();
     header("location: index.php");
     exit;
 }
 
-// Inclui PHPMailer e conexÃ£o com o banco
+// Inclui PHPMailer e conexão com o banco
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
 
@@ -26,7 +26,7 @@ require_once 'vendor/autoload.php';
 require_once 'includes/db_connect.php';
 
 // ===================================================================================
-// 2. DEFINIÃ‡ÃƒO DE FUNÃ‡Ã•ES AUXILIARES
+// 2. DEFINIÇÃO DE FUNÇÕES AUXILIARES
 // ===================================================================================
 
 function registrarHistoricoOrcamento($conn, $orcamento_id, $status_anterior, $status_novo, $observacoes = '') {
@@ -49,7 +49,7 @@ function gerarPDFComoString($orcamento_id, $conn) {
         $stmt->execute();
         $orcamento = $stmt->get_result()->fetch_assoc();
         
-        if (!$orcamento) throw new Exception("OrÃ§amento nÃ£o encontrado");
+        if (!$orcamento) throw new Exception("Orçamento não encontrado");
 
         $sql_itens = "SELECT i.*, p.nome AS nome_produto FROM itens_orcamento i JOIN produtos p ON i.produto_id = p.id WHERE i.orcamento_id = ?";
         $stmt_itens = $conn->prepare($sql_itens);
@@ -107,44 +107,44 @@ function gerarPDFComoString($orcamento_id, $conn) {
         
         return $pdf->Output('S');
     } catch (Exception $e) {
-        error_log("Erro ao gerar PDF do orÃ§amento #$orcamento_id: " . $e->getMessage());
+        error_log("Erro ao gerar PDF do orçamento #$orcamento_id: " . $e->getMessage());
         throw $e;
     }
 }
 
 // ===================================================================================
-// 3. BLOCO DE PROCESSAMENTO DE AÃ‡Ã•ES (POST e GET)
+// 3. BLOCO DE PROCESSAMENTO DE AÇÕES (POST e GET)
 // ===================================================================================
 
-// --- NOVA AÃ‡ÃƒO DE EXCLUIR ORÃ‡AMENTO ---
+// --- NOVA AÇÃO DE EXCLUIR ORÇAMENTO ---
 if ($_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['action']) && $_GET['action'] === 'delete') {
     $orcamento_id = intval($_GET['id']);
 
     $conn->begin_transaction();
     try {
-        // 1. Excluir itens do orÃ§amento
+        // 1. Excluir itens do orçamento
         $stmt_itens = $conn->prepare("DELETE FROM itens_orcamento WHERE orcamento_id = ?");
         $stmt_itens->bind_param("i", $orcamento_id);
         $stmt_itens->execute();
 
-        // 2. Excluir histÃ³rico do orÃ§amento
+        // 2. Excluir histórico do orçamento
         $stmt_hist = $conn->prepare("DELETE FROM historico_orcamentos WHERE orcamento_id = ?");
         $stmt_hist->bind_param("i", $orcamento_id);
         $stmt_hist->execute();
 
-        // 3. Excluir o orÃ§amento principal
+        // 3. Excluir o orçamento principal
         $stmt_orc = $conn->prepare("DELETE FROM orcamentos WHERE id = ?");
         $stmt_orc->bind_param("i", $orcamento_id);
         $stmt_orc->execute();
 
         $conn->commit();
-        $_SESSION['message'] = "OrÃ§amento #{$orcamento_id} e seus dados foram excluÃ­dos com sucesso.";
+        $_SESSION['message'] = "Orçamento #{$orcamento_id} e seus dados foram excluídos com sucesso.";
         $_SESSION['message_type'] = 'success';
     } catch (Exception $e) {
         $conn->rollback();
-        $_SESSION['message'] = "Erro ao excluir o orÃ§amento: " . $e->getMessage();
+        $_SESSION['message'] = "Erro ao excluir o orçamento: " . $e->getMessage();
         $_SESSION['message_type'] = 'danger';
-        error_log("Erro na exclusÃ£o do orÃ§amento #$orcamento_id: " . $e->getMessage());
+        error_log("Erro na exclusão do orçamento #$orcamento_id: " . $e->getMessage());
     }
     
     if (ob_get_length()) ob_end_clean();
@@ -152,7 +152,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['action']) && $_GET['act
     exit;
 }
 
-// AÃ§Ã£o de Mudar Status (via POST do Modal)
+// Ação de Mudar Status (via POST do Modal)
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'change_status') {
     $orcamento_id = intval($_POST['orcamento_id']);
     $novo_status = $_POST['novo_status'];
@@ -166,26 +166,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
         $stmt_get_status->execute();
         $result_status = $stmt_get_status->get_result();
         if ($result_status->num_rows === 0) {
-            throw new Exception("OrÃ§amento nÃ£o encontrado.");
+            throw new Exception("Orçamento não encontrado.");
         }
         $status_anterior = $result_status->fetch_assoc()['status_orcamento'];
         $stmt_get_status->close();
 
-        // Atualizar status do orÃ§amento
+        // Atualizar status do orçamento
         $stmt_update_orcamento = $conn->prepare("UPDATE orcamentos SET status_orcamento = ? WHERE id = ?");
         $stmt_update_orcamento->bind_param("si", $novo_status, $orcamento_id);
         if (!$stmt_update_orcamento->execute()) {
-            throw new Exception("Erro ao atualizar o status do orÃ§amento: " . $stmt_update_orcamento->error);
+            throw new Exception("Erro ao atualizar o status do orçamento: " . $stmt_update_orcamento->error);
         }
         $stmt_update_orcamento->close();
 
         registrarHistoricoOrcamento($conn, $orcamento_id, $status_anterior, $novo_status, $observacoes_status);
-        $_SESSION['message'] = "Status do orÃ§amento #{$orcamento_id} atualizado para '{$novo_status}'.";
+        $_SESSION['message'] = "Status do orçamento #{$orcamento_id} atualizado para '{$novo_status}'.";
         $_SESSION['message_type'] = 'success';
 
         // Se o novo status for 'aprovado', criar a venda automaticamente
         if ($novo_status === 'aprovado') {
-            // 1. Buscar dados do orÃ§amento para a venda
+            // 1. Buscar dados do orçamento para a venda
             $stmt_get_orc_details = $conn->prepare("SELECT cliente_id, valor_total, data_orcamento, observacoes, forma_pagamento, empresa_id, comissao_percentual, valor_comissao FROM orcamentos WHERE id = ?");
             $stmt_get_orc_details->bind_param("i", $orcamento_id);
             $stmt_get_orc_details->execute();
@@ -193,7 +193,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
             $stmt_get_orc_details->close();
 
             if (!$orcamento_details) {
-                throw new Exception("Detalhes do orÃ§amento nÃ£o encontrados para criar a venda.");
+                throw new Exception("Detalhes do orçamento não encontrados para criar a venda.");
             }
 
             // 2. Inserir na tabela \'vendas\'
@@ -218,7 +218,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
             $venda_id = $stmt_insert_venda->insert_id;
             $stmt_insert_venda->close();
 
-            // 3. Buscar itens do orÃ§amento e inserir em 'itens_venda'
+            // 3. Buscar itens do orçamento e inserir em 'itens_venda'
             $stmt_get_itens = $conn->prepare("SELECT produto_id, quantidade, preco_unitario FROM itens_orcamento WHERE orcamento_id = ?");
             $stmt_get_itens->bind_param("i", $orcamento_id);
             $stmt_get_itens->execute();
@@ -238,8 +238,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
             // Adicionar mensagem de sucesso para a venda
             $_SESSION['message'] .= " Venda #{$venda_id} registrada automaticamente.";
             
-            // Registrar no histÃ³rico do orÃ§amento que a venda foi criada
-            registrarHistoricoOrcamento($conn, $orcamento_id, $novo_status, $novo_status, "Venda #{$venda_id} gerada automaticamente a partir deste orÃ§amento.");
+            // Registrar no histórico do orçamento que a venda foi criada
+            registrarHistoricoOrcamento($conn, $orcamento_id, $novo_status, $novo_status, "Venda #{$venda_id} gerada automaticamente a partir deste orçamento.");
         }
 
         $conn->commit();
@@ -248,7 +248,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
         $conn->rollback();
         $_SESSION['message'] = "Erro: " . $e->getMessage();
         $_SESSION['message_type'] = 'danger';
-        error_log("Erro na operaÃ§Ã£o de mudanÃ§a de status/criaÃ§Ã£o de venda para orÃ§amento #$orcamento_id: " . $e->getMessage());
+        error_log("Erro na operação de mudança de status/criação de venda para orçamento #$orcamento_id: " . $e->getMessage());
     }
     
     if (ob_get_length()) ob_end_clean();
@@ -256,21 +256,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
     exit;
 }
 
-// AÃ§Ã£o de Converter OrÃ§amento em Venda (via POST)
+// Ação de Converter Orçamento em Venda (via POST)
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'convert_to_sale') {
     $orcamento_id = intval($_POST['orcamento_id']);
     $forma_pagamento = trim($_POST['forma_pagamento']);
 
     $conn->begin_transaction();
     try {
-        // 1. Buscar dados do orÃ§amento
+        // 1. Buscar dados do orçamento
         $stmt_orcamento = $conn->prepare("SELECT * FROM orcamentos WHERE id = ? AND status_orcamento = 'aprovado'");
         $stmt_orcamento->bind_param("i", $orcamento_id);
         $stmt_orcamento->execute();
         $orcamento = $stmt_orcamento->get_result()->fetch_assoc();
 
         if (!$orcamento) {
-            throw new Exception("OrÃ§amento nÃ£o encontrado ou nÃ£o estÃ¡ aprovado.");
+            throw new Exception("Orçamento não encontrado ou não está aprovado.");
         }
 
         // 2. Criar nova venda
@@ -279,7 +279,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
         $stmt_venda->execute();
         $venda_id = $conn->insert_id;
 
-        // 3. Buscar itens do orÃ§amento
+        // 3. Buscar itens do orçamento
         $stmt_itens_orc = $conn->prepare("SELECT * FROM itens_orcamento WHERE orcamento_id = ?");
         $stmt_itens_orc->bind_param("i", $orcamento_id);
         $stmt_itens_orc->execute();
@@ -298,12 +298,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
             $stmt_estoque->execute();
         }
 
-        // 5. Atualizar status do orÃ§amento para 'convertido_venda'
+        // 5. Atualizar status do orçamento para 'convertido_venda'
         $stmt_update_orc = $conn->prepare("UPDATE orcamentos SET status_orcamento = 'convertido_venda' WHERE id = ?");
         $stmt_update_orc->bind_param("i", $orcamento_id);
         $stmt_update_orc->execute();
 
-        // 6. Registrar histÃ³rico
+        // 6. Registrar histórico
         registrarHistoricoOrcamento($conn, $orcamento_id, 'aprovado', 'convertido_venda', "Convertido em venda #$venda_id");
 
         $conn->commit();
@@ -314,15 +314,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
 
     } catch (Exception $e) {
         $conn->rollback();
-        $erro_conversao = "Erro ao converter orÃ§amento: " . $e->getMessage();
+        $erro_conversao = "Erro ao converter orçamento: " . $e->getMessage();
     }
 }
 
-// AÃ§Ã£o de Enviar E-mail (via GET)
+// Ação de Enviar E-mail (via GET)
 if ($_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['action']) && $_GET['action'] === 'send_email') {
     $orcamento_id = intval($_GET['id']);
 
-    // Buscar dados do cliente e orÃ§amento
+    // Buscar dados do cliente e orçamento
     $stmt_cli = $conn->prepare("SELECT c.nome, c.email, o.status_orcamento FROM clientes c JOIN orcamentos o ON c.id = o.cliente_id WHERE o.id = ?");
     $stmt_cli->bind_param("i", $orcamento_id);
     $stmt_cli->execute();
@@ -331,17 +331,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['action']) && $_GET['act
     if ($data && !empty($data['email'])) {
         $mail = new PHPMailer(true);
         try {
-            // Carrega configuraÃ§Ãµes do SMTP do arquivo de configuraÃ§Ã£o
+            // Carrega configurações do SMTP do arquivo de configuração
             $email_config = include 'includes/email_config.php';
 
-            // ConfiguraÃ§Ãµes do servidor SMTP
+            // Configurações do servidor SMTP
             $mail->isSMTP();
             $mail->Host = $email_config['host'];
             $mail->SMTPAuth = true;
             $mail->Username = $email_config['username'];
             $mail->Password = $email_config['password'];
 
-            // Configurar encryption baseado no arquivo de configuraÃ§Ã£o
+            // Configurar encryption baseado no arquivo de configuração
             if ($email_config['encryption'] === 'ssl') {
                 $mail->SMTPSecure = PHPMailer::ENCRYPTION_SMTPS;
             } else {
@@ -351,7 +351,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['action']) && $_GET['act
             $mail->Port = $email_config['port'];
             $mail->CharSet = 'UTF-8';
 
-            // ConfiguraÃ§Ãµes do remetente e destinatÃ¡rio
+            // Configurações do remetente e destinatário
             $mail->setFrom($email_config['from_email'], $email_config['from_name']);
             $mail->addAddress($data['email'], $data['nome']);
 
@@ -360,13 +360,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['action']) && $_GET['act
                 $pdf_content = gerarPDFComoString($orcamento_id, $conn);
                 $mail->addStringAttachment($pdf_content, 'Orcamento_'.$orcamento_id.'.pdf', 'base64', 'application/pdf');
             } catch (Exception $pdf_error) {
-                error_log("Erro ao gerar PDF para orÃ§amento #$orcamento_id: " . $pdf_error->getMessage());
-                throw new Exception("Erro ao gerar PDF do orÃ§amento: " . $pdf_error->getMessage());
+                error_log("Erro ao gerar PDF para orçamento #$orcamento_id: " . $pdf_error->getMessage());
+                throw new Exception("Erro ao gerar PDF do orçamento: " . $pdf_error->getMessage());
             }
 
-            // Configurar conteÃºdo do email
+            // Configurar conteúdo do email
             $mail->isHTML(true);
-            $mail->Subject = 'Seu OrÃ§amento NÂº ' . $orcamento_id . ' - LFM Tecnologia';
+            $mail->Subject = 'Seu Orçamento Nº ' . $orcamento_id . ' - LFM Tecnologia';
 
             $mail->Body = "
             <html>
@@ -384,13 +384,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['action']) && $_GET['act
                     <h2>LFM Tecnologia</h2>
                 </div>
                 <div class='content'>
-                    <p>OlÃ¡, <strong>" . htmlspecialchars($data['nome']) . "</strong>!</p>
+                    <p>Olá, <strong>" . htmlspecialchars($data['nome']) . "</strong>!</p>
 
                     <p>Esperamos que esteja bem!</p>
 
-                    <p>Segue em anexo o orÃ§amento solicitado (NÂº <strong>$orcamento_id</strong>).</p>
+                    <p>Segue em anexo o orçamento solicitado (Nº <strong>$orcamento_id</strong>).</p>
 
-                    <p>Caso tenha alguma dÃºvida ou precise de esclarecimentos, nÃ£o hesite em entrar em contato conosco.</p>
+                    <p>Caso tenha alguma dúvida ou precise de esclarecimentos, não hesite em entrar em contato conosco.</p>
 
                     <p>Aguardamos seu retorno!</p>
 
@@ -400,26 +400,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['action']) && $_GET['act
                     LFM Tecnologia</p>
                 </div>
                 <div class='footer'>
-                    <p>Este Ã© um e-mail automÃ¡tico. Por favor, nÃ£o responda diretamente a este e-mail.</p>
+                    <p>Este é um e-mail automático. Por favor, não responda diretamente a este e-mail.</p>
                     <p>Para entrar em contato, utilize: desenvolvimento@lfmtecnologia.com</p>
                 </div>
             </body>
             </html>";
 
-            $mail->AltBody = "OlÃ¡, " . htmlspecialchars($data['nome']) . "!\n\n" .
-                           "Segue em anexo o orÃ§amento solicitado (NÂº $orcamento_id).\n\n" .
-                           "Caso tenha alguma dÃºvida, entre em contato conosco.\n\n" .
+            $mail->AltBody = "Olá, " . htmlspecialchars($data['nome']) . "!\n\n" .
+                           "Segue em anexo o orçamento solicitado (Nº $orcamento_id).\n\n" .
+                           "Caso tenha alguma dúvida, entre em contato conosco.\n\n" .
                            "Atenciosamente,\nKarla Wollinge\nLFM Tecnologia";
 
             // Enviar email
             if ($mail->send()) {
                 // Log de sucesso
-                error_log("EMAIL ENVIADO COM SUCESSO - OrÃ§amento #$orcamento_id para {$data['email']} em " . date('Y-m-d H:i:s'));
+                error_log("EMAIL ENVIADO COM SUCESSO - Orçamento #$orcamento_id para {$data['email']} em " . date('Y-m-d H:i:s'));
 
-                // Registrar no histÃ³rico
-                registrarHistoricoOrcamento($conn, $orcamento_id, $data['status_orcamento'], $data['status_orcamento'], "OrÃ§amento enviado por e-mail para {$data['email']} em " . date('d/m/Y H:i:s'));
+                // Registrar no histórico
+                registrarHistoricoOrcamento($conn, $orcamento_id, $data['status_orcamento'], $data['status_orcamento'], "Orçamento enviado por e-mail para {$data['email']} em " . date('d/m/Y H:i:s'));
 
-                $_SESSION['message'] = "OrÃ§amento enviado com sucesso para " . htmlspecialchars($data['email']) . "!";
+                $_SESSION['message'] = "Orçamento enviado com sucesso para " . htmlspecialchars($data['email']) . "!";
                 $_SESSION['message_type'] = 'success';
             } else {
                 throw new Exception("Falha no envio do email");
@@ -427,18 +427,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['action']) && $_GET['act
 
         } catch (Exception $e) {
             // Log detalhado do erro
-            error_log("ERRO NO ENVIO DE EMAIL - OrÃ§amento #$orcamento_id: " . $e->getMessage());
+            error_log("ERRO NO ENVIO DE EMAIL - Orçamento #$orcamento_id: " . $e->getMessage());
             error_log("Dados do cliente: " . print_r($data, true));
-            error_log("ConfiguraÃ§Ãµes de email: Host=" . ($email_config['host'] ?? 'N/A') . ", Username=" . ($email_config['username'] ?? 'N/A') . ", Port=" . ($email_config['port'] ?? 'N/A'));
+            error_log("Configurações de email: Host=" . ($email_config['host'] ?? 'N/A') . ", Username=" . ($email_config['username'] ?? 'N/A') . ", Port=" . ($email_config['port'] ?? 'N/A'));
 
             $_SESSION['message'] = "Erro ao enviar e-mail: " . htmlspecialchars($e->getMessage());
             $_SESSION['message_type'] = 'danger';
         }
     } else {
         if (!$data) {
-            $_SESSION['message'] = "OrÃ§amento nÃ£o encontrado.";
+            $_SESSION['message'] = "Orçamento não encontrado.";
         } else {
-            $_SESSION['message'] = "Cliente nÃ£o possui e-mail cadastrado. Por favor, atualize o cadastro do cliente.";
+            $_SESSION['message'] = "Cliente não possui e-mail cadastrado. Por favor, atualize o cadastro do cliente.";
         }
         $_SESSION['message_type'] = 'warning';
     }
@@ -452,25 +452,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['action']) && $_GET['act
 // 4. BLOCO DE BUSCA DE DADOS E MENSAGENS FLASH
 // ===================================================================================
 
-// ConfiguraÃ§Ãµes de paginaÃ§Ã£o
-$itens_por_pagina_orc = 10; // Nome da variÃ¡vel alterado para evitar conflito
+// Configurações de paginação
+$itens_por_pagina_orc = 10; // Nome da variável alterado para evitar conflito
 $pagina_atual_orc = isset($_GET['pagina_orc']) ? (int)$_GET['pagina_orc'] : 1;
 if ($pagina_atual_orc < 1) $pagina_atual_orc = 1;
 $offset_orc = ($pagina_atual_orc - 1) * $itens_por_pagina_orc;
 
-// Contar total de orÃ§amentos (todos, para estatÃ­sticas e total de pÃ¡ginas)
+// Contar total de orçamentos (todos, para estatísticas e total de páginas)
 $sql_total_orcamentos_db = "SELECT COUNT(*) as total FROM orcamentos";
 $result_total_orcamentos_db = $conn->query($sql_total_orcamentos_db);
 $total_orcamentos_db = $result_total_orcamentos_db->fetch_assoc()['total'];
 
-// Contar orÃ§amentos para exibir na lista (excluindo 'convertido_venda')
+// Contar orçamentos para exibir na lista (excluindo 'convertido_venda')
 $sql_total_orcamentos_para_exibir_db = "SELECT COUNT(*) as total FROM orcamentos WHERE status_orcamento != 'convertido_venda'";
 $result_total_orcamentos_para_exibir_db = $conn->query($sql_total_orcamentos_para_exibir_db);
 $total_orcamentos_para_exibir_db = $result_total_orcamentos_para_exibir_db->fetch_assoc()['total'];
 $total_paginas_orc = ceil($total_orcamentos_para_exibir_db / $itens_por_pagina_orc);
 
 
-// Busca os orÃ§amentos para a pÃ¡gina atual (excluindo 'convertido_venda')
+// Busca os orçamentos para a página atual (excluindo 'convertido_venda')
 $sql_select_orcamentos = "SELECT o.id, c.nome AS nome_cliente, o.data_orcamento, o.valor_total, o.status_orcamento
                           FROM orcamentos o LEFT JOIN clientes c ON o.cliente_id = c.id
                           WHERE o.status_orcamento != 'convertido_venda'
@@ -480,11 +480,11 @@ $stmt_orcamentos = $conn->prepare($sql_select_orcamentos);
 $stmt_orcamentos->bind_param("ii", $itens_por_pagina_orc, $offset_orc);
 $stmt_orcamentos->execute();
 $result_orcamentos_paginados = $stmt_orcamentos->get_result();
-if (!$result_orcamentos_paginados) die("Erro na consulta de orÃ§amentos paginados: " . $conn->error);
+if (!$result_orcamentos_paginados) die("Erro na consulta de orçamentos paginados: " . $conn->error);
 $orcamentos_para_exibir = $result_orcamentos_paginados->fetch_all(MYSQLI_ASSOC);
 
 
-// EstatÃ­sticas (calculadas sobre todos os orÃ§amentos)
+// Estatísticas (calculadas sobre todos os orçamentos)
 $sql_all_orcamentos_stats = "SELECT status_orcamento FROM orcamentos";
 $result_all_orcamentos_stats = $conn->query($sql_all_orcamentos_stats);
 $stats = ['pendentes' => 0, 'aprovados' => 0, 'rejeitados' => 0, 'convertidos' => 0];
@@ -500,14 +500,14 @@ if ($result_all_orcamentos_stats) {
 }
 
 // ===================================================================================
-// 5. RENDERIZAÃ‡ÃƒO DA PÃGINA HTML
+// 5. RENDERIZAÇÃO DA PÁGINA HTML
 // ===================================================================================
 
 include_once 'includes/header.php';
 ?>
 
 <div class="page-header fade-in-up">
-    <h1 class="page-title"><i class="fas fa-file-invoice-dollar"></i> Gerenciamento de OrÃ§amentos</h1>
+    <h1 class="page-title"><i class="fas fa-file-invoice-dollar"></i> Gerenciamento de Orçamentos</h1>
 </div>
 
 <?php 
@@ -521,7 +521,7 @@ if (isset($_SESSION['message'])) {
     unset($_SESSION['message_type']);
 }
 
-// Exibir mensagem de erro de conversÃ£o se houver
+// Exibir mensagem de erro de conversão se houver
 if (isset($erro_conversao)) {
     echo '<div class="alert alert-danger alert-dismissible fade show" role="alert">';
     echo '<i class="fas fa-exclamation-triangle me-2"></i>' . htmlspecialchars($erro_conversao);
@@ -540,20 +540,20 @@ if (isset($erro_conversao)) {
 <div class="modern-card">
     <div class="card-header-modern d-flex justify-content-between align-items-center flex-wrap gap-3">
         <div class="d-flex align-items-center">
-            <span><i class="fas fa-list"></i> Lista de OrÃ§amentos (PÃ¡gina <?php echo $pagina_atual_orc; ?> de <?php echo $total_paginas_orc; ?>)</span>
+            <span><i class="fas fa-list"></i> Lista de Orçamentos (Página <?php echo $pagina_atual_orc; ?> de <?php echo $total_paginas_orc; ?>)</span>
             <div class="ms-auto">
-                <span class="badge bg-primary"><?php echo count($orcamentos_para_exibir); ?> orÃ§amentos</span>
+                <span class="badge bg-primary"><?php echo count($orcamentos_para_exibir); ?> orçamentos</span>
             </div>
         </div>
         <div class="d-flex gap-2 flex-grow-1 flex-md-grow-0">
             <div class="input-group" style="max-width: 300px;">
-                <input type="text" class="form-control" placeholder="Buscar orÃ§amentos..." id="searchInput">
+                <input type="text" class="form-control" placeholder="Buscar orçamentos..." id="searchInput">
                 <button class="btn btn-outline-primary" type="button">
                     <i class="fas fa-search"></i>
                 </button>
             </div>
         </div>
-        <a href="criar_orcamento.php" class="btn btn-primary btn-sm"><i class="fas fa-plus me-2"></i> Novo OrÃ§amento</a>
+        <a href="criar_orcamento.php" class="btn btn-primary btn-sm"><i class="fas fa-plus me-2"></i> Novo Orçamento</a>
     </div>
     <div class="card-body-modern">
         <!-- Tabela para Desktop e Tablet -->
@@ -562,7 +562,7 @@ if (isset($erro_conversao)) {
                 <table class="table table-hover table-striped" id="orcamentosTable">
                     <thead>
                         <tr>
-                            <th>ID</th><th>Cliente</th><th>Data</th><th>Valor</th><th>Status</th><th class="text-center">AÃ§Ãµes</th>
+                            <th>ID</th><th>Cliente</th><th>Data</th><th>Valor</th><th>Status</th><th class="text-center">Ações</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -603,7 +603,7 @@ if (isset($erro_conversao)) {
                                                 <i class="fas fa-sync-alt"></i>
                                             </button>
 
-                                            <a href="orcamentos.php?action=delete&id=<?php echo $row['id']; ?>" class="btn btn-sm btn-danger" title="Excluir OrÃ§amento" onclick="return confirm('Tem certeza que deseja excluir este orÃ§amento e todos os seus itens? Esta aÃ§Ã£o nÃ£o pode ser desfeita.');">
+                                            <a href="orcamentos.php?action=delete&id=<?php echo $row['id']; ?>" class="btn btn-sm btn-danger" title="Excluir Orçamento" onclick="return confirm('Tem certeza que deseja excluir este orçamento e todos os seus itens? Esta ação não pode ser desfeita.');">
                                                 <i class="fas fa-trash-alt"></i>
                                             </a>
                                         </div>
@@ -611,7 +611,7 @@ if (isset($erro_conversao)) {
                                 </tr>
                             <?php endforeach; ?>
                         <?php else: ?>
-                            <tr><td colspan="6" class="text-center">Nenhum orÃ§amento para exibir (orÃ§amentos jÃ¡ convertidos em venda nÃ£o sÃ£o listados aqui).</td></tr>
+                            <tr><td colspan="6" class="text-center">Nenhum orçamento para exibir (orçamentos já convertidos em venda não são listados aqui).</td></tr>
                         <?php endif; ?>
                     </tbody>
                 </table>
@@ -645,7 +645,7 @@ if (isset($erro_conversao)) {
                     ?>
                     <div class="mobile-orcamento-item mobile-orcamento-card">
                         <div class="mobile-orcamento-header">
-                            <div class="mobile-orcamento-id">OrÃ§amento #<?php echo htmlspecialchars($row['id']); ?></div>
+                            <div class="mobile-orcamento-id">Orçamento #<?php echo htmlspecialchars($row['id']); ?></div>
                             <span class="badge <?php echo $status_class; ?> mobile-orcamento-status">
                                 <?php echo $status_text; ?>
                             </span>
@@ -688,7 +688,7 @@ if (isset($erro_conversao)) {
                             <button type="button" class="btn btn-sm btn-outline-warning" title="Mudar Status" data-bs-toggle="modal" data-bs-target="#statusModal" data-id="<?php echo $row['id']; ?>" data-status="<?php echo $row['status_orcamento']; ?>">
                                 <i class="fas fa-sync-alt me-1"></i> Status
                             </button>
-                            <a href="orcamentos.php?action=delete&id=<?php echo $row['id']; ?>" class="btn btn-sm btn-outline-danger" title="Excluir OrÃ§amento" onclick="return confirm('Tem certeza que deseja excluir este orÃ§amento e todos os seus itens? Esta aÃ§Ã£o nÃ£o pode ser desfeita.');">
+                            <a href="orcamentos.php?action=delete&id=<?php echo $row['id']; ?>" class="btn btn-sm btn-outline-danger" title="Excluir Orçamento" onclick="return confirm('Tem certeza que deseja excluir este orçamento e todos os seus itens? Esta ação não pode ser desfeita.');">
                                 <i class="fas fa-trash-alt me-1"></i> Excluir
                             </a>
                         </div>
@@ -699,16 +699,16 @@ if (isset($erro_conversao)) {
                     <div class="stats-icon primary mx-auto mb-3">
                         <i class="fas fa-file-invoice-dollar"></i>
                     </div>
-                    <h5 class="text-muted mb-2">Nenhum orÃ§amento encontrado</h5>
-                    <p class="text-muted">OrÃ§amentos jÃ¡ convertidos em venda nÃ£o sÃ£o listados aqui.</p>
+                    <h5 class="text-muted mb-2">Nenhum orçamento encontrado</h5>
+                    <p class="text-muted">Orçamentos já convertidos em venda não são listados aqui.</p>
                     <a href="criar_orcamento.php" class="btn btn-primary">
-                        <i class="fas fa-plus me-2"></i> Criar Primeiro OrÃ§amento
+                        <i class="fas fa-plus me-2"></i> Criar Primeiro Orçamento
                     </a>
                 </div>
             <?php endif; ?>
         </div>
 
-        <!-- NavegaÃ§Ã£o da PaginaÃ§Ã£o para OrÃ§amentos -->
+        <!-- Navegação da Paginação para Orçamentos -->
         <?php
         echo render_pagination([
             'current_page' => $pagina_atual_orc,
@@ -734,48 +734,48 @@ if (isset($erro_conversao)) {
         <div class="modal-content">
             <form action="orcamentos.php" method="POST">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="statusModalLabel">Alterar Status do OrÃ§amento</h5>
+                    <h5 class="modal-title" id="statusModalLabel">Alterar Status do Orçamento</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
                     <input type="hidden" name="action" value="change_status">
                     <input type="hidden" name="orcamento_id" id="modal_orcamento_id">
                     
-                    <p>Selecione o novo status para o orÃ§amento <strong id="modal_orcamento_id_display">#</strong>.</p>
+                    <p>Selecione o novo status para o orçamento <strong id="modal_orcamento_id_display">#</strong>.</p>
                     <div class="mb-3">
                         <label for="novo_status" class="form-label">Novo Status</label>
                         <select name="novo_status" id="modal_novo_status_orcamento" class="form-select" required>
                             <option value="pendente">Pendente</option>
-                            <option value="aprovado">Aprovado (ConverterÃ¡ em Venda)</option>
+                            <option value="aprovado">Aprovado (Converterá em Venda)</option>
                             <option value="rejeitado">Rejeitado</option>
                             <option value="cancelado">Cancelado</option>
                         </select>
                     </div>
                     <div class="mb-3">
-                        <label for="observacoes" class="form-label">ObservaÃ§Ãµes (Opcional)</label>
+                        <label for="observacoes" class="form-label">Observações (Opcional)</label>
                         <textarea name="observacoes" id="modal_observacoes_orcamento" class="form-control" rows="3"></textarea>
                     </div>
                     <div class="alert alert-info small">
-                        <strong>AtenÃ§Ã£o:</strong> Alterar o status para 'Aprovado' irÃ¡ automaticamente criar uma nova venda com os itens deste orÃ§amento e marcar este orÃ§amento como 'Convertido em Venda'.
+                        <strong>Atenção:</strong> Alterar o status para 'Aprovado' irá automaticamente criar uma nova venda com os itens deste orçamento e marcar este orçamento como 'Convertido em Venda'.
                     </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
-                    <button type="submit" class="btn btn-primary">Salvar AlteraÃ§Ã£o</button>
+                    <button type="submit" class="btn btn-primary">Salvar Alteração</button>
                 </div>
             </form>
         </div>
     </div>
 </div>
 
-<!-- Modal para Converter OrÃ§amento em Venda -->
+<!-- Modal para Converter Orçamento em Venda -->
 <div class="modal fade" id="convertModal" tabindex="-1" aria-labelledby="convertModalLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
             <form action="orcamentos.php" method="POST">
                 <div class="modal-header">
                     <h5 class="modal-title" id="convertModalLabel">
-                        <i class="fas fa-shopping-cart me-2"></i>Converter OrÃ§amento em Venda
+                        <i class="fas fa-shopping-cart me-2"></i>Converter Orçamento em Venda
                     </h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
@@ -785,11 +785,11 @@ if (isset($erro_conversao)) {
 
                     <div class="alert alert-info">
                         <i class="fas fa-info-circle me-2"></i>
-                        <strong>AtenÃ§Ã£o:</strong> Esta aÃ§Ã£o irÃ¡ converter o orÃ§amento em uma venda e atualizar o estoque dos produtos.
+                        <strong>Atenção:</strong> Esta ação irá converter o orçamento em uma venda e atualizar o estoque dos produtos.
                     </div>
 
                     <div class="mb-3">
-                        <label class="form-label"><strong>OrÃ§amento:</strong></label>
+                        <label class="form-label"><strong>Orçamento:</strong></label>
                         <p class="mb-1">Cliente: <span id="convert_cliente_nome"></span></p>
                         <p class="mb-1">Valor Total: R$ <span id="convert_valor_total"></span></p>
                     </div>
@@ -799,10 +799,10 @@ if (isset($erro_conversao)) {
                         <select name="forma_pagamento" id="forma_pagamento" class="form-select" required>
                             <option value="">Selecione...</option>
                             <option value="dinheiro">Dinheiro</option>
-                            <option value="cartao_credito">CartÃ£o de CrÃ©dito</option>
-                            <option value="cartao_debito">CartÃ£o de DÃ©bito</option>
+                            <option value="cartao_credito">Cartão de Crédito</option>
+                            <option value="cartao_debito">Cartão de Débito</option>
                             <option value="pix">PIX</option>
-                            <option value="transferencia">TransferÃªncia BancÃ¡ria</option>
+                            <option value="transferencia">Transferência Bancária</option>
                             <option value="boleto">Boleto</option>
                             <option value="cheque">Cheque</option>
                         </select>
@@ -810,7 +810,7 @@ if (isset($erro_conversao)) {
 
                     <div class="alert alert-warning">
                         <i class="fas fa-exclamation-triangle me-2"></i>
-                        <strong>ObservaÃ§Ã£o:</strong> As observaÃ§Ãµes do orÃ§amento original serÃ£o mantidas no histÃ³rico.
+                        <strong>Observação:</strong> As observações do orçamento original serão mantidas no histórico.
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -828,13 +828,13 @@ if (isset($erro_conversao)) {
 
 <?php
 include_once 'includes/footer.php';
-if (ob_get_length()) ob_end_flush(); // Libera o buffer de saÃ­da
+if (ob_get_length()) ob_end_flush(); // Libera o buffer de saída
 ?>
 
 <script src="js/search-utils.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Inicializar busca para orÃ§amentos
+    // Inicializar busca para orçamentos
     SearchUtils.initializeSearch({
         inputId: 'searchInput',
         tableId: 'orcamentosTable',
@@ -847,7 +847,7 @@ document.addEventListener('DOMContentLoaded', function() {
         statusModal.addEventListener('show.bs.modal', function (event) {
             const button = event.relatedTarget;
             const orcamentoId = button.getAttribute('data-id');
-            const currentStatus = button.getAttribute('data-status'); // Pega o status atual do botÃ£o
+            const currentStatus = button.getAttribute('data-status'); // Pega o status atual do botão
 
             const modalOrcamentoIdInput = statusModal.querySelector('#modal_orcamento_id');
             const modalOrcamentoIdDisplay = statusModal.querySelector('#modal_orcamento_id_display');
@@ -856,7 +856,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
             modalOrcamentoIdInput.value = orcamentoId;
             modalOrcamentoIdDisplay.textContent = '#' + orcamentoId;
-            modalObservacoes.value = ''; // Limpa observaÃ§Ãµes anteriores
+            modalObservacoes.value = ''; // Limpa observações anteriores
 
             // Define o valor selecionado no select para o status atual
             if (currentStatus) {
@@ -865,7 +865,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Modal para converter orÃ§amento em venda
+    // Modal para converter orçamento em venda
     const convertModal = document.getElementById('convertModal');
     if (convertModal) {
         convertModal.addEventListener('show.bs.modal', function (event) {
@@ -882,7 +882,7 @@ document.addEventListener('DOMContentLoaded', function() {
             modalOrcamentoIdInput.value = orcamentoId;
             modalClienteNome.textContent = clienteNome;
             modalValorTotal.textContent = valorTotal;
-            modalFormaPagamento.value = ''; // Limpa seleÃ§Ã£o anterior
+            modalFormaPagamento.value = ''; // Limpa seleção anterior
         });
     }
 });

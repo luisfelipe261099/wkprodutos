@@ -1,14 +1,14 @@
 <?php
 require_once 'includes/session_bootstrap.php';
 
-// Verifica se o usuÃ¡rio estÃ¡ logado
+// Verifica se o usuário está logado
 if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
     header("location: index.php");
     exit;
 }
 
 require_once 'includes/db_connect.php';
-// --- LÃ³gica para Alterar Status do Agendamento via Modal ---
+// --- Lógica para Alterar Status do Agendamento via Modal ---
 if (isset($_POST['alterar_status'])) {
     $agendamento_id_update = trim($_POST['agendamento_id_status']);
     $novo_status = trim($_POST['novo_status_agendamento']);
@@ -26,11 +26,11 @@ if (isset($_POST['alterar_status'])) {
             }
             $stmt_update_status->close();
         } else {
-            $message = "Erro na preparaÃ§Ã£o da query de atualizaÃ§Ã£o de status: " . $conn->error;
+            $message = "Erro na preparação da query de atualização de status: " . $conn->error;
             $message_type = "danger";
         }
     } else {
-        $message = "ID do agendamento ou novo status invÃ¡lido.";
+        $message = "ID do agendamento ou novo status inválido.";
         $message_type = "danger";
     }
 }
@@ -46,7 +46,7 @@ $ag_stats = $conn->query("SELECT COUNT(*) as total,
     SUM(CASE WHEN status_entrega='cancelado' THEN 1 ELSE 0 END) as cancelados
     FROM agendamentos_entrega")->fetch_assoc();
 
-// PaginaÃ§Ã£o
+// Paginação
 $ag_por_pag = 20;
 $ag_pag_atual = max(1, (int)($_GET['page'] ?? 1));
 $ag_offset = ($ag_pag_atual - 1) * $ag_por_pag;
@@ -136,10 +136,10 @@ include_once 'includes/header.php';
                         <th>ID Agendamento</th>
                         <th>Cliente</th>
                         <th>Data/Hora Entrega</th>
-                        <th>EndereÃ§o</th>
-                        <th>Venda/OrÃ§amento</th>
+                        <th>Endereço</th>
+                        <th>Venda/Orçamento</th>
                         <th>Status</th>
-                        <th class="text-center">AÃ§Ãµes</th>
+                        <th class="text-center">Ações</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -169,7 +169,7 @@ include_once 'includes/header.php';
                             if ($row['venda_id']) {
                                 $referencia = '<a href="detalhes_venda.php?id=' . htmlspecialchars($row['venda_id']) . '" class="text-decoration-none">Venda #' . htmlspecialchars($row['venda_id']) . '</a>';
                             } elseif ($row['orcamento_id']) {
-                                $referencia = '<a href="detalhes_orcamento.php?id=' . htmlspecialchars($row['orcamento_id']) . '" class="text-decoration-none">OrÃ§amento #' . htmlspecialchars($row['orcamento_id']) . '</a>';
+                                $referencia = '<a href="detalhes_orcamento.php?id=' . htmlspecialchars($row['orcamento_id']) . '" class="text-decoration-none">Orçamento #' . htmlspecialchars($row['orcamento_id']) . '</a>';
                             }
                             ?>
                             <tr>
@@ -226,7 +226,7 @@ include_once 'includes/header.php';
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="submit" name="alterar_status" class="btn btn-primary">Salvar AlteraÃ§Ãµes</button>
+                    <button type="submit" name="alterar_status" class="btn btn-primary">Salvar Alterações</button>
                 </div>
             </form>
         </div>
@@ -239,7 +239,7 @@ include_once 'includes/header.php';
     // Script para preencher o modal com os dados do agendamento
     var modalStatusAgendamento = document.getElementById('modalStatusAgendamento');
     modalStatusAgendamento.addEventListener('show.bs.modal', function (event) {
-        var button = event.relatedTarget; // BotÃ£o que acionou o modal
+        var button = event.relatedTarget; // Botão que acionou o modal
         var agendamentoId = button.getAttribute('data-id');
         var currentStatus = button.getAttribute('data-current-status');
 
@@ -247,6 +247,6 @@ include_once 'includes/header.php';
         var modalStatusSelect = modalStatusAgendamento.querySelector('#novo_status_agendamento');
 
         modalIdInput.value = agendamentoId;
-        modalStatusSelect.value = currentStatus; // PrÃ©-seleciona o status atual
+        modalStatusSelect.value = currentStatus; // Pré-seleciona o status atual
     });
 </script>

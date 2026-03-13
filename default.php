@@ -1,11 +1,11 @@
 <!DOCTYPE html>
 <html lang="pt">
     <head>
-        <title>Página padrão</title>
+        <title>P�gina padr�o</title>
         <link rel="icon" type="image/x-icon" href="https://hpanel.hostinger.com/favicons/hostinger.png">
         <meta charset="utf-8">
         <meta content="IE=edge,chrome=1" http-equiv="X-UA-Compatible">
-        <meta content="Página padrão" name="description">
+        <meta content="P�gina padr�o" name="description">
         <meta content="width=device-width, initial-scale=1" name="viewport">
         <link rel="preconnect" href="https://fonts.googleapis.com">
         <link href="https://fonts.googleapis.com/css2?family=DM+Sans&display=swap" rel="stylesheet">
@@ -153,8 +153,8 @@
                     />
                 </defs>
             </svg>
-            <h1>Está tudo pronto!</h1>
-            <p>Tudo o que tem de fazer agora é carregar os ficheiros do seu site e iniciar a sua jornada. Veja como fazer isto abaixo:</p>
+            <h1>Est� tudo pronto!</h1>
+            <p>Tudo o que tem de fazer agora � carregar os ficheiros do seu site e iniciar a sua jornada. Veja como fazer isto abaixo:</p>
             <div class="link-container">
                 <a 
                     class=link
@@ -178,7 +178,7 @@
                     rel="nofollow"
                     target="_blank"
                 >
-                    Como instalar o WordPress com o Instalador Automático?
+                    Como instalar o WordPress com o Instalador Autom�tico?
                     <svg class="ic-launch" viewBox="0 0 21 20" fill="none" xmlns="http://www.w3.org/2000/svg">
                         <path 
                             fill-rule="evenodd" 

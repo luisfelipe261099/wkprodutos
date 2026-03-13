@@ -1,5 +1,5 @@
 <?php
-// Habilita a exibiÃ§Ã£o de erros
+// Habilita a exibição de erros
 ini_set('display_errors', 1);
 error_reporting(E_ALL);
 
@@ -12,7 +12,7 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
 
 require_once 'includes/db_connect.php';
 
-// --- FUNÃ‡Ã•ES DE GERAÃ‡ÃƒO DE RELATÃ“RIO ---
+// --- FUNÇÕES DE GERAÇÃO DE RELATÓRIO ---
 
 function gerarRelatorioVendasGeral($conn, $di, $df, $cid, $status, $eid) {
     if (!$conn || $conn->connect_error) {
@@ -141,9 +141,9 @@ function gerarRelatorioEmpresas($conn, $di, $df, $eid) {
     return ['dados' => $dados, 'resumo' => ['faturamento_geral' => $faturamento_geral, 'lucro_geral' => $lucro_geral, 'empresas_ativas' => count($dados)]];
 }
 
-// Verificar se estÃ¡ em modo PDF
+// Verificar se está em modo PDF
 if (isset($_GET['modo_pdf']) && $_GET['modo_pdf'] == '1') {
-    // Processar parÃ¢metros GET para modo PDF
+    // Processar parâmetros GET para modo PDF
     $tipo_relatorio = $_GET["tipo_relatorio"] ?? '';
     $data_inicio = $_GET["data_inicio"] ?? '';
     $data_fim = $_GET["data_fim"] ?? '';
@@ -153,24 +153,24 @@ if (isset($_GET['modo_pdf']) && $_GET['modo_pdf'] == '1') {
     $produto_id = $_GET["produto_id"] ?? null;
     
     if (!empty($tipo_relatorio) && !empty($data_inicio) && !empty($data_fim)) {
-        // Gerar dados do relatÃ³rio
+        // Gerar dados do relatório
         switch ($tipo_relatorio) {
             case 'vendas_geral':
                 $dados_relatorio = gerarRelatorioVendasGeral($conn, $data_inicio, $data_fim, $cliente_id, $status_filtro, $empresa_id);
-                $titulo_relatorio = "RelatÃ³rio de Vendas Detalhadas";
+                $titulo_relatorio = "Relatório de Vendas Detalhadas";
                 break;
             case 'produtos_vendidos':
                 $dados_relatorio = gerarRelatorioProdutosVendidos($conn, $data_inicio, $data_fim, $empresa_id, $produto_id);
-                $titulo_relatorio = "RelatÃ³rio de Produtos Vendidos";
+                $titulo_relatorio = "Relatório de Produtos Vendidos";
                 break;
             case 'lucro_por_empresa':
                 $dados_relatorio = gerarRelatorioEmpresas($conn, $data_inicio, $data_fim, $empresa_id);
-                $titulo_relatorio = "RelatÃ³rio de Lucratividade por Empresa";
+                $titulo_relatorio = "Relatório de Lucratividade por Empresa";
                 break;
         }
         
         if (!empty($dados_relatorio['dados'])) {
-            // Buscar dados do usuÃ¡rio
+            // Buscar dados do usuário
             $usuario_id = $_SESSION["id"];
             $sql_usuario = "SELECT nome FROM usuarios WHERE id = ?";
             $stmt_usuario = $conn->prepare($sql_usuario);
@@ -190,7 +190,7 @@ if (isset($_GET['modo_pdf']) && $_GET['modo_pdf'] == '1') {
     }
     
     // Se chegou aqui, houve erro
-    die('Erro: ParÃ¢metros insuficientes ou dados nÃ£o encontrados para gerar o relatÃ³rio.');
+    die('Erro: Parâmetros insuficientes ou dados não encontrados para gerar o relatório.');
 }
 
 // --- Bloco Principal de Processamento ---
@@ -209,15 +209,15 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && !empty($tipo_relatorio)) {
     switch ($tipo_relatorio) {
         case 'vendas_geral':
             $dados_relatorio = gerarRelatorioVendasGeral($conn, $data_inicio, $data_fim, $cliente_id, $status_filtro, $empresa_id);
-            $titulo_relatorio = "RelatÃ³rio de Vendas Detalhadas";
+            $titulo_relatorio = "Relatório de Vendas Detalhadas";
             break;
         case 'produtos_vendidos':
             $dados_relatorio = gerarRelatorioProdutosVendidos($conn, $data_inicio, $data_fim, $empresa_id, $produto_id);
-            $titulo_relatorio = "RelatÃ³rio de Produtos Vendidos";
+            $titulo_relatorio = "Relatório de Produtos Vendidos";
             break;
         case 'lucro_por_empresa':
             $dados_relatorio = gerarRelatorioEmpresas($conn, $data_inicio, $data_fim, $empresa_id);
-            $titulo_relatorio = "RelatÃ³rio de Lucratividade por Empresa";
+            $titulo_relatorio = "Relatório de Lucratividade por Empresa";
             break;
     }
     $relatorio_gerado = true;
@@ -236,16 +236,16 @@ try {
 include_once 'includes/header.php';
 ?>
 
-<!-- CSS especializado para impressÃ£o de relatÃ³rios -->
+<!-- CSS especializado para impressão de relatórios -->
 <style>
 @media print {
-    /* Ocultar elementos desnecessÃ¡rios na impressÃ£o */
+    /* Ocultar elementos desnecessários na impressão */
     .page-header, .modern-card:first-of-type, .no-print,
     .btn, button, .navbar, .sidebar, .footer {
         display: none !important;
     }
     
-    /* Configurar pÃ¡gina para impressÃ£o */
+    /* Configurar página para impressão */
     body {
         margin: 0;
         padding: 15px;
@@ -256,7 +256,7 @@ include_once 'includes/header.php';
         background: white;
     }
     
-    /* CabeÃ§alho do relatÃ³rio para impressÃ£o */
+    /* Cabeçalho do relatório para impressão */
     .relatorio-cabecalho {
         display: block !important;
         text-align: center;
@@ -278,7 +278,7 @@ include_once 'includes/header.php';
         font-weight: normal;
     }
     
-    /* Ajustar cards de resumo para impressÃ£o */
+    /* Ajustar cards de resumo para impressão */
     .stats-card {
         border: 1px solid #ccc !important;
         margin-bottom: 10px;
@@ -302,7 +302,7 @@ include_once 'includes/header.php';
         max-width: 23% !important;
     }
     
-    /* Melhorar tabelas para impressÃ£o */
+    /* Melhorar tabelas para impressão */
     table {
         width: 100% !important;
         border-collapse: collapse;
@@ -322,7 +322,7 @@ include_once 'includes/header.php';
         text-align: center;
     }
     
-    /* RodapÃ© para impressÃ£o */
+    /* Rodapé para impressão */
     .relatorio-rodape {
         display: block !important;
         margin-top: 20px;
@@ -332,7 +332,7 @@ include_once 'includes/header.php';
         text-align: center;
     }
     
-    /* InformaÃ§Ãµes de comissÃ£o destacadas */
+    /* Informações de comissão destacadas */
     .comissao-info {
         display: block !important;
         background-color: #f8f8f8 !important;
@@ -349,7 +349,7 @@ include_once 'includes/header.php';
     }
 }
 
-/* Estilos para o modo de visualizaÃ§Ã£o normal */
+/* Estilos para o modo de visualização normal */
 .relatorio-cabecalho, .relatorio-rodape, .comissao-info {
     display: none;
 }
@@ -362,7 +362,7 @@ include_once 'includes/header.php';
 </style>
 
 <?php
-// Buscar dados do usuÃ¡rio logado para o cabeÃ§alho
+// Buscar dados do usuário logado para o cabeçalho
 if ($relatorio_gerado) {
     try {
         $usuario_id = $_SESSION["id"];
@@ -376,11 +376,11 @@ if ($relatorio_gerado) {
             $usuario_dados = $result_usuario->fetch_assoc();
             $stmt_usuario->close();
         } else {
-            $usuario_dados = ['nome' => 'UsuÃ¡rio nÃ£o identificado'];
+            $usuario_dados = ['nome' => 'Usuário não identificado'];
         }
     } catch (Exception $e) {
-        error_log("Erro ao buscar dados do usuÃ¡rio: " . $e->getMessage());
-        $usuario_dados = ['nome' => 'Erro ao carregar usuÃ¡rio'];
+        error_log("Erro ao buscar dados do usuário: " . $e->getMessage());
+        $usuario_dados = ['nome' => 'Erro ao carregar usuário'];
     }
     
     $periodo_formatado = date('d/m/Y', strtotime($data_inicio)) . ' a ' . date('d/m/Y', strtotime($data_fim));
@@ -388,8 +388,8 @@ if ($relatorio_gerado) {
 ?>
 
 <div class="page-header fade-in-up">
-    <h1 class="page-title"><i class="fas fa-chart-bar"></i> Central de RelatÃ³rios</h1>
-    <p class="page-subtitle">Analise a performance do seu negÃ³cio com relatÃ³rios detalhados.</p>
+    <h1 class="page-title"><i class="fas fa-chart-bar"></i> Central de Relatórios</h1>
+    <p class="page-subtitle">Analise a performance do seu negócio com relatórios detalhados.</p>
 </div>
 
 <div class="modern-card fade-in-up">
@@ -397,15 +397,15 @@ if ($relatorio_gerado) {
         <form method="POST" action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]); ?>">
             <div class="row g-3 align-items-end">
                 <div class="col-md-6 col-lg-3">
-                    <label for="tipo_relatorio" class="form-label fw-bold">1. Tipo de RelatÃ³rio</label>
+                    <label for="tipo_relatorio" class="form-label fw-bold">1. Tipo de Relatório</label>
                     <select class="form-select" id="tipo_relatorio" name="tipo_relatorio" required>
-                        <option value="lucro_por_empresa" <?php echo ($tipo_relatorio == 'lucro_por_empresa' ? 'selected' : ''); ?>>ðŸ¢ Lucro por Empresa</option>
-                        <option value="produtos_vendidos" <?php echo ($tipo_relatorio == 'produtos_vendidos' ? 'selected' : ''); ?>>ðŸ“¦ Produtos Vendidos</option>
-                        <option value="vendas_geral" <?php echo ($tipo_relatorio == 'vendas_geral' ? 'selected' : ''); ?>>ðŸ“Š Vendas Detalhadas</option>
+                        <option value="lucro_por_empresa" <?php echo ($tipo_relatorio == 'lucro_por_empresa' ? 'selected' : ''); ?>>🏢 Lucro por Empresa</option>
+                        <option value="produtos_vendidos" <?php echo ($tipo_relatorio == 'produtos_vendidos' ? 'selected' : ''); ?>>📦 Produtos Vendidos</option>
+                        <option value="vendas_geral" <?php echo ($tipo_relatorio == 'vendas_geral' ? 'selected' : ''); ?>>📊 Vendas Detalhadas</option>
                     </select>
                 </div>
                 <div class="col-md-3 col-lg-2">
-                    <label for="data_inicio" class="form-label fw-bold">2. Data InÃ­cio</label>
+                    <label for="data_inicio" class="form-label fw-bold">2. Data Início</label>
                     <input type="date" class="form-control" id="data_inicio" name="data_inicio" value="<?php echo htmlspecialchars($data_inicio); ?>" required>
                 </div>
                 <div class="col-md-3 col-lg-2">
@@ -446,7 +446,7 @@ if ($relatorio_gerado) {
                     <label for="status_filtro" class="form-label">Status da Venda</label>
                     <select class="form-select" name="status_filtro" id="status_filtro">
                         <option value="">Todos os Status</option>
-                        <option value="concluida" <?php echo ($status_filtro == 'concluida' ? 'selected' : ''); ?>>ConcluÃ­da</option>
+                        <option value="concluida" <?php echo ($status_filtro == 'concluida' ? 'selected' : ''); ?>>Concluída</option>
                         <option value="pendente" <?php echo ($status_filtro == 'pendente' ? 'selected' : ''); ?>>Pendente</option>
                         <option value="cancelada" <?php echo ($status_filtro == 'cancelada' ? 'selected' : ''); ?>>Cancelada</option>
                     </select>
@@ -463,13 +463,13 @@ if ($relatorio_gerado) {
 
 <?php if ($relatorio_gerado && !empty($dados_relatorio) && !empty($dados_relatorio['dados'])): ?>
 
-<!-- CabeÃ§alho para impressÃ£o -->
+<!-- Cabeçalho para impressão -->
 <div class="relatorio-cabecalho">
     <h1><?php echo htmlspecialchars($titulo_relatorio); ?></h1>
-    <h2>RelatÃ³rio Comercial para PrestaÃ§Ã£o de Contas</h2>
-    <p><strong>PerÃ­odo:</strong> <?php echo $periodo_formatado; ?></p>
+    <h2>Relatório Comercial para Prestação de Contas</h2>
+    <p><strong>Período:</strong> <?php echo $periodo_formatado; ?></p>
     <p><strong>Representante Comercial:</strong> <?php echo htmlspecialchars($usuario_dados['nome'] ?? 'N/A'); ?></p>
-    <p><strong>Data de GeraÃ§Ã£o:</strong> <?php echo date('d/m/Y H:i:s'); ?></p>
+    <p><strong>Data de Geração:</strong> <?php echo date('d/m/Y H:i:s'); ?></p>
 </div>
 
 <div class="modern-card fade-in-up mt-4">
@@ -486,10 +486,10 @@ if ($relatorio_gerado) {
                 <div class="col-6 col-lg-4"><div class="stats-card primary"><div class="stats-icon"><i class="fas fa-chart-line"></i></div><div class="stats-value">R$ <?php echo number_format($dados_relatorio['resumo']['faturamento_geral'], 2, ',', '.'); ?></div><div class="stats-label">Faturamento Total</div></div></div>
                 <div class="col-12 col-lg-4"><div class="stats-card info"><div class="stats-icon"><i class="fas fa-building"></i></div><div class="stats-value"><?php echo $dados_relatorio['resumo']['empresas_ativas']; ?></div><div class="stats-label">Empresas com Vendas</div></div></div>
             <?php elseif ($tipo_relatorio == 'vendas_geral'): ?>
-                <div class="col-6 col-lg-3"><div class="stats-card primary"><div class="stats-icon"><i class="fas fa-shopping-cart"></i></div><div class="stats-value"><?php echo $dados_relatorio['resumo']['total_vendas']; ?></div><div class="stats-label">Vendas no PerÃ­odo</div></div></div>
-                <div class="col-6 col-lg-3"><div class="stats-card success"><div class="stats-icon"><i class="fas fa-dollar-sign"></i></div><div class="stats-value">R$ <?php echo number_format($dados_relatorio['resumo']['faturamento'], 2, ',', '.'); ?></div><div class="stats-label">Faturamento (ConcluÃ­das)</div></div></div>
-                <div class="col-6 col-lg-3"><div class="stats-card info"><div class="stats-icon"><i class="fas fa-chart-pie"></i></div><div class="stats-value">R$ <?php echo number_format($dados_relatorio['resumo']['lucro_bruto'], 2, ',', '.'); ?></div><div class="stats-label">Lucro Bruto (ConcluÃ­das)</div></div></div>
-                <div class="col-6 col-lg-3"><div class="stats-card warning"><div class="stats-icon"><i class="fas fa-percentage"></i></div><div class="stats-value"><?php echo number_format($dados_relatorio['resumo']['margem_media'], 1, ',', '.'); ?>%</div><div class="stats-label">Margem MÃ©dia</div></div></div>
+                <div class="col-6 col-lg-3"><div class="stats-card primary"><div class="stats-icon"><i class="fas fa-shopping-cart"></i></div><div class="stats-value"><?php echo $dados_relatorio['resumo']['total_vendas']; ?></div><div class="stats-label">Vendas no Período</div></div></div>
+                <div class="col-6 col-lg-3"><div class="stats-card success"><div class="stats-icon"><i class="fas fa-dollar-sign"></i></div><div class="stats-value">R$ <?php echo number_format($dados_relatorio['resumo']['faturamento'], 2, ',', '.'); ?></div><div class="stats-label">Faturamento (Concluídas)</div></div></div>
+                <div class="col-6 col-lg-3"><div class="stats-card info"><div class="stats-icon"><i class="fas fa-chart-pie"></i></div><div class="stats-value">R$ <?php echo number_format($dados_relatorio['resumo']['lucro_bruto'], 2, ',', '.'); ?></div><div class="stats-label">Lucro Bruto (Concluídas)</div></div></div>
+                <div class="col-6 col-lg-3"><div class="stats-card warning"><div class="stats-icon"><i class="fas fa-percentage"></i></div><div class="stats-value"><?php echo number_format($dados_relatorio['resumo']['margem_media'], 1, ',', '.'); ?>%</div><div class="stats-label">Margem Média</div></div></div>
             <?php elseif ($tipo_relatorio == 'produtos_vendidos'): ?>
                 <div class="col-6 col-lg-3"><div class="stats-card success"><div class="stats-icon"><i class="fas fa-dollar-sign"></i></div><div class="stats-value">R$ <?php echo number_format($dados_relatorio['resumo']['total_faturamento'], 2, ',', '.'); ?></div><div class="stats-label">Faturamento Total</div></div></div>
                 <div class="col-6 col-lg-3"><div class="stats-card info"><div class="stats-icon"><i class="fas fa-chart-pie"></i></div><div class="stats-value">R$ <?php echo number_format($dados_relatorio['resumo']['total_lucro'], 2, ',', '.'); ?></div><div class="stats-label">Lucro Total</div></div></div>
@@ -503,7 +503,7 @@ if ($relatorio_gerado) {
                 <thead>
                     <tr>
                         <?php if($tipo_relatorio == 'lucro_por_empresa'): ?>
-                            <th>Empresa Representada</th><th class="text-end">NÂº de Vendas</th><th class="text-end">Itens Vendidos</th><th class="text-end">Faturamento</th><th class="text-end">Lucro Bruto</th><th class="text-end">Margem</th>
+                            <th>Empresa Representada</th><th class="text-end">Nº de Vendas</th><th class="text-end">Itens Vendidos</th><th class="text-end">Faturamento</th><th class="text-end">Lucro Bruto</th><th class="text-end">Margem</th>
                         <?php elseif($tipo_relatorio == 'vendas_geral'): ?>
                             <th>Venda</th><th>Data</th><th>Cliente</th><th class="text-end">Faturamento</th><th class="text-end">Lucro</th><th class="text-end">Margem</th><th>Status</th>
                         <?php elseif($tipo_relatorio == 'produtos_vendidos'): ?>
@@ -543,58 +543,58 @@ if ($relatorio_gerado) {
     </div>
 </div>
 
-<!-- InformaÃ§Ãµes bancÃ¡rias para impressÃ£o -->
+<!-- Informações bancárias para impressão -->
 <div class="payment-section">
-    <h3>ðŸ’³ INFORMAÃ‡Ã•ES BANCÃRIAS PARA PAGAMENTO</h3>
+    <h3>💳 INFORMAÇÕES BANCÁRIAS PARA PAGAMENTO</h3>
     
     <div class="bank-info">
         <div class="bank-item">
-            <span class="bank-label">ðŸ¦ Banco:</span>
+            <span class="bank-label">🏦 Banco:</span>
             <span class="bank-value">INTER - 077</span>
         </div>
         <div class="bank-item">
-            <span class="bank-label">ðŸ‘¤ BeneficiÃ¡rio:</span>
+            <span class="bank-label">👤 Beneficiário:</span>
             <span class="bank-value">KARLA WOLLINGER DOS SANTOS</span>
         </div>
         <div class="bank-item">
-            <span class="bank-label">ðŸ¢ CNPJ:</span>
+            <span class="bank-label">🏢 CNPJ:</span>
             <span class="bank-value">30.459.625/0001-87</span>
         </div>
         <div class="bank-item">
-            <span class="bank-label">ðŸª AgÃªncia:</span>
+            <span class="bank-label">🏪 Agência:</span>
             <span class="bank-value">0001</span>
         </div>
         <div class="bank-item">
-            <span class="bank-label">ðŸ’° Conta Corrente:</span>
+            <span class="bank-label">💰 Conta Corrente:</span>
             <span class="bank-value">44337759-6</span>
         </div>
         <div class="bank-item">
-            <span class="bank-label">ðŸ”‘ Chave PIX:</span>
+            <span class="bank-label">🔑 Chave PIX:</span>
             <span class="bank-value">30.459.625/0001-87</span>
         </div>
     </div>
     
     <div class="commission-note">
-        <p><strong>ðŸš€ InstruÃ§Ãµes para Pagamento:</strong> Utilize as informaÃ§Ãµes bancÃ¡rias acima para realizar o pagamento das comissÃµes referentes ao perÃ­odo demonstrado neste relatÃ³rio. Para pagamentos via PIX, utilize o CNPJ como chave. Mantenha este relatÃ³rio como comprovante das transaÃ§Ãµes comerciais realizadas.</p>
+        <p><strong>🚀 Instruções para Pagamento:</strong> Utilize as informações bancárias acima para realizar o pagamento das comissões referentes ao período demonstrado neste relatório. Para pagamentos via PIX, utilize o CNPJ como chave. Mantenha este relatório como comprovante das transações comerciais realizadas.</p>
     </div>
 </div>
 
-<!-- RodapÃ© para impressÃ£o -->
+<!-- Rodapé para impressão -->
 <div class="relatorio-rodape">
-    <p><strong>RelatÃ³rio gerado em:</strong> <?php echo date('d/m/Y H:i:s'); ?> | <strong>Total de registros:</strong> <?php echo count($dados_relatorio['dados']); ?></p>
+    <p><strong>Relatório gerado em:</strong> <?php echo date('d/m/Y H:i:s'); ?> | <strong>Total de registros:</strong> <?php echo count($dados_relatorio['dados']); ?></p>
 </div>
 <?php elseif ($relatorio_gerado): ?>
 <div class="modern-card fade-in-up mt-4">
     <div class="card-body-modern text-center">
         <i class="fas fa-info-circle fa-3x text-muted mb-3"></i>
         <h4>Nenhum dado encontrado</h4>
-        <p class="text-muted">NÃ£o hÃ¡ registros que correspondam aos filtros selecionados para o perÃ­odo de <?php echo date('d/m/Y', strtotime($data_inicio)); ?> a <?php echo date('d/m/Y', strtotime($data_fim)); ?>.</p>
+        <p class="text-muted">Não há registros que correspondam aos filtros selecionados para o período de <?php echo date('d/m/Y', strtotime($data_inicio)); ?> a <?php echo date('d/m/Y', strtotime($data_fim)); ?>.</p>
     </div>
 </div>
 <?php endif; ?>
 
 <?php 
-// Fechar conexÃ£o com o banco de dados
+// Fechar conexão com o banco de dados
 if (isset($conn) && $conn) {
     $conn->close();
 }
@@ -612,7 +612,7 @@ document.addEventListener('DOMContentLoaded', function() {
     function toggleFilters() {
         const tipo = tipoRelatorioSelect.value;
         
-        // Esconde todos por padrÃ£o para recomeÃ§ar
+        // Esconde todos por padrão para recomeçar
         filtroClienteDiv.style.display = 'none';
         filtroEmpresaDiv.style.display = 'none';
         filtroStatusDiv.style.display = 'none';
@@ -622,7 +622,7 @@ document.addEventListener('DOMContentLoaded', function() {
             filtroEmpresaDiv.style.display = 'block';
             filtroStatusDiv.style.display = 'block';
         } else if (tipo === 'produtos_vendidos' || tipo === 'lucro_por_empresa') {
-            // Filtro de empresa Ã© relevante para estes dois relatÃ³rios
+            // Filtro de empresa é relevante para estes dois relatórios
             filtroEmpresaDiv.style.display = 'block';
         }
     }
@@ -632,7 +632,7 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 function imprimirRelatorio() {
-    // Criar uma nova janela com apenas o conteÃºdo do relatÃ³rio
+    // Criar uma nova janela com apenas o conteúdo do relatório
     const printWindow = window.open('', '_blank');
     const relatorioContent = document.querySelector('.modern-card.fade-in-up.mt-4');
     const cabecalho = document.querySelector('.relatorio-cabecalho');
@@ -644,7 +644,7 @@ function imprimirRelatorio() {
         <!DOCTYPE html>
         <html>
         <head>
-            <title>RelatÃ³rio - PDF</title>
+            <title>Relatório - PDF</title>
             <style>
                 body {
                     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -903,31 +903,31 @@ function imprimirRelatorio() {
         <body>
     `);
     
-    // Adicionar cabeÃ§alho
+    // Adicionar cabeçalho
     if (cabecalho) {
         printWindow.document.write('<div class="cabecalho">' + cabecalho.innerHTML + '</div>');
     }
     
-    // Adicionar conteÃºdo do relatÃ³rio (sem os botÃµes)
+    // Adicionar conteúdo do relatório (sem os botões)
     if (relatorioContent) {
         let content = relatorioContent.innerHTML;
-        // Remover botÃµes
+        // Remover botões
         content = content.replace(/<button[^>]*>.*?<\/button>/gi, '');
         content = content.replace(/<div class="ms-auto">.*?<\/div>/gi, '');
         printWindow.document.write(content);
     }
     
-    // Adicionar informaÃ§Ãµes bancÃ¡rias
+    // Adicionar informações bancárias
     if (paymentSection) {
         printWindow.document.write(paymentSection.outerHTML);
     }
     
-    // Adicionar informaÃ§Ãµes de comissÃ£o
+    // Adicionar informações de comissão
     if (comissaoInfo) {
         printWindow.document.write(comissaoInfo.outerHTML);
     }
     
-    // Adicionar rodapÃ©
+    // Adicionar rodapé
     if (rodape) {
         printWindow.document.write('<div class="rodape">' + rodape.innerHTML + '</div>');
     }

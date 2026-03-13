@@ -1,18 +1,18 @@
 <?php
 require_once 'includes/session_bootstrap.php';
 
-// Verifica se o usuÃ¡rio estÃ¡ logado e Ã© admin
+// Verifica se o usuário está logado e é admin
 if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
     header("location: login.php");
     exit;
 }
 
 if (!isset($_SESSION["nivel_acesso"]) || $_SESSION["nivel_acesso"] !== "admin") {
-    echo "Acesso negado. Apenas administradores podem acessar esta pÃ¡gina.";
+    echo "Acesso negado. Apenas administradores podem acessar esta página.";
     exit;
 }
 
-// Ativar exibiÃ§Ã£o de todos os erros para depuraÃ§Ã£o completa
+// Ativar exibição de todos os erros para depuração completa
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
@@ -26,14 +26,14 @@ if (file_exists('vendor/autoload.php')) {
     require_once 'vendor/autoload.php';
 }
 
-// --- VariÃ¡veis de Controle ---
+// --- Variáveis de Controle ---
 $message = '';
 $message_type = '';
 $smtp_debug_output = '';
 $config_loaded = false;
 $phpmailer_loaded = class_exists('PHPMailer\PHPMailer\PHPMailer');
 
-// Carregar configuraÃ§Ãµes de e-mail, se o arquivo existir
+// Carregar configurações de e-mail, se o arquivo existir
 if (file_exists('includes/email_config.php')) {
     $email_config = include 'includes/email_config.php';
     $config_loaded = true;
@@ -41,16 +41,16 @@ if (file_exists('includes/email_config.php')) {
     $email_config = [];
 }
 
-// --- Processamento do FormulÃ¡rio ---
+// --- Processamento do Formulário ---
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     if (!$phpmailer_loaded) {
-        $message = "PHPMailer nÃ£o estÃ¡ instalado. Execute o composer ou o script de instalaÃ§Ã£o.";
+        $message = "PHPMailer não está instalado. Execute o composer ou o script de instalação.";
         $message_type = 'danger';
     } elseif (!$config_loaded) {
-        $message = "Arquivo de configuraÃ§Ã£o de e-mail (includes/email_config.php) nÃ£o encontrado.";
+        $message = "Arquivo de configuração de e-mail (includes/email_config.php) não encontrado.";
         $message_type = 'danger';
     } else {
-        // Capturar dados do formulÃ¡rio
+        // Capturar dados do formulário
         $to_email = $_POST['to_email'];
         $to_name = $_POST['to_name'];
         $subject = $_POST['subject'];
@@ -59,7 +59,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $mail = new PHPMailer(true);
 
         try {
-            // ConfiguraÃ§Ãµes do servidor
+            // Configurações do servidor
             $mail->isSMTP();
             $mail->Host       = $email_config['host'];
             $mail->SMTPAuth   = true;
@@ -70,20 +70,20 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $mail->CharSet    = 'UTF-8';
 
             // ===================================================================
-            // CORREÃ‡ÃƒO APLICADA: Captura de log de forma robusta
+            // CORREÇÃO APLICADA: Captura de log de forma robusta
             // ===================================================================
             $mail->SMTPDebug  = SMTP::DEBUG_SERVER;
             $mail->Debugoutput = function($str, $level) use (&$smtp_debug_output) {
-                // Adiciona a string de debug Ã  nossa variÃ¡vel, formatando-a para HTML
+                // Adiciona a string de debug à nossa variável, formatando-a para HTML
                 $smtp_debug_output .= htmlspecialchars($str) . "<br>\n";
             };
             // ===================================================================
 
-            // Remetente e DestinatÃ¡rio
+            // Remetente e Destinatário
             $mail->setFrom($email_config['from_email'], $email_config['from_name']);
             $mail->addAddress($to_email, $to_name);
 
-            // ConteÃºdo
+            // Conteúdo
             $mail->isHTML(true);
             $mail->Subject = $subject;
             $mail->Body    = nl2br($body);
@@ -91,7 +91,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
             // Enviar
             $mail->send();
-            $message = 'Tentativa de envio concluÃ­da! Verifique o log de depuraÃ§Ã£o abaixo para confirmar o status.';
+            $message = 'Tentativa de envio concluída! Verifique o log de depuração abaixo para confirmar o status.';
             $message_type = 'success';
 
         } catch (Exception $e) {
@@ -106,7 +106,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DiagnÃ³stico e Teste de E-mail</title>
+    <title>Diagnóstico e Teste de E-mail</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
     <style>
@@ -134,15 +134,15 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             <div class="col-lg-10">
                 <div class="card">
                     <div class="card-header bg-dark text-white">
-                        <h4 class="mb-0"><i class="fas fa-cogs me-2"></i> DiagnÃ³stico e Teste de E-mail</h4>
+                        <h4 class="mb-0"><i class="fas fa-cogs me-2"></i> Diagnóstico e Teste de E-mail</h4>
                     </div>
                     <div class="card-body p-4">
 
                         <div class="mb-4">
-                            <h5><i class="fas fa-stethoscope me-2 text-primary"></i>VerificaÃ§Ã£o do Sistema</h5>
+                            <h5><i class="fas fa-stethoscope me-2 text-primary"></i>Verificação do Sistema</h5>
                             <ul class="list-group">
                                 <li class="list-group-item d-flex justify-content-between align-items-center">
-                                    VersÃ£o do PHP
+                                    Versão do PHP
                                     <span class="badge bg-light text-dark"><?php echo PHP_VERSION; ?></span>
                                 </li>
                                 <li class="list-group-item d-flex justify-content-between align-items-center">
@@ -150,16 +150,16 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                                     <?php echo $phpmailer_loaded ? '<i class="fas fa-check-circle check-icon"></i>' : '<i class="fas fa-times-circle cross-icon"></i>'; ?>
                                 </li>
                                 <li class="list-group-item d-flex justify-content-between align-items-center">
-                                    Arquivo de ConfiguraÃ§Ã£o (email_config.php)
+                                    Arquivo de Configuração (email_config.php)
                                     <?php echo $config_loaded ? '<i class="fas fa-check-circle check-icon"></i>' : '<i class="fas fa-times-circle cross-icon"></i>'; ?>
                                 </li>
                                 <?php if($config_loaded): ?>
                                 <li class="list-group-item">
-                                    <strong>ConfiguraÃ§Ãµes Atuais:</strong><br>
+                                    <strong>Configurações Atuais:</strong><br>
                                     <small class="text-muted">
                                         Host: <code><?php echo htmlspecialchars($email_config['host']); ?></code> |
                                         Porta: <code><?php echo htmlspecialchars($email_config['port']); ?></code> |
-                                        UsuÃ¡rio: <code><?php echo htmlspecialchars($email_config['username']); ?></code>
+                                        Usuário: <code><?php echo htmlspecialchars($email_config['username']); ?></code>
                                     </small>
                                 </li>
                                 <?php endif; ?>
@@ -171,11 +171,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                             <form action="testeemail.php" method="POST">
                                 <div class="row">
                                     <div class="col-md-6 mb-3">
-                                        <label for="to_email" class="form-label">E-mail do DestinatÃ¡rio:</label>
+                                        <label for="to_email" class="form-label">E-mail do Destinatário:</label>
                                         <input type="email" class="form-control" id="to_email" name="to_email" required value="luisfelipedasilvamachadoo@gmail.com">
                                     </div>
                                     <div class="col-md-6 mb-3">
-                                        <label for="to_name" class="form-label">Nome do DestinatÃ¡rio:</label>
+                                        <label for="to_name" class="form-label">Nome do Destinatário:</label>
                                         <input type="text" class="form-control" id="to_name" name="to_name" value="Cliente Teste">
                                     </div>
                                 </div>
@@ -185,7 +185,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                                 </div>
                                 <div class="mb-3">
                                     <label for="body" class="form-label">Mensagem:</label>
-                                    <textarea class="form-control" id="body" name="body" rows="4" required>Este Ã© um e-mail de teste para verificar a funcionalidade de envio.</textarea>
+                                    <textarea class="form-control" id="body" name="body" rows="4" required>Este é um e-mail de teste para verificar a funcionalidade de envio.</textarea>
                                 </div>
                                 <button type="submit" class="btn btn-primary w-100 py-2" <?php echo !$phpmailer_loaded || !$config_loaded ? 'disabled' : ''; ?>>
                                     <i class="fas fa-paper-plane me-2"></i> Enviar E-mail de Teste
@@ -204,7 +204,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                             <?php endif; ?>
 
                             <?php if (!empty($smtp_debug_output)): ?>
-                                <h6 class="text-muted mt-3">Log de DepuraÃ§Ã£o SMTP:</h6>
+                                <h6 class="text-muted mt-3">Log de Depuração SMTP:</h6>
                                 <div class="debug-output">
                                     <?php echo $smtp_debug_output; ?>
                                 </div>

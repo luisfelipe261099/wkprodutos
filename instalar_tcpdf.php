@@ -2,37 +2,37 @@
 // Script para baixar e instalar TCPDF automaticamente
 require_once 'includes/session_bootstrap.php';
 
-// Verifica se o usuÃ¡rio estÃ¡ logado e Ã© admin
+// Verifica se o usuário está logado e é admin
 if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
     header("location: login.php");
     exit;
 }
 
 if (!isset($_SESSION["nivel_acesso"]) || $_SESSION["nivel_acesso"] !== "admin") {
-    echo "Acesso negado. Apenas administradores podem acessar esta pÃ¡gina.";
+    echo "Acesso negado. Apenas administradores podem acessar esta página.";
     exit;
 }
 
-echo "<h2>ðŸ“„ InstalaÃ§Ã£o da Biblioteca TCPDF</h2>";
-echo "<p>Este script irÃ¡ baixar e instalar a biblioteca TCPDF para geraÃ§Ã£o de PDFs profissionais.</p>";
+echo "<h2>📄 Instalação da Biblioteca TCPDF</h2>";
+echo "<p>Este script irá baixar e instalar a biblioteca TCPDF para geração de PDFs profissionais.</p>";
 
 $tcpdf_dir = 'tcpdf';
 $tcpdf_url = 'https://github.com/tecnickcom/TCPDF/archive/refs/heads/main.zip';
 $zip_file = 'tcpdf.zip';
 
 try {
-    // Verificar se jÃ¡ existe
+    // Verificar se já existe
     if (is_dir($tcpdf_dir)) {
-        echo "<p style='color: green;'>âœ… TCPDF jÃ¡ estÃ¡ instalado!</p>";
-        echo "<p><a href='gerar_pdf_orcamento.php?id=1' class='btn btn-success'>Testar GeraÃ§Ã£o de PDF</a></p>";
+        echo "<p style='color: green;'>✅ TCPDF já está instalado!</p>";
+        echo "<p><a href='gerar_pdf_orcamento.php?id=1' class='btn btn-success'>Testar Geração de PDF</a></p>";
         exit;
     }
     
     echo "<h3>1. Baixando TCPDF...</h3>";
     
-    // Verificar se curl estÃ¡ disponÃ­vel
+    // Verificar se curl está disponível
     if (!function_exists('curl_init')) {
-        throw new Exception('cURL nÃ£o estÃ¡ disponÃ­vel. Instale manualmente o TCPDF.');
+        throw new Exception('cURL não está disponível. Instale manualmente o TCPDF.');
     }
     
     // Baixar TCPDF
@@ -48,10 +48,10 @@ try {
     curl_close($ch);
     
     if ($http_code !== 200 || !$zip_content) {
-        throw new Exception('Erro ao baixar TCPDF. CÃ³digo HTTP: ' . $http_code);
+        throw new Exception('Erro ao baixar TCPDF. Código HTTP: ' . $http_code);
     }
     
-    echo "<p style='color: green;'>âœ… Download concluÃ­do!</p>";
+    echo "<p style='color: green;'>✅ Download concluído!</p>";
     
     echo "<h3>2. Extraindo arquivos...</h3>";
     
@@ -64,7 +64,7 @@ try {
         $zip->extractTo('./');
         $zip->close();
         
-        // Renomear diretÃ³rio
+        // Renomear diretório
         if (is_dir('TCPDF-main')) {
             rename('TCPDF-main', $tcpdf_dir);
         }
@@ -72,19 +72,19 @@ try {
         // Remover arquivo ZIP
         unlink($zip_file);
         
-        echo "<p style='color: green;'>âœ… ExtraÃ§Ã£o concluÃ­da!</p>";
+        echo "<p style='color: green;'>✅ Extração concluída!</p>";
     } else {
         throw new Exception('Erro ao extrair arquivo ZIP');
     }
     
     echo "<h3>3. Configurando TCPDF...</h3>";
     
-    // Criar arquivo de configuraÃ§Ã£o personalizado
+    // Criar arquivo de configuração personalizado
     $config_content = '<?php
-// ConfiguraÃ§Ã£o personalizada do TCPDF para o sistema
+// Configuração personalizada do TCPDF para o sistema
 define("K_TCPDF_EXTERNAL_CONFIG", true);
 
-// ConfiguraÃ§Ãµes de caminho
+// Configurações de caminho
 define("K_PATH_MAIN", dirname(__FILE__)."/");
 define("K_PATH_URL", K_PATH_MAIN);
 define("K_PATH_FONTS", K_PATH_MAIN."fonts/");
@@ -92,7 +92,7 @@ define("K_PATH_CACHE", K_PATH_MAIN."cache/");
 define("K_PATH_URL_CACHE", K_PATH_URL."cache/");
 define("K_PATH_IMAGES", K_PATH_MAIN."images/");
 
-// ConfiguraÃ§Ãµes gerais
+// Configurações gerais
 define("PDF_PAGE_FORMAT", "A4");
 define("PDF_PAGE_ORIENTATION", "P");
 define("PDF_CREATOR", "Karla Wollinger Sistema");
@@ -124,7 +124,7 @@ define("K_TIMEZONE", "America/Sao_Paulo");
     
     file_put_contents($tcpdf_dir . '/config/tcpdf_config.php', $config_content);
     
-    // Criar diretÃ³rios necessÃ¡rios
+    // Criar diretórios necessários
     if (!is_dir($tcpdf_dir . '/cache')) {
         mkdir($tcpdf_dir . '/cache', 0755, true);
     }
@@ -133,41 +133,41 @@ define("K_TIMEZONE", "America/Sao_Paulo");
         mkdir($tcpdf_dir . '/images', 0755, true);
     }
     
-    echo "<p style='color: green;'>âœ… ConfiguraÃ§Ã£o concluÃ­da!</p>";
+    echo "<p style='color: green;'>✅ Configuração concluída!</p>";
     
-    echo "<h3>4. Testando instalaÃ§Ã£o...</h3>";
+    echo "<h3>4. Testando instalação...</h3>";
     
     // Testar se TCPDF funciona
     require_once($tcpdf_dir . '/tcpdf.php');
     
     if (class_exists('TCPDF')) {
-        echo "<p style='color: green;'>âœ… TCPDF instalado e funcionando!</p>";
+        echo "<p style='color: green;'>✅ TCPDF instalado e funcionando!</p>";
     } else {
-        throw new Exception('TCPDF nÃ£o foi carregado corretamente');
+        throw new Exception('TCPDF não foi carregado corretamente');
     }
     
     echo "<div style='background: #d4edda; border: 1px solid #c3e6cb; color: #155724; padding: 15px; border-radius: 5px; margin: 20px 0;'>";
-    echo "<h4>ðŸŽ‰ INSTALAÃ‡ÃƒO CONCLUÃDA COM SUCESSO!</h4>";
+    echo "<h4>🎉 INSTALAÇÃO CONCLUÍDA COM SUCESSO!</h4>";
     echo "<p>A biblioteca TCPDF foi instalada e configurada.</p>";
-    echo "<p><strong>PrÃ³ximos passos:</strong></p>";
+    echo "<p><strong>Próximos passos:</strong></p>";
     echo "<ul>";
-    echo "<li>âœ… Agora vocÃª pode gerar PDFs profissionais dos orÃ§amentos</li>";
-    echo "<li>âœ… Acesse qualquer orÃ§amento e clique no botÃ£o 'Gerar PDF'</li>";
-    echo "<li>âœ… O PDF serÃ¡ gerado com layout profissional</li>";
+    echo "<li>✅ Agora você pode gerar PDFs profissionais dos orçamentos</li>";
+    echo "<li>✅ Acesse qualquer orçamento e clique no botão 'Gerar PDF'</li>";
+    echo "<li>✅ O PDF será gerado com layout profissional</li>";
     echo "</ul>";
-    echo "<p><a href='orcamentos.php' class='btn btn-primary'>Ver OrÃ§amentos</a> ";
+    echo "<p><a href='orcamentos.php' class='btn btn-primary'>Ver Orçamentos</a> ";
     echo "<a href='gerar_pdf_orcamento.php?id=1' class='btn btn-success'>Testar PDF</a></p>";
     echo "</div>";
     
 } catch (Exception $e) {
     echo "<div style='background: #f8d7da; border: 1px solid #f5c6cb; color: #721c24; padding: 15px; border-radius: 5px; margin: 20px 0;'>";
-    echo "<h4>âŒ ERRO NA INSTALAÃ‡ÃƒO</h4>";
+    echo "<h4>❌ ERRO NA INSTALAÇÃO</h4>";
     echo "<p>Erro: " . $e->getMessage() . "</p>";
-    echo "<p><strong>InstalaÃ§Ã£o Manual:</strong></p>";
+    echo "<p><strong>Instalação Manual:</strong></p>";
     echo "<ol>";
     echo "<li>Baixe TCPDF de: <a href='https://tcpdf.org/' target='_blank'>https://tcpdf.org/</a></li>";
     echo "<li>Extraia na pasta 'tcpdf' do seu projeto</li>";
-    echo "<li>O PDF simples ainda funcionarÃ¡ sem TCPDF</li>";
+    echo "<li>O PDF simples ainda funcionará sem TCPDF</li>";
     echo "</ol>";
     echo "</div>";
 }

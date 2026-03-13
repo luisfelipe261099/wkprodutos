@@ -1,7 +1,7 @@
 <?php
 require_once 'includes/session_bootstrap.php';
 
-// Verifica se o usuÃ¡rio estÃ¡ logado
+// Verifica se o usuário está logado
 if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
     header("location: index.php");
     exit;
@@ -10,76 +10,76 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
 require_once 'includes/db_connect.php';
 
 $id = $tipo = $valor = $data_transacao = $descricao = $categoria = $referencia_id = $tabela_referencia = "";
-$title = "Registrar Nova TransaÃ§Ã£o";
-$submit_button_text = "Registrar TransaÃ§Ã£o";
+$title = "Registrar Nova Transação";
+$submit_button_text = "Registrar Transação";
 $message = '';
 $message_type = '';
 
-// Processar formulÃ¡rio quando enviado
+// Processar formulário quando enviado
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $id = trim($_POST["id"] ?? '');
     $tipo = trim($_POST["tipo"]);
-    $valor = str_replace(',', '.', trim($_POST["valor"])); // Converte vÃ­rgula para ponto
+    $valor = str_replace(',', '.', trim($_POST["valor"])); // Converte vírgula para ponto
     $data_transacao_str = trim($_POST["data_transacao_date"]) . ' ' . trim($_POST["data_transacao_time"]) . ':00'; // Combina data e hora
     $descricao = trim($_POST["descricao"]);
     $categoria = trim($_POST["categoria"]);
     $referencia_id = empty(trim($_POST["referencia_id"])) ? NULL : trim($_POST["referencia_id"]);
     $tabela_referencia = empty(trim($_POST["tabela_referencia"])) ? NULL : trim($_POST["tabela_referencia"]);
 
-    // ValidaÃ§Ã£o bÃ¡sica
+    // Validação básica
     if (empty($tipo) || !is_numeric($valor) || $valor <= 0 || empty($data_transacao_str) || empty($descricao) || empty($categoria)) {
-        $message = "Por favor, preencha todos os campos obrigatÃ³rios e garanta que o valor seja numÃ©rico e positivo.";
+        $message = "Por favor, preencha todos os campos obrigatórios e garanta que o valor seja numérico e positivo.";
         $message_type = "danger";
     } else {
-        // Assegura que referencia_id e tabela_referencia sejam NULL se nÃ£o forem fornecidos
+        // Assegura que referencia_id e tabela_referencia sejam NULL se não forem fornecidos
         if (empty($referencia_id) || empty($tabela_referencia)) {
             $referencia_id = NULL;
             $tabela_referencia = NULL;
         }
 
-        if (empty($id)) { // Nova TransaÃ§Ã£o
+        if (empty($id)) { // Nova Transação
             $sql = "INSERT INTO transacoes_financeiras (tipo, valor, data_transacao, descricao, categoria, referencia_id, tabela_referencia) VALUES (?, ?, ?, ?, ?, ?, ?)";
             if ($stmt = $conn->prepare($sql)) {
                 $stmt->bind_param("sdsssis", $tipo, $valor, $data_transacao_str, $descricao, $categoria, $referencia_id, $tabela_referencia);
                 if ($stmt->execute()) {
-                    $message = "TransaÃ§Ã£o registrada com sucesso!";
+                    $message = "Transação registrada com sucesso!";
                     $message_type = "success";
-                    // Limpa os campos apÃ³s o cadastro
+                    // Limpa os campos após o cadastro
                     $tipo = $valor = $data_transacao = $descricao = $categoria = $referencia_id = $tabela_referencia = "";
                 } else {
-                    $message = "Erro ao registrar transaÃ§Ã£o: " . $stmt->error;
+                    $message = "Erro ao registrar transação: " . $stmt->error;
                     $message_type = "danger";
                 }
                 $stmt->close();
             } else {
-                $message = "Erro na preparaÃ§Ã£o da query de inserÃ§Ã£o: " . $conn->error;
+                $message = "Erro na preparação da query de inserção: " . $conn->error;
                 $message_type = "danger";
             }
-        } else { // Editar TransaÃ§Ã£o Existente
+        } else { // Editar Transação Existente
             $sql = "UPDATE transacoes_financeiras SET tipo = ?, valor = ?, data_transacao = ?, descricao = ?, categoria = ?, referencia_id = ?, tabela_referencia = ? WHERE id = ?";
             if ($stmt = $conn->prepare($sql)) {
                 $stmt->bind_param("sdsssis", $tipo, $valor, $data_transacao_str, $descricao, $categoria, $referencia_id, $tabela_referencia, $id);
                 if ($stmt->execute()) {
-                    $message = "TransaÃ§Ã£o atualizada com sucesso!";
+                    $message = "Transação atualizada com sucesso!";
                     $message_type = "success";
                 } else {
-                    $message = "Erro ao atualizar transaÃ§Ã£o: " . $stmt->error;
+                    $message = "Erro ao atualizar transação: " . $stmt->error;
                     $message_type = "danger";
                 }
                 $stmt->close();
             } else {
-                $message = "Erro na preparaÃ§Ã£o da query de atualizaÃ§Ã£o: " . $conn->error;
+                $message = "Erro na preparação da query de atualização: " . $conn->error;
                 $message_type = "danger";
             }
         }
     }
 }
 
-// Preencher formulÃ¡rio para ediÃ§Ã£o se um ID for passado via GET
+// Preencher formulário para edição se um ID for passado via GET
 if (isset($_GET["id"]) && empty($message)) {
     $id = trim($_GET["id"]);
-    $title = "Editar TransaÃ§Ã£o";
-    $submit_button_text = "Atualizar TransaÃ§Ã£o";
+    $title = "Editar Transação";
+    $submit_button_text = "Atualizar Transação";
 
     $sql_edit = "SELECT id, tipo, valor, data_transacao, descricao, categoria, referencia_id, tabela_referencia FROM transacoes_financeiras WHERE id = ?";
     if ($stmt_edit = $conn->prepare($sql_edit)) {
@@ -89,7 +89,7 @@ if (isset($_GET["id"]) && empty($message)) {
             if ($result_edit->num_rows == 1) {
                 $row = $result_edit->fetch_assoc();
                 $tipo = $row['tipo'];
-                $valor = number_format($row['valor'], 2, ',', '.'); // Formata para exibiÃ§Ã£o
+                $valor = number_format($row['valor'], 2, ',', '.'); // Formata para exibição
                 $data_transacao_datetime = new DateTime($row['data_transacao']);
                 $data_transacao_date = $data_transacao_datetime->format('Y-m-d');
                 $data_transacao_time = $data_transacao_datetime->format('H:i');
@@ -98,26 +98,26 @@ if (isset($_GET["id"]) && empty($message)) {
                 $referencia_id = $row['referencia_id'];
                 $tabela_referencia = $row['tabela_referencia'];
             } else {
-                $message = "TransaÃ§Ã£o nÃ£o encontrada.";
+                $message = "Transação não encontrada.";
                 $message_type = "danger";
-                $id = ""; // Reset para tratar como novo cadastro se ID nÃ£o encontrado
-                $title = "Registrar Nova TransaÃ§Ã£o";
-                $submit_button_text = "Registrar TransaÃ§Ã£o";
+                $id = ""; // Reset para tratar como novo cadastro se ID não encontrado
+                $title = "Registrar Nova Transação";
+                $submit_button_text = "Registrar Transação";
             }
         } else {
-            $message = "Erro ao buscar transaÃ§Ã£o para ediÃ§Ã£o: " . $stmt_edit->error;
+            $message = "Erro ao buscar transação para edição: " . $stmt_edit->error;
             $message_type = "danger";
         }
         $stmt_edit->close();
     }
-} else { // Valores padrÃ£o para nova transaÃ§Ã£o
+} else { // Valores padrão para nova transação
     $data_transacao_date = date('Y-m-d');
     $data_transacao_time = date('H:i');
-    $tipo = 'entrada'; // PadrÃ£o para nova transaÃ§Ã£o
+    $tipo = 'entrada'; // Padrão para nova transação
 }
 
 
-// NÃ£o fechar a conexÃ£o aqui pois ainda vamos usar no HTML
+// Não fechar a conexão aqui pois ainda vamos usar no HTML
 // $conn->close();
 
 include_once 'includes/header.php';
@@ -130,7 +130,7 @@ include_once 'includes/header.php';
         <?php echo $title; ?>
     </h1>
     <p class="page-subtitle">
-        <?php echo $id ? 'Atualize os dados da transaÃ§Ã£o financeira' : 'Registre uma nova entrada ou saÃ­da financeira'; ?>
+        <?php echo $id ? 'Atualize os dados da transação financeira' : 'Registre uma nova entrada ou saída financeira'; ?>
     </p>
 </div>
 
@@ -146,28 +146,28 @@ include_once 'includes/header.php';
 <div class="modern-card fade-in-up">
     <div class="card-header-modern">
         <i class="fas fa-money-bill-wave"></i>
-        Dados da TransaÃ§Ã£o
+        Dados da Transação
     </div>
     <div class="card-body-modern">
         <form action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]); ?>" method="post">
             <input type="hidden" name="id" value="<?php echo htmlspecialchars($id); ?>">
 
-            <!-- InformaÃ§Ãµes BÃ¡sicas -->
+            <!-- Informações Básicas -->
             <div class="row g-4">
                 <div class="col-12">
                     <h5 class="text-primary mb-3">
-                        <i class="fas fa-info-circle me-2"></i>InformaÃ§Ãµes BÃ¡sicas
+                        <i class="fas fa-info-circle me-2"></i>Informações Básicas
                     </h5>
                 </div>
 
                 <div class="col-md-4">
-                    <label for="tipo" class="form-label">Tipo de TransaÃ§Ã£o *</label>
+                    <label for="tipo" class="form-label">Tipo de Transação *</label>
                     <select class="form-control" id="tipo" name="tipo" required>
                         <option value="entrada" <?php echo ($tipo == 'entrada' ? 'selected' : ''); ?>>
                             <i class="fas fa-arrow-up"></i> Entrada (Receita)
                         </option>
                         <option value="saida" <?php echo ($tipo == 'saida' ? 'selected' : ''); ?>>
-                            <i class="fas fa-arrow-down"></i> SaÃ­da (Despesa)
+                            <i class="fas fa-arrow-down"></i> Saída (Despesa)
                         </option>
                     </select>
                 </div>
@@ -188,49 +188,49 @@ include_once 'includes/header.php';
                 </div>
 
                 <div class="col-md-6">
-                    <label for="data_transacao_date" class="form-label">Data da TransaÃ§Ã£o *</label>
+                    <label for="data_transacao_date" class="form-label">Data da Transação *</label>
                     <input type="date" class="form-control" id="data_transacao_date" name="data_transacao_date" value="<?php echo htmlspecialchars($data_transacao_date); ?>" required>
                 </div>
                 <div class="col-md-6">
-                    <label for="data_transacao_time" class="form-label">Hora da TransaÃ§Ã£o *</label>
+                    <label for="data_transacao_time" class="form-label">Hora da Transação *</label>
                     <input type="time" class="form-control" id="data_transacao_time" name="data_transacao_time" value="<?php echo htmlspecialchars($data_transacao_time); ?>" required>
                 </div>
 
-                <!-- DescriÃ§Ã£o -->
+                <!-- Descrição -->
                 <div class="col-12">
                     <h5 class="text-primary mb-3 mt-4">
-                        <i class="fas fa-file-alt me-2"></i>DescriÃ§Ã£o
+                        <i class="fas fa-file-alt me-2"></i>Descrição
                     </h5>
                 </div>
 
                 <div class="col-12">
-                    <label for="descricao" class="form-label">DescriÃ§Ã£o *</label>
-                    <textarea class="form-control" id="descricao" name="descricao" rows="3" required placeholder="Detalhes da transaÃ§Ã£o..."><?php echo htmlspecialchars($descricao); ?></textarea>
+                    <label for="descricao" class="form-label">Descrição *</label>
+                    <textarea class="form-control" id="descricao" name="descricao" rows="3" required placeholder="Detalhes da transação..."><?php echo htmlspecialchars($descricao); ?></textarea>
                 </div>
             </div>
 
-                <!-- VÃ­nculo (Opcional) -->
+                <!-- Vínculo (Opcional) -->
                 <div class="col-12">
                     <h5 class="text-primary mb-3 mt-4">
-                        <i class="fas fa-link me-2"></i>VÃ­nculo (Opcional)
+                        <i class="fas fa-link me-2"></i>Vínculo (Opcional)
                     </h5>
-                    <p class="text-muted small">Vincule esta transaÃ§Ã£o a uma venda ou outro registro para rastreabilidade.</p>
+                    <p class="text-muted small">Vincule esta transação a uma venda ou outro registro para rastreabilidade.</p>
                 </div>
 
                 <div class="col-md-6">
-                    <label for="tabela_referencia" class="form-label">Tipo de ReferÃªncia</label>
+                    <label for="tabela_referencia" class="form-label">Tipo de Referência</label>
                     <select class="form-control" id="tabela_referencia" name="tabela_referencia">
                         <option value="">Nenhum</option>
                         <option value="vendas" <?php echo ($tabela_referencia == 'vendas' ? 'selected' : ''); ?>>Venda</option>
-                        <option value="orcamentos" <?php echo ($tabela_referencia == 'orcamentos' ? 'selected' : ''); ?>>OrÃ§amento</option>
+                        <option value="orcamentos" <?php echo ($tabela_referencia == 'orcamentos' ? 'selected' : ''); ?>>Orçamento</option>
                     </select>
                 </div>
                 <div class="col-md-6">
-                    <label for="referencia_id" class="form-label">ID de ReferÃªncia</label>
-                    <input type="number" class="form-control" id="referencia_id" name="referencia_id" value="<?php echo htmlspecialchars($referencia_id); ?>" placeholder="Ex: ID da Venda, ID do OrÃ§amento">
+                    <label for="referencia_id" class="form-label">ID de Referência</label>
+                    <input type="number" class="form-control" id="referencia_id" name="referencia_id" value="<?php echo htmlspecialchars($referencia_id); ?>" placeholder="Ex: ID da Venda, ID do Orçamento">
                 </div>
 
-                <!-- BotÃµes -->
+                <!-- Botões -->
                 <div class="col-12">
                     <div class="d-flex gap-2 justify-content-end mt-4">
                         <a href="financeiro.php" class="btn btn-outline-secondary">

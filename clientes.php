@@ -1,7 +1,7 @@
 <?php
 require_once 'includes/session_bootstrap.php';
 
-// Verifica se o usuÃ¡rio estÃ¡ logado
+// Verifica se o usuário está logado
 if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
     header("location: index.php");
     exit;
@@ -12,7 +12,7 @@ require_once 'includes/db_connect.php';
 $message = '';
 $message_type = '';
 
-// --- LÃ³gica para ExclusÃ£o de Cliente ---
+// --- Lógica para Exclusão de Cliente ---
 if (isset($_GET['action']) && $_GET['action'] == 'delete' && isset($_GET['id'])) {
     $cliente_id_to_delete = $_GET['id'];
 
@@ -20,32 +20,32 @@ if (isset($_GET['action']) && $_GET['action'] == 'delete' && isset($_GET['id']))
     if ($stmt_delete = $conn->prepare($sql_delete)) {
         $stmt_delete->bind_param("i", $cliente_id_to_delete);
         if ($stmt_delete->execute()) {
-            $message = "Cliente excluÃ­do com sucesso!";
+            $message = "Cliente excluído com sucesso!";
             $message_type = "success";
         } else {
-            $message = "Erro ao excluir o cliente. Pode haver vendas ou orÃ§amentos associados a este cliente: " . $stmt_delete->error;
+            $message = "Erro ao excluir o cliente. Pode haver vendas ou orçamentos associados a este cliente: " . $stmt_delete->error;
             $message_type = "danger";
         }
         $stmt_delete->close();
     } else {
-        $message = "Erro na preparaÃ§Ã£o da query de exclusÃ£o: " . $conn->error;
+        $message = "Erro na preparação da query de exclusão: " . $conn->error;
         $message_type = "danger";
     }
 }
 
-// --- LÃ³gica para buscar todos os clientes e calcular estatÃ­sticas com PAGINAÃ‡ÃƒO ---
-$itens_por_pagina = 15; // Defina quantos itens por pÃ¡gina
+// --- Lógica para buscar todos os clientes e calcular estatísticas com PAGINAÇÃO ---
+$itens_por_pagina = 15; // Defina quantos itens por página
 $pagina_atual = isset($_GET['page']) && is_numeric($_GET['page']) ? (int)$_GET['page'] : 1;
 $offset = ($pagina_atual - 1) * $itens_por_pagina;
 
-// Contar o total de clientes para a paginaÃ§Ã£o
+// Contar o total de clientes para a paginação
 $sql_total_clientes = "SELECT COUNT(*) AS total FROM clientes";
 $result_total = $conn->query($sql_total_clientes);
 $total_clientes_db = $result_total->fetch_assoc()['total'];
 $total_paginas = ceil($total_clientes_db / $itens_por_pagina);
 
 $clientes_data = [];
-// As estatÃ­sticas dos cards (Total de Clientes, PF, PJ, Cidades) devem ser calculadas globalmente, nÃ£o apenas na pÃ¡gina atual.
+// As estatísticas dos cards (Total de Clientes, PF, PJ, Cidades) devem ser calculadas globalmente, não apenas na página atual.
 $sql_stats_globais = "SELECT tipo_pessoa, cidade FROM clientes";
 $result_stats_globais = $conn->query($sql_stats_globais);
 
@@ -79,7 +79,7 @@ $stmt_clientes->execute();
 $result_clientes = $stmt_clientes->get_result();
 
 if ($result_clientes) {
-    // $total_clientes jÃ¡ foi obtido de $total_clientes_db para os cards
+    // $total_clientes já foi obtido de $total_clientes_db para os cards
     while ($row = $result_clientes->fetch_assoc()) {
         $clientes_data[] = $row;
     }
@@ -92,9 +92,9 @@ include_once 'includes/header.php';
 ?>
 
 <style>
-/* Melhorias especÃ­ficas para iPad Air */
+/* Melhorias específicas para iPad Air */
 @media (min-width: 768px) and (max-width: 1180px) {
-    /* BotÃµes de aÃ§Ã£o mais visÃ­veis */
+    /* Botões de ação mais visíveis */
     .btn-group .btn {
         min-width: 40px !important;
         min-height: 40px !important;
@@ -109,7 +109,7 @@ include_once 'includes/header.php';
         box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
     }
 
-    /* BotÃµes mobile mais touch-friendly */
+    /* Botões mobile mais touch-friendly */
     .mobile-client-actions .btn {
         min-height: 40px !important;
         padding: 0.5rem 1rem !important;
@@ -142,7 +142,7 @@ include_once 'includes/header.php';
         font-size: 1rem !important;
     }
 
-    /* Cards de estatÃ­sticas */
+    /* Cards de estatísticas */
     .stats-card {
         padding: 1.5rem !important;
         margin-bottom: 1rem;
@@ -155,14 +155,14 @@ include_once 'includes/header.php';
         border-radius: 0.5rem !important;
     }
 
-    /* CabeÃ§alho do card */
+    /* Cabeçalho do card */
     .card-header-modern {
         padding: 1.25rem !important;
         flex-wrap: wrap;
         gap: 1rem;
     }
 
-    /* PaginaÃ§Ã£o */
+    /* Paginação */
     .pagination .page-link {
         min-width: 40px !important;
         min-height: 40px !important;
@@ -174,7 +174,7 @@ include_once 'includes/header.php';
 
 
 
-/* Ajustes para orientaÃ§Ã£o paisagem do iPad */
+/* Ajustes para orientação paisagem do iPad */
 @media (min-width: 1024px) and (max-width: 1180px) and (orientation: landscape) {
     .container-fluid {
         padding-left: 2rem;
@@ -216,14 +216,14 @@ include_once 'includes/header.php';
         <div class="stats-card success fade-in-up">
             <div class="stats-icon success"><i class="fas fa-user"></i></div>
             <div class="stats-value"><?php echo $clientes_pf; ?></div>
-            <div class="stats-label">Pessoa FÃ­sica</div>
+            <div class="stats-label">Pessoa Física</div>
         </div>
     </div>
     <div class="col-6 col-lg-3">
         <div class="stats-card info fade-in-up">
             <div class="stats-icon info"><i class="fas fa-building"></i></div>
             <div class="stats-value"><?php echo $clientes_pj; ?></div>
-            <div class="stats-label">Pessoa JurÃ­dica</div>
+            <div class="stats-label">Pessoa Jurídica</div>
         </div>
     </div>
     <div class="col-6 col-lg-3">
@@ -275,8 +275,8 @@ include_once 'includes/header.php';
                             <th>Tipo</th>
                             <th>Documento</th>
                             <th>Contato</th>
-                            <th>LocalizaÃ§Ã£o</th>
-                            <th class="text-center">AÃ§Ãµes</th>
+                            <th>Localização</th>
+                            <th class="text-center">Ações</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -352,7 +352,7 @@ include_once 'includes/header.php';
                             <?php endif; ?>
                             <?php if (!empty($row['cidade'])): ?>
                             <div class="mobile-client-info-item">
-                                <span class="mobile-client-info-label">LocalizaÃ§Ã£o:</span>
+                                <span class="mobile-client-info-label">Localização:</span>
                                 <span class="mobile-client-info-value"><?php echo htmlspecialchars($row['cidade']) . ' - ' . htmlspecialchars($row['estado']); ?></span>
                             </div>
                             <?php endif; ?>
@@ -392,9 +392,9 @@ include_once 'includes/header.php';
 </div>
 
 <script>
-// Nenhuma alteraÃ§Ã£o necessÃ¡ria no JavaScript. Ele jÃ¡ estÃ¡ funcional.
+// Nenhuma alteração necessária no JavaScript. Ele já está funcional.
 function confirmDelete(id) {
-    if (confirm('Tem certeza que deseja excluir este cliente? Isso pode afetar vendas e orÃ§amentos relacionados.')) {
+    if (confirm('Tem certeza que deseja excluir este cliente? Isso pode afetar vendas e orçamentos relacionados.')) {
         const button = event.target.closest('button');
         button.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
         button.disabled = true;
@@ -472,5 +472,5 @@ document.addEventListener('DOMContentLoaded', function() {
 </script>
 
 <?php 
-$conn->close(); // Fechar conexÃ£o aqui
+$conn->close(); // Fechar conexão aqui
 include_once 'includes/footer.php'; ?>
