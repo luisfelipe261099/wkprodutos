@@ -1,16 +1,16 @@
 <?php
-// Script para atualizar marketplace com integra��o
+// Script para atualizar marketplace com integração
 require_once 'includes/db_connect.php';
 
-echo "<h2>?? Atualiza��o do Marketplace para Integra��o Completa</h2>";
-echo "<p>Este script ir� adicionar os campos de integra��o ao marketplace existente.</p>";
+echo "<h2>🔄 Atualização do Marketplace para Integração Completa</h2>";
+echo "<p>Este script irá adicionar os campos de integração ao marketplace existente.</p>";
 
 $errors = [];
 $success = [];
 
 try {
-    // 1. Adicionar campos de integra��o na tabela marketplace_pedidos
-    echo "<h3>1. Adicionando campos de integra��o...</h3>";
+    // 1. Adicionar campos de integração na tabela marketplace_pedidos
+    echo "<h3>1. Adicionando campos de integração...</h3>";
     
     $campos_integracao = [
         "ADD COLUMN `venda_id` int(11) DEFAULT NULL",
@@ -20,12 +20,12 @@ try {
     foreach ($campos_integracao as $campo) {
         $sql = "ALTER TABLE marketplace_pedidos $campo";
         if ($conn->query($sql)) {
-            $success[] = "? Campo de integra��o adicionado: " . explode('`', $campo)[1];
+            $success[] = "✓ Campo de integração adicionado: " . explode('`', $campo)[1];
         } else {
             if (strpos($conn->error, 'Duplicate column name') === false) {
-                $errors[] = "? Erro ao adicionar campo: " . $conn->error;
+                $errors[] = "✗ Erro ao adicionar campo: " . $conn->error;
             } else {
-                $success[] = "? Campo j� existe: " . explode('`', $campo)[1];
+                $success[] = "✓ Campo já existe: " . explode('`', $campo)[1];
             }
         }
     }
@@ -41,19 +41,19 @@ try {
     foreach ($foreign_keys as $fk) {
         $sql = "ALTER TABLE marketplace_pedidos $fk";
         if ($conn->query($sql)) {
-            $success[] = "? Foreign key adicionada";
+            $success[] = "✓ Foreign key adicionada";
         } else {
             if (strpos($conn->error, 'Duplicate foreign key') === false && 
                 strpos($conn->error, 'foreign key constraint fails') === false) {
-                $errors[] = "? Erro ao adicionar foreign key: " . $conn->error;
+                $errors[] = "✗ Erro ao adicionar foreign key: " . $conn->error;
             } else {
-                $success[] = "? Foreign key j� existe";
+                $success[] = "✓ Foreign key já existe";
             }
         }
     }
 
-    // 3. Adicionar �ndices
-    echo "<h3>3. Adicionando �ndices...</h3>";
+    // 3. Adicionar índices
+    echo "<h3>3. Adicionando índices...</h3>";
     
     $indices = [
         "ADD INDEX `idx_venda` (`venda_id`)",
@@ -63,17 +63,17 @@ try {
     foreach ($indices as $indice) {
         $sql = "ALTER TABLE marketplace_pedidos $indice";
         if ($conn->query($sql)) {
-            $success[] = "? �ndice adicionado";
+            $success[] = "✓ Índice adicionado";
         } else {
             if (strpos($conn->error, 'Duplicate key name') === false) {
-                $errors[] = "? Erro ao adicionar �ndice: " . $conn->error;
+                $errors[] = "✗ Erro ao adicionar índice: " . $conn->error;
             } else {
-                $success[] = "? �ndice j� existe";
+                $success[] = "✓ Índice já existe";
             }
         }
     }
 
-    // 4. Adicionar campos na tabela produtos (se n�o existirem)
+    // 4. Adicionar campos na tabela produtos (se não existirem)
     echo "<h3>4. Atualizando tabela produtos...</h3>";
     
     $campos_produtos = [
@@ -87,28 +87,28 @@ try {
     foreach ($campos_produtos as $campo) {
         $sql = "ALTER TABLE produtos $campo";
         if ($conn->query($sql)) {
-            $success[] = "? Campo adicionado � tabela produtos: " . explode('`', $campo)[1];
+            $success[] = "✓ Campo adicionado à tabela produtos: " . explode('`', $campo)[1];
         } else {
             if (strpos($conn->error, 'Duplicate column name') === false) {
-                $errors[] = "? Erro ao adicionar campo produtos: " . $conn->error;
+                $errors[] = "✗ Erro ao adicionar campo produtos: " . $conn->error;
             } else {
-                $success[] = "? Campo produtos j� existe: " . explode('`', $campo)[1];
+                $success[] = "✓ Campo produtos já existe: " . explode('`', $campo)[1];
             }
         }
     }
 
-    // 5. Inserir configura��es (se n�o existirem)
-    echo "<h3>5. Inserindo configura��es...</h3>";
+    // 5. Inserir configurações (se não existirem)
+    echo "<h3>5. Inserindo configurações...</h3>";
     
     $configuracoes = [
         ['marketplace_ativo', '1', 'Marketplace ativo (1) ou inativo (0)'],
-        ['titulo_marketplace', 'Karla Wollinger - Marketplace', 'T�tulo do marketplace'],
-        ['descricao_marketplace', 'Fa�a seus pedidos online de forma r�pida e pr�tica', 'Descri��o do marketplace'],
-        ['email_notificacoes', 'contato@karlawollinger.com', 'Email para receber notifica��es de pedidos'],
-        ['prazo_entrega_padrao', '3', 'Prazo padr�o de entrega em dias �teis'],
-        ['valor_minimo_pedido', '0.00', 'Valor m�nimo para pedidos'],
-        ['permitir_agendamento', '1', 'Permitir agendamento de entrega (1) ou n�o (0)'],
-        ['horario_funcionamento', '08:00-18:00', 'Hor�rio de funcionamento para entregas'],
+        ['titulo_marketplace', 'Karla Wollinger - Marketplace', 'Título do marketplace'],
+        ['descricao_marketplace', 'Faça seus pedidos online de forma rápida e prática', 'Descrição do marketplace'],
+        ['email_notificacoes', 'contato@karlawollinger.com', 'Email para receber notificações de pedidos'],
+        ['prazo_entrega_padrao', '3', 'Prazo padrão de entrega em dias úteis'],
+        ['valor_minimo_pedido', '0.00', 'Valor mínimo para pedidos'],
+        ['permitir_agendamento', '1', 'Permitir agendamento de entrega (1) ou não (0)'],
+        ['horario_funcionamento', '08:00-18:00', 'Horário de funcionamento para entregas'],
         ['dias_funcionamento', '1,2,3,4,5', 'Dias da semana que funciona (1=segunda, 7=domingo)']
     ];
 
@@ -118,7 +118,7 @@ try {
         $stmt->bind_param("sss", $config[0], $config[1], $config[2]);
         if ($stmt->execute()) {
             if ($stmt->affected_rows > 0) {
-                $success[] = "? Configura��o inserida: " . $config[0];
+                $success[] = "✓ Configuração inserida: " . $config[0];
             }
         }
     }
@@ -156,9 +156,9 @@ try {
             END";
     
     if ($conn->query($sql)) {
-        $success[] = "? Trigger atualizado";
+        $success[] = "✓ Trigger atualizado";
     } else {
-        $errors[] = "? Erro ao criar trigger: " . $conn->error;
+        $errors[] = "✗ Erro ao criar trigger: " . $conn->error;
     }
 
     // 7. Atualizar view
@@ -197,9 +197,9 @@ try {
             GROUP BY mp.id";
     
     if ($conn->query($sql)) {
-        $success[] = "? View atualizada";
+        $success[] = "✓ View atualizada";
     } else {
-        $errors[] = "? Erro ao criar view: " . $conn->error;
+        $errors[] = "✗ Erro ao criar view: " . $conn->error;
     }
 
     // 8. Ativar produtos no marketplace
@@ -213,9 +213,9 @@ try {
     
     if ($conn->query($sql)) {
         $affected = $conn->affected_rows;
-        $success[] = "? $affected produtos ativados no marketplace";
+        $success[] = "✓ $affected produtos ativados no marketplace";
     } else {
-        $errors[] = "? Erro ao ativar produtos: " . $conn->error;
+        $errors[] = "✗ Erro ao ativar produtos: " . $conn->error;
     }
 
     // 9. Verificar integridade
@@ -230,15 +230,15 @@ try {
     $result = $conn->query($sql);
     if ($result) {
         $stats = $result->fetch_assoc();
-        $success[] = "? Verifica��o: {$stats['total_pedidos']} pedidos, {$stats['com_venda']} com venda, {$stats['com_transacao']} com transa��o";
+        $success[] = "✓ Verificação: {$stats['total_pedidos']} pedidos, {$stats['com_venda']} com venda, {$stats['com_transacao']} com transação";
     }
 
 } catch (Exception $e) {
-    $errors[] = "? Erro geral: " . $e->getMessage();
+    $errors[] = "✗ Erro geral: " . $e->getMessage();
 }
 
 // Exibir resultados
-echo "<h3>?? Resultados da Atualiza��o:</h3>";
+echo "<h3>📊 Resultados da Atualização:</h3>";
 
 if (!empty($success)) {
     echo "<div style='color: green; margin-bottom: 20px;'>";
@@ -258,27 +258,27 @@ if (!empty($errors)) {
 
 if (empty($errors)) {
     echo "<div style='background: #d4edda; border: 1px solid #c3e6cb; color: #155724; padding: 15px; border-radius: 5px; margin: 20px 0;'>";
-    echo "<h4>?? ATUALIZA��O CONCLU�DA COM SUCESSO!</h4>";
-    echo "<p>O marketplace agora est� totalmente integrado com o sistema principal.</p>";
+    echo "<h4>🎉 ATUALIZAÇÃO CONCLUÍDA COM SUCESSO!</h4>";
+    echo "<p>O marketplace agora está totalmente integrado com o sistema principal.</p>";
     echo "<p><strong>Funcionalidades ativadas:</strong></p>";
     echo "<ul>";
-    echo "<li>? Integra��o autom�tica de vendas</li>";
-    echo "<li>? Cria��o autom�tica de transa��es financeiras</li>";
-    echo "<li>? Atualiza��o autom�tica de estoque</li>";
-    echo "<li>? Relat�rios integrados</li>";
-    echo "<li>? Rastreamento completo de pedidos</li>";
+    echo "<li>✅ Integração automática de vendas</li>";
+    echo "<li>✅ Criação automática de transações financeiras</li>";
+    echo "<li>✅ Atualização automática de estoque</li>";
+    echo "<li>✅ Relatórios integrados</li>";
+    echo "<li>✅ Rastreamento completo de pedidos</li>";
     echo "</ul>";
-    echo "<p><strong>Pr�ximos passos:</strong></p>";
+    echo "<p><strong>Próximos passos:</strong></p>";
     echo "<ul>";
     echo "<li>1. Acesse <a href='marketplace_admin.php'>Links Marketplace</a> para gerar links</li>";
-    echo "<li>2. Configure produtos em <a href='produtos.php'>Gest�o de Produtos</a></li>";
+    echo "<li>2. Configure produtos em <a href='produtos.php'>Gestão de Produtos</a></li>";
     echo "<li>3. Monitore pedidos em <a href='marketplace_pedidos.php'>Pedidos Marketplace</a></li>";
-    echo "<li>4. Veja relat�rios em <a href='relatorios.php'>Relat�rios</a></li>";
+    echo "<li>4. Veja relatórios em <a href='relatorios.php'>Relatórios</a></li>";
     echo "</ul>";
     echo "</div>";
 } else {
     echo "<div style='background: #f8d7da; border: 1px solid #f5c6cb; color: #721c24; padding: 15px; border-radius: 5px; margin: 20px 0;'>";
-    echo "<h4>? ATUALIZA��O CONCLU�DA COM AVISOS</h4>";
+    echo "<h4>⚠ ATUALIZAÇÃO CONCLUÍDA COM AVISOS</h4>";
     echo "<p>Alguns erros ocorreram. Verifique os detalhes acima.</p>";
     echo "</div>";
 }

@@ -6,12 +6,12 @@ use PHPMailer\PHPMailer\Exception;
 
 require 'vendor/autoload.php'; // Certifique-se de ter o PHPMailer instalado via Composer
 
-// Adicionar log para depura��o
+// Adicionar log para depuração
 function logMessage($message) {
     file_put_contents('email_log.txt', date('Y-m-d H:i:s') . ': ' . $message . "\n", FILE_APPEND);
 }
 
-// Fun��o para sanitizar dados de entrada
+// Função para sanitizar dados de entrada
 function sanitizeInput($data) {
     $data = trim($data);
     $data = stripslashes($data);
@@ -19,14 +19,14 @@ function sanitizeInput($data) {
     return $data;
 }
 
-// Fun��o para enviar e-mail
+// Função para enviar e-mail
 function sendEmail($subject, $body, $from_email, $from_name, $isHTML = true) {
     logMessage("Iniciando tentativa de envio de email: " . $subject);
 
     $mail = new PHPMailer(true);
 
     try {
-        // Configura��es do servidor
+        // Configurações do servidor
         $mail->isSMTP();
         $mail->Host       = 'smtp.hostinger.com';
         $mail->SMTPAuth   = true;
@@ -37,37 +37,37 @@ function sendEmail($subject, $body, $from_email, $from_name, $isHTML = true) {
         $mail->CharSet    = 'UTF-8';
 
         // Ativar debug SMTP
-        $mail->SMTPDebug  = 3; // N�vel 3 = debug m�ximo
+        $mail->SMTPDebug  = 3; // Nível 3 = debug máximo
         $mail->Debugoutput = function($str, $level) {
             logMessage("DEBUG SMTP ($level): $str");
         };
 
-        // Verificar se o servidor est� acess�vel
-        logMessage("Verificando conex�o com servidor SMTP...");
+        // Verificar se o servidor está acessível
+        logMessage("Verificando conexão com servidor SMTP...");
         $socket = @fsockopen($mail->Host, $mail->Port, $errno, $errstr, 5);
         if (!$socket) {
-            logMessage("ERRO: N�o foi poss�vel conectar ao servidor SMTP: $errstr ($errno)");
+            logMessage("ERRO: Não foi possível conectar ao servidor SMTP: $errstr ($errno)");
             return false;
         }
         fclose($socket);
-        logMessage("Conex�o com servidor SMTP bem-sucedida");
+        logMessage("Conexão com servidor SMTP bem-sucedida");
 
-        // Destinat�rios
+        // Destinatários
         $mail->setFrom('desenvolvimento@lfmtecnologia.com', 'Site WK Produtos');
 
-        // Adicionar m�ltiplos destinat�rios para aumentar chances de recebimento
+        // Adicionar múltiplos destinatários para aumentar chances de recebimento
         $mail->addAddress('wk.karla@hotmail.com', 'WK Produtos de Limpeza');
-        // Adicione seu email pessoal como c�pia para teste
+        // Adicione seu email pessoal como cópia para teste
         // $mail->addCC('seu-email-pessoal@gmail.com'); // Comentado para evitar erros
         $mail->addReplyTo($from_email, $from_name);
 
-        // Conte�do
+        // Conteúdo
         $mail->isHTML($isHTML);
         $mail->Subject = $subject;
         $mail->Body    = $body;
         $mail->AltBody = strip_tags(str_replace(['<br>', '<p>', '</p>'], ["\n", "\n", "\n"], $body));
 
-        logMessage("Configura��o conclu�da, tentando enviar email...");
+        logMessage("Configuração concluída, tentando enviar email...");
         $result = $mail->send();
         logMessage("Resultado do envio: " . ($result ? "SUCESSO" : "FALHA"));
 
@@ -75,20 +75,20 @@ function sendEmail($subject, $body, $from_email, $from_name, $isHTML = true) {
             logMessage("Email enviado com sucesso!");
             return true;
         } else {
-            logMessage("FALHA NO ENVIO: Nenhum erro espec�fico");
+            logMessage("FALHA NO ENVIO: Nenhum erro específico");
             return false;
         }
     } catch (Exception $e) {
-        logMessage("EXCE��O AO ENVIAR EMAIL: " . $mail->ErrorInfo);
-        logMessage("Detalhes da exce��o: " . $e->getMessage());
+        logMessage("EXCEÇÃO AO ENVIAR EMAIL: " . $mail->ErrorInfo);
+        logMessage("Detalhes da exceção: " . $e->getMessage());
         return false;
     }
 }
 
 function sendEmailFallback($subject, $body, $from_email, $from_name) {
-    logMessage("Tentando enviar email via fun��o mail() nativa: " . $subject);
+    logMessage("Tentando enviar email via função mail() nativa: " . $subject);
 
-    // Cabe�alhos
+    // Cabeçalhos
     $headers = "From: $from_name <$from_email>\r\n";
     $headers .= "Reply-To: $from_email\r\n";
     $headers .= "MIME-Version: 1.0\r\n";
@@ -101,9 +101,9 @@ function sendEmailFallback($subject, $body, $from_email, $from_name) {
     return $result;
 }
 
-// Fun��o para gerar o HTML do email de cota��o
+// Função para gerar o HTML do email de cotação
 function generateQuoteEmailHTML($name, $email, $phone, $type, $products, $message) {
-    // Garantir que produtos � um array
+    // Garantir que produtos é um array
     if (!is_array($products)) {
         $products = [];
     }
@@ -115,18 +115,18 @@ function generateQuoteEmailHTML($name, $email, $phone, $type, $products, $messag
             $products_list_html .= '<li class="product-item">' . $product . '</li>';
         }
     } else {
-        $products_list_html = '<li class="product-item">Nenhum produto espec�fico selecionado</li>';
+        $products_list_html = '<li class="product-item">Nenhum produto específico selecionado</li>';
     }
 
-    // Se n�o houver mensagem, exibir texto padr�o
+    // Se não houver mensagem, exibir texto padrão
     if (empty($message)) {
         $message = "Nenhuma mensagem adicional informada.";
     }
 
-    // Carregar o template de cota��o embutido no c�digo
+    // Carregar o template de cotação embutido no código
     $template = getQuoteEmailTemplate();
 
-    // Substituir vari�veis no template
+    // Substituir variáveis no template
     $template = str_replace('{$name}', $name, $template);
     $template = str_replace('{$email}', $email, $template);
     $template = str_replace('{$phone}', $phone, $template);
@@ -137,17 +137,17 @@ function generateQuoteEmailHTML($name, $email, $phone, $type, $products, $messag
     return $template;
 }
 
-// Fun��o para gerar o HTML do email de contato
+// Função para gerar o HTML do email de contato
 function generateContactEmailHTML($name, $email, $phone, $subject, $message) {
-    // Se n�o houver mensagem, exibir texto padr�o
+    // Se não houver mensagem, exibir texto padrão
     if (empty($message)) {
         $message = "Nenhuma mensagem informada.";
     }
 
-    // Carregar o template de contato embutido no c�digo
+    // Carregar o template de contato embutido no código
     $template = getContactEmailTemplate();
 
-    // Substituir vari�veis no template
+    // Substituir variáveis no template
     $template = str_replace('{$name}', $name, $template);
     $template = str_replace('{$email}', $email, $template);
     $template = str_replace('{$phone}', $phone, $template);
@@ -157,7 +157,7 @@ function generateContactEmailHTML($name, $email, $phone, $subject, $message) {
     return $template;
 }
 
-// Fun��o para gerar o HTML do email de newsletter
+// Função para gerar o HTML do email de newsletter
 function generateNewsletterEmailHTML($email) {
     // Um template simples para a newsletter
     $html = '
@@ -175,16 +175,16 @@ function generateNewsletterEmailHTML($email) {
     <body>
         <div class="container">
             <div class="header">
-                <h2>Nova Inscri��o na Newsletter</h2>
+                <h2>Nova Inscrição na Newsletter</h2>
             </div>
             <div class="content">
-                <p>Ol� Karla,</p>
-                <p>Uma nova pessoa se inscreveu para receber atualiza��es e promo��es da WK Produtos de Limpeza.</p>
+                <p>Olá Karla,</p>
+                <p>Uma nova pessoa se inscreveu para receber atualizações e promoções da WK Produtos de Limpeza.</p>
                 <p><strong>Email inscrito:</strong> ' . $email . '</p>
-                <p>� recomend�vel adicionar este email � sua lista de contatos de newsletter.</p>
+                <p>É recomendável adicionar este email à sua lista de contatos de newsletter.</p>
             </div>
             <div class="footer">
-                <p>WK Produtos de Limpeza - Rua Tiradentes, 406 - S�o Jos� dos Pinhais - PR</p>
+                <p>WK Produtos de Limpeza - Rua Tiradentes, 406 - São José dos Pinhais - PR</p>
             </div>
         </div>
     </body>
@@ -193,14 +193,14 @@ function generateNewsletterEmailHTML($email) {
     return $html;
 }
 
-// Template de email de cota��o embutido
+// Template de email de cotação embutido
 function getQuoteEmailTemplate() {
     return '<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nova Solicita��o de Cota��o - WK Produtos</title>
+    <title>Nova Solicitação de Cotação - WK Produtos</title>
     <style>
         /* Reset de estilos para compatibilidade com clientes de email */
         body, html {
@@ -222,7 +222,7 @@ function getQuoteEmailTemplate() {
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
         }
 
-        /* Cabe�alho */
+        /* Cabeçalho */
         .header {
             background: linear-gradient(90deg, #005294, #0078d4);
             padding: 20px;
@@ -244,7 +244,7 @@ function getQuoteEmailTemplate() {
             font-weight: 700;
         }
 
-        /* Sauda��o */
+        /* Saudação */
         .greeting {
             background-color: #f8f9fa;
             padding: 15px 20px;
@@ -253,7 +253,7 @@ function getQuoteEmailTemplate() {
             font-size: 16px;
         }
 
-        /* Conte�do */
+        /* Conteúdo */
         .content {
             padding: 20px;
         }
@@ -314,7 +314,7 @@ function getQuoteEmailTemplate() {
             border-left: 3px solid #6c757d;
         }
 
-        /* Rodap� */
+        /* Rodapé */
         .footer {
             background-color: #003b6f;
             color: white;
@@ -362,22 +362,22 @@ function getQuoteEmailTemplate() {
 </head>
 <body>
     <div class="email-container">
-        <!-- Cabe�alho com logo -->
+        <!-- Cabeçalho com logo -->
         <div class="header">
             <div class="logo">
-                <span class="logo-icon">??</span>
+                <span class="logo-icon">⚗️</span>
                 <span class="logo-text">WK Produtos de Limpeza</span>
             </div>
-            <h1>Nova Solicita��o de Cota��o</h1>
+            <h1>Nova Solicitação de Cotação</h1>
         </div>
 
-        <!-- Sauda��o -->
+        <!-- Saudação -->
         <div class="greeting">
-            <p>Ol� <strong>Karla</strong>,</p>
-            <p>Voc� recebeu uma nova solicita��o de cota��o atrav�s do seu site. Abaixo est�o os detalhes para voc� responder ao cliente.</p>
+            <p>Olá <strong>Karla</strong>,</p>
+            <p>Você recebeu uma nova solicitação de cotação através do seu site. Abaixo estão os detalhes para você responder ao cliente.</p>
         </div>
 
-        <!-- Conte�do principal -->
+        <!-- Conteúdo principal -->
         <div class="content">
             <!-- Dados do cliente -->
             <h2 class="section-title">Dados do Cliente</h2>
@@ -414,15 +414,15 @@ function getQuoteEmailTemplate() {
 
             <!-- Call to Action -->
             <div class="cta">
-                <p>Recomendamos responder a esta solicita��o em at� 24 horas para maximizar suas chances de convers�o.</p>
+                <p>Recomendamos responder a esta solicitação em até 24 horas para maximizar suas chances de conversão.</p>
                 <a href="mailto:{$email}" class="button">Responder ao Cliente</a>
             </div>
         </div>
 
-        <!-- Rodap� -->
+        <!-- Rodapé -->
         <div class="footer">
             <p><strong>WK Produtos de Limpeza</strong></p>
-            <p>Rua Tiradentes, 406 - S�o Jos� dos Pinhais - PR</p>
+            <p>Rua Tiradentes, 406 - São José dos Pinhais - PR</p>
             <p>Tel: (41) 3283-7121 | (41) 9 9859-3242</p>
 
             <div class="social-links">
@@ -467,7 +467,7 @@ function getContactEmailTemplate() {
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
         }
 
-        /* Cabe�alho */
+        /* Cabeçalho */
         .header {
             background: linear-gradient(135deg, #005294, #00a1ff);
             padding: 20px;
@@ -489,7 +489,7 @@ function getContactEmailTemplate() {
             font-weight: 700;
         }
 
-        /* Sauda��o */
+        /* Saudação */
         .greeting {
             background-color: #f8f9fa;
             padding: 15px 20px;
@@ -498,7 +498,7 @@ function getContactEmailTemplate() {
             font-size: 16px;
         }
 
-        /* Conte�do */
+        /* Conteúdo */
         .content {
             padding: 20px;
         }
@@ -541,7 +541,7 @@ function getContactEmailTemplate() {
             line-height: 1.8;
         }
 
-        /* �cone de assunto */
+        /* Ícone de assunto */
         .subject-icon {
             display: inline-block;
             width: 30px;
@@ -581,7 +581,7 @@ function getContactEmailTemplate() {
             border-radius: 0 4px 4px 0;
         }
 
-        /* Rodap� */
+        /* Rodapé */
         .footer {
             background-color: #003b6f;
             color: white;
@@ -613,22 +613,22 @@ function getContactEmailTemplate() {
 </head>
 <body>
     <div class="email-container">
-        <!-- Cabe�alho com logo -->
+        <!-- Cabeçalho com logo -->
         <div class="header">
             <div class="logo">
-                <span class="logo-icon">??</span>
+                <span class="logo-icon">⚗️</span>
                 <span class="logo-text">WK Produtos de Limpeza</span>
             </div>
             <h1>Nova Mensagem de Contato</h1>
         </div>
 
-        <!-- Sauda��o -->
+        <!-- Saudação -->
         <div class="greeting">
-            <p>Ol� <strong>Karla</strong>,</p>
-            <p>Voc� recebeu uma nova mensagem de contato atrav�s do site da WK Produtos de Limpeza.</p>
+            <p>Olá <strong>Karla</strong>,</p>
+            <p>Você recebeu uma nova mensagem de contato através do site da WK Produtos de Limpeza.</p>
         </div>
 
-        <!-- Conte�do principal -->
+        <!-- Conteúdo principal -->
         <div class="content">
             <!-- Dados do contato -->
             <h2 class="section-title">
@@ -653,9 +653,9 @@ function getContactEmailTemplate() {
                 {$message}
             </div>
 
-            <!-- Observa��o -->
+            <!-- Observação -->
             <div class="highlight-box">
-                <p><strong>Importante:</strong> Este contato foi recebido atrav�s do formul�rio do site. Recomendamos responder no prazo de 24 horas para um melhor atendimento.</p>
+                <p><strong>Importante:</strong> Este contato foi recebido através do formulário do site. Recomendamos responder no prazo de 24 horas para um melhor atendimento.</p>
             </div>
 
             <!-- Call to Action -->
@@ -664,10 +664,10 @@ function getContactEmailTemplate() {
             </div>
         </div>
 
-        <!-- Rodap� -->
+        <!-- Rodapé -->
         <div class="footer">
             <p><strong>WK Produtos de Limpeza</strong></p>
-            <p>Rua Tiradentes, 406 - S�o Jos� dos Pinhais - PR</p>
+            <p>Rua Tiradentes, 406 - São José dos Pinhais - PR</p>
             <p>Tel: (41) 3283-7121 | (41) 9 9859-3242</p>
 
             <div class="social-links">
@@ -683,12 +683,12 @@ function getContactEmailTemplate() {
 </html>';
 }
 
-// Verifica qual formul�rio foi enviado
+// Verifica qual formulário foi enviado
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
-    logMessage("Recebido um formul�rio via POST");
+    logMessage("Recebido um formulário via POST");
 
-    // Formul�rio de Cota��o
+    // Formulário de Cotação
     if (isset($_POST['name']) && isset($_POST['email']) && isset($_POST['phone']) && isset($_POST['type'])) {
         $name = sanitizeInput($_POST['name']);
         $email = sanitizeInput($_POST['email']);
@@ -696,7 +696,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $type = sanitizeInput($_POST['type']);
         $message = isset($_POST['message']) ? sanitizeInput($_POST['message']) : '';
 
-        logMessage("Processando formul�rio de cota��o de: " . $name);
+        logMessage("Processando formulário de cotação de: " . $name);
 
         // Produtos selecionados
         $products = [];
@@ -710,29 +710,29 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $email_body = generateQuoteEmailHTML($name, $email, $phone, $type, $products, $message);
 
         // Enviar e-mail
-        $subject = "Nova Solicita��o de Cota��o - WK Produtos";
+        $subject = "Nova Solicitação de Cotação - WK Produtos";
         $result = sendEmail($subject, $email_body, $email, $name, true);
 
         // Redirecionamento com status
         if ($result) {
-            logMessage("Cota��o enviada com sucesso, redirecionando");
+            logMessage("Cotação enviada com sucesso, redirecionando");
             header("Location: index.php?form=quote&status=success");
         } else {
-            logMessage("ERRO ao enviar cota��o, redirecionando com erro");
+            logMessage("ERRO ao enviar cotação, redirecionando com erro");
             header("Location: index.php?form=quote&status=error");
         }
         exit;
     }
 
-    // Formul�rio de Contato
+    // Formulário de Contato
     elseif (isset($_POST['contact-name']) && isset($_POST['contact-email']) && isset($_POST['contact-subject'])) {
         $name = sanitizeInput($_POST['contact-name']);
         $email = sanitizeInput($_POST['contact-email']);
-        $phone = isset($_POST['contact-phone']) ? sanitizeInput($_POST['contact-phone']) : 'N�o informado';
+        $phone = isset($_POST['contact-phone']) ? sanitizeInput($_POST['contact-phone']) : 'Não informado';
         $subject = sanitizeInput($_POST['contact-subject']);
         $message = isset($_POST['contact-message']) ? sanitizeInput($_POST['contact-message']) : '';
 
-        logMessage("Processando formul�rio de contato de: " . $name);
+        logMessage("Processando formulário de contato de: " . $name);
 
         // Gerar o HTML do email usando o template
         $email_body = generateContactEmailHTML($name, $email, $phone, $subject, $message);
@@ -752,22 +752,22 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         exit;
     }
 
-    // Formul�rio de Newsletter
+    // Formulário de Newsletter
     elseif (isset($_POST['newsletter-email'])) {
         $email = sanitizeInput($_POST['newsletter-email']);
 
-        logMessage("Processando inscri��o newsletter: " . $email);
+        logMessage("Processando inscrição newsletter: " . $email);
 
         // Gerar o HTML do email
         $email_body = generateNewsletterEmailHTML($email);
 
         // Enviar e-mail
-        $subject = "Nova Inscri��o na Newsletter - WK Produtos";
+        $subject = "Nova Inscrição na Newsletter - WK Produtos";
         $result = sendEmail($subject, $email_body, $email, 'Assinante Newsletter', true);
 
         // Redirecionamento com status
         if ($result) {
-            logMessage("Inscri��o newsletter enviada com sucesso, redirecionando");
+            logMessage("Inscrição newsletter enviada com sucesso, redirecionando");
             header("Location: index.php?form=newsletter&status=success");
         } else {
             logMessage("ERRO ao processar newsletter, redirecionando com erro");
@@ -776,14 +776,14 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         exit;
     }
 
-    // Se nenhum formul�rio v�lido for identificado
-    logMessage("Nenhum formul�rio v�lido identificado");
+    // Se nenhum formulário válido for identificado
+    logMessage("Nenhum formulário válido identificado");
     header("Location: index.php?status=error");
     exit;
 }
 
-// No final do arquivo, ap�s processar o formul�rio
-// Adicione este c�digo para testar o envio diretamente
+// No final do arquivo, após processar o formulário
+// Adicione este código para testar o envio diretamente
 
 if (isset($_GET['test']) && $_GET['test'] == '1') {
     logMessage("Iniciando teste de email direto");
@@ -793,8 +793,8 @@ if (isset($_GET['test']) && $_GET['test'] == '1') {
     <html>
     <body>
         <h2>Teste de Email</h2>
-        <p>Este � um email de teste enviado em: " . date('Y-m-d H:i:s') . "</p>
-        <p>Se voc� est� vendo esta mensagem, o sistema de email est� funcionando.</p>
+        <p>Este é um email de teste enviado em: " . date('Y-m-d H:i:s') . "</p>
+        <p>Se você está vendo esta mensagem, o sistema de email está funcionando.</p>
     </body>
     </html>";
 
@@ -802,7 +802,7 @@ if (isset($_GET['test']) && $_GET['test'] == '1') {
         $test_subject,
         $test_body,
         'teste@exemplo.com',
-        'Teste Autom�tico',
+        'Teste Automático',
         true
     );
 

@@ -6,7 +6,7 @@ require_once 'includes/db_connect.php';
 $input = json_decode(file_get_contents('php://input'), true);
 
 if (!$input || !isset($input['action']) || !isset($input['token'])) {
-    echo json_encode(['success' => false, 'message' => 'Dados inv�lidos']);
+    echo json_encode(['success' => false, 'message' => 'Dados inválidos']);
     exit;
 }
 
@@ -21,7 +21,7 @@ $stmt_token->execute();
 $result_token = $stmt_token->get_result();
 
 if ($result_token->num_rows === 0) {
-    echo json_encode(['success' => false, 'message' => 'Token inv�lido']);
+    echo json_encode(['success' => false, 'message' => 'Token inválido']);
     exit;
 }
 
@@ -33,7 +33,7 @@ switch ($action) {
         $quantidade = (int)$input['quantidade'];
         $preco_unitario = (float)$input['preco_unitario'];
         
-        // Verificar se produto existe e est� ativo
+        // Verificar se produto existe e está ativo
         $sql_produto = "SELECT id, preco_venda, quantidade_estoque FROM produtos WHERE id = ? AND ativo_marketplace = 1";
         $stmt_produto = $conn->prepare($sql_produto);
         $stmt_produto->bind_param("i", $produto_id);
@@ -41,7 +41,7 @@ switch ($action) {
         $result_produto = $stmt_produto->get_result();
         
         if ($result_produto->num_rows === 0) {
-            echo json_encode(['success' => false, 'message' => 'Produto n�o encontrado']);
+            echo json_encode(['success' => false, 'message' => 'Produto não encontrado']);
             exit;
         }
         
@@ -49,11 +49,11 @@ switch ($action) {
         
         // Verificar estoque
         if ($quantidade > $produto['quantidade_estoque']) {
-            echo json_encode(['success' => false, 'message' => 'Quantidade n�o dispon�vel em estoque']);
+            echo json_encode(['success' => false, 'message' => 'Quantidade não disponível em estoque']);
             exit;
         }
         
-        // Verificar se j� existe no carrinho
+        // Verificar se já existe no carrinho
         $sql_check = "SELECT id, quantidade FROM marketplace_carrinho WHERE token_acesso = ? AND produto_id = ?";
         $stmt_check = $conn->prepare($sql_check);
         $stmt_check->bind_param("si", $token, $produto_id);
@@ -104,14 +104,14 @@ switch ($action) {
             $result_produto = $stmt_produto->get_result();
             
             if ($result_produto->num_rows === 0) {
-                echo json_encode(['success' => false, 'message' => 'Produto n�o encontrado']);
+                echo json_encode(['success' => false, 'message' => 'Produto não encontrado']);
                 exit;
             }
             
             $produto = $result_produto->fetch_assoc();
             
             if ($quantidade > $produto['quantidade_estoque']) {
-                echo json_encode(['success' => false, 'message' => 'Quantidade n�o dispon�vel em estoque']);
+                echo json_encode(['success' => false, 'message' => 'Quantidade não disponível em estoque']);
                 exit;
             }
             
@@ -164,7 +164,7 @@ switch ($action) {
         break;
         
     default:
-        echo json_encode(['success' => false, 'message' => 'A��o inv�lida']);
+        echo json_encode(['success' => false, 'message' => 'Ação inválida']);
         break;
 }
 

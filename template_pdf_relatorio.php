@@ -195,7 +195,7 @@
             margin: 20px 0;
             page-break-after: always !important;
             break-after: page !important;
-            /* FOR�A quebra de p�gina SEMPRE */
+            /* FORÇA quebra de página SEMPRE */
             min-height: 1px;
             page-break-inside: avoid;
             visibility: hidden;
@@ -215,7 +215,7 @@
             -webkit-column-break-inside: avoid;
             orphans: 10;
             widows: 10;
-            /* SEMPRE for�a uma nova p�gina */
+            /* SEMPRE força uma nova página */
             min-height: 250px;
         }
         
@@ -364,7 +364,7 @@
             font-size: 10px;
         }
         
-        /* Regras de impress�o otimizadas */
+        /* Regras de impressão otimizadas */
         @media print {
             body { 
                 margin: 0 !important;
@@ -416,7 +416,7 @@
                 margin: 0 !important;
                 page-break-after: always !important;
                 break-after: page !important;
-                /* FOR�A quebra de p�gina SEMPRE */
+                /* FORÇA quebra de página SEMPRE */
                 min-height: 1px !important;
                 page-break-inside: avoid !important;
                 visibility: hidden;
@@ -435,7 +435,7 @@
                 widows: 10;
                 display: block !important;
                 min-height: 200px !important;
-                /* SEMPRE for�a quebra de p�gina */
+                /* SEMPRE força quebra de página */
                 margin-top: 20px !important;
             }
             
@@ -481,7 +481,7 @@
                 page-break-inside: avoid !important;
             }
             
-            /* For�a toda a se��o banc�ria como um bloco �nico */
+            /* Força toda a seção bancária como um bloco único */
             .payment-section * {
                 page-break-inside: avoid !important;
                 break-inside: avoid !important;
@@ -554,7 +554,7 @@
             }
         }
         
-        /* Regras espec�ficas de impress�o/PDF */
+        /* Regras específicas de impressão/PDF */
         @media print {
             @page {
                 size: A4;
@@ -563,7 +563,7 @@
                 widows: 4;
             }
             
-            /* For�a quebra de p�gina antes da se��o banc�ria se necess�rio */
+            /* Força quebra de página antes da seção bancária se necessário */
             .page-break-helper {
                 page-break-after: auto;
                 height: 200px;
@@ -574,15 +574,15 @@
                 page-break-after: always;
             }
             
-            /* Regra que for�a nova p�gina SEMPRE para a se��o banc�ria */
+            /* Regra que força nova página SEMPRE para a seção bancária */
             .payment-section {
-                /* SEMPRE vai para pr�xima p�gina */
+                /* SEMPRE vai para próxima página */
                 min-height: 250px;
                 page-break-before: always !important;
                 break-before: page !important;
             }
             
-            /* Hack CSS: se a se��o anterior tem mais de 70% da altura da p�gina, for�a quebra */
+            /* Hack CSS: se a seção anterior tem mais de 70% da altura da página, força quebra */
             table + .page-break-helper {
                 page-break-before: auto;
                 page-break-after: always;
@@ -595,24 +595,24 @@
 <body>
     <div class="header">
         <h1><?php echo htmlspecialchars($titulo_relatorio); ?></h1>
-        <h2>Relat�rio Comercial para Presta��o de Contas</h2>
+        <h2>Relatório Comercial para Prestação de Contas</h2>
     </div>
 
     <div class="company-info">
         <div class="info-row">
-            <span class="info-label">?? Per�odo de An�lise:</span>
+            <span class="info-label">📅 Período de Análise:</span>
             <span class="info-value"><?php echo $periodo; ?></span>
         </div>
         <div class="info-row">
-            <span class="info-label">?? Representante Comercial:</span>
+            <span class="info-label">👤 Representante Comercial:</span>
             <span class="info-value"><?php echo htmlspecialchars($usuario['nome'] ?? 'N/A'); ?></span>
         </div>
         <div class="info-row">
-            <span class="info-label">?? CNPJ:</span>
+            <span class="info-label">🏢 CNPJ:</span>
             <span class="info-value">30.459.625/0001-87</span>
         </div>
         <div class="info-row">
-            <span class="info-label">? Gerado em:</span>
+            <span class="info-label">⏰ Gerado em:</span>
             <span class="info-value"><?php echo date('d/m/Y H:i:s'); ?></span>
         </div>
     </div>
@@ -632,7 +632,7 @@
                 <div class="value"><?php echo $dados_relatorio['resumo']['empresas_ativas']; ?></div>
             </div>
             <div class="summary-card warning">
-                <h3>Margem M�dia</h3>
+                <h3>Margem Média</h3>
                 <div class="value"><?php echo number_format($dados_relatorio['resumo']['faturamento_geral'] > 0 ? ($dados_relatorio['resumo']['lucro_geral'] / $dados_relatorio['resumo']['faturamento_geral']) * 100 : 0, 1, ',', '.'); ?>%</div>
             </div>
         <?php elseif ($tipo_relatorio == 'vendas_geral'): ?>
@@ -641,7 +641,7 @@
                 <div class="value"><?php echo $dados_relatorio['resumo']['total_vendas']; ?></div>
             </div>
             <div class="summary-card success">
-                <h3>Faturamento (Conclu�das)</h3>
+                <h3>Faturamento (Concluídas)</h3>
                 <div class="value">R$ <?php echo number_format($dados_relatorio['resumo']['faturamento'], 2, ',', '.'); ?></div>
             </div>
             <div class="summary-card info">
@@ -649,7 +649,7 @@
                 <div class="value">R$ <?php echo number_format($dados_relatorio['resumo']['lucro_bruto'], 2, ',', '.'); ?></div>
             </div>
             <div class="summary-card warning">
-                <h3>Margem M�dia</h3>
+                <h3>Margem Média</h3>
                 <div class="value"><?php echo number_format($dados_relatorio['resumo']['margem_media'], 1, ',', '.'); ?>%</div>
             </div>
         <?php elseif ($tipo_relatorio == 'produtos_vendidos'): ?>
@@ -678,7 +678,7 @@
             <tr>
                 <?php if($tipo_relatorio == 'lucro_por_empresa'): ?>
                     <th>Empresa Representada</th>
-                    <th>N� de Vendas</th>
+                    <th>Nº de Vendas</th>
                     <th>Itens Vendidos</th>
                     <th>Faturamento</th>
                     <th>Lucro Bruto</th>
@@ -740,7 +740,7 @@
             
             <?php if($tipo_relatorio == 'vendas_geral' && $total_faturamento > 0): ?>
                 <tr class="total-row">
-                    <td colspan="3" class="text-right"><strong>TOTAIS (Vendas Conclu�das):</strong></td>
+                    <td colspan="3" class="text-right"><strong>TOTAIS (Vendas Concluídas):</strong></td>
                     <td class="text-right"><strong>R$ <?php echo number_format($total_faturamento, 2, ',', '.'); ?></strong></td>
                     <td class="text-right"><strong>R$ <?php echo number_format($total_lucro, 2, ',', '.'); ?></strong></td>
                     <td class="text-center"><strong><?php echo number_format($total_faturamento > 0 ? ($total_lucro / $total_faturamento) * 100 : 0, 1); ?>%</strong></td>
@@ -755,50 +755,50 @@
         &nbsp;
     </table>
 
-    <!-- Div para for�ar quebra de p�gina antes das informa��es banc�rias se necess�rio -->
+    <!-- Div para forçar quebra de página antes das informações bancárias se necessário -->
     <div class="page-break-helper"></div>
 
-    <!-- Se��o de Informa��es Banc�rias para Pagamento -->
+    <!-- Seção de Informações Bancárias para Pagamento -->
     <div class="payment-section">
-        <h3>?? Informa��es Banc�rias para Pagamento</h3>
+        <h3>💳 Informações Bancárias para Pagamento</h3>
         
         <div class="bank-info">
             <div class="bank-item">
-                <span class="bank-label">?? Banco:</span>
+                <span class="bank-label">🏦 Banco:</span>
                 <span class="bank-value">INTER - 077</span>
             </div>
             <div class="bank-item">
-                <span class="bank-label">?? Benefici�rio:</span>
+                <span class="bank-label">👤 Beneficiário:</span>
                 <span class="bank-value">KARLA WOLLINGER DOS SANTOS</span>
             </div>
             <div class="bank-item">
-                <span class="bank-label">?? CNPJ:</span>
+                <span class="bank-label">🏢 CNPJ:</span>
                 <span class="bank-value">30.459.625/0001-87</span>
             </div>
             <div class="bank-item">
-                <span class="bank-label">?? Ag�ncia:</span>
+                <span class="bank-label">🏪 Agência:</span>
                 <span class="bank-value">0001</span>
             </div>
             <div class="bank-item">
-                <span class="bank-label">?? Conta Corrente:</span>
+                <span class="bank-label">💰 Conta Corrente:</span>
                 <span class="bank-value">44337759-6</span>
             </div>
             <div class="bank-item">
-                <span class="bank-label">?? Chave PIX:</span>
+                <span class="bank-label">🔑 Chave PIX:</span>
                 <span class="bank-value">30.459.625/0001-87</span>
             </div>
         </div>
         
         <div class="commission-note">
-            <p><strong>?? Instru��es para Pagamento:</strong> Utilize as informa��es banc�rias acima para realizar o pagamento das comiss�es referentes ao per�odo demonstrado neste relat�rio. Para pagamentos via PIX, utilize o CNPJ como chave. Mantenha este relat�rio como comprovante das transa��es comerciais realizadas.</p>
+            <p><strong>🚀 Instruções para Pagamento:</strong> Utilize as informações bancárias acima para realizar o pagamento das comissões referentes ao período demonstrado neste relatório. Para pagamentos via PIX, utilize o CNPJ como chave. Mantenha este relatório como comprovante das transações comerciais realizadas.</p>
         </div>
     </div>
 
     <div class="commission-info">
-        <h3>INFORMA��ES PARA PAGAMENTO DE COMISS�ES</h3>
+        <h3>INFORMAÇÕES PARA PAGAMENTO DE COMISSÕES</h3>
         <div class="info-box">
             <div class="info-row">
-                <strong>Per�odo de Refer�ncia:</strong>
+                <strong>Período de Referência:</strong>
                 <span><?php echo $periodo; ?></span>
             </div>
             <?php if ($tipo_relatorio == 'lucro_por_empresa'): ?>
@@ -811,12 +811,12 @@
                     <span>R$ <?php echo number_format($dados_relatorio['resumo']['lucro_geral'], 2, ',', '.'); ?></span>
                 </div>
                 <div class="info-row">
-                    <strong>N�mero de Empresas Ativas:</strong>
+                    <strong>Número de Empresas Ativas:</strong>
                     <span><?php echo $dados_relatorio['resumo']['empresas_ativas']; ?></span>
                 </div>
             <?php elseif ($tipo_relatorio == 'vendas_geral'): ?>
                 <div class="info-row">
-                    <strong>Faturamento Total (Conclu�das):</strong>
+                    <strong>Faturamento Total (Concluídas):</strong>
                     <span>R$ <?php echo number_format($dados_relatorio['resumo']['faturamento'], 2, ',', '.'); ?></span>
                 </div>
                 <div class="info-row">
@@ -824,7 +824,7 @@
                     <span>R$ <?php echo number_format($dados_relatorio['resumo']['lucro_bruto'], 2, ',', '.'); ?></span>
                 </div>
                 <div class="info-row">
-                    <strong>N�mero de Vendas:</strong>
+                    <strong>Número de Vendas:</strong>
                     <span><?php echo $dados_relatorio['resumo']['total_vendas']; ?></span>
                 </div>
             <?php elseif ($tipo_relatorio == 'produtos_vendidos'): ?>
@@ -842,25 +842,25 @@
                 </div>
             <?php endif; ?>
         </div>
-        <p><em><strong>Observa��o:</strong> Este relat�rio apresenta todas as vendas realizadas no per�odo para verifica��o e c�lculo de comiss�es conforme acordo comercial estabelecido.</em></p>
+        <p><em><strong>Observação:</strong> Este relatório apresenta todas as vendas realizadas no período para verificação e cálculo de comissões conforme acordo comercial estabelecido.</em></p>
     </div>
 
     <div class="footer">
-        <p><strong>Relat�rio gerado em:</strong> <?php echo date('d/m/Y H:i:s'); ?></p>
+        <p><strong>Relatório gerado em:</strong> <?php echo date('d/m/Y H:i:s'); ?></p>
         <p><strong>Total de registros:</strong> <?php echo count($dados_relatorio['dados']); ?></p>
     </div>
 
     <div class="no-print" style="margin-top: 30px; text-align: center;">
         <button onclick="window.print()" style="background-color: #007bff; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; margin-right: 10px;">
-            ??? Imprimir/Salvar PDF
+            🖨️ Imprimir/Salvar PDF
         </button>
         <button onclick="window.close()" style="background-color: #6c757d; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer;">
-            ? Fechar
+            ❌ Fechar
         </button>
     </div>
 
     <script>
-        // Fun��o para verificar se a se��o banc�ria precisa de quebra de p�gina
+        // Função para verificar se a seção bancária precisa de quebra de página
         function adjustBankingSectionPageBreak() {
             const paymentSection = document.querySelector('.payment-section');
             const pageBreakHelper = document.querySelector('.page-break-helper');
@@ -871,24 +871,24 @@
                 const sectionHeight = rect.height;
                 const sectionTop = rect.top;
                 
-                // Se a se��o banc�ria est� muito pr�xima do final da p�gina (menos de 300px de espa�o)
-                // ou se a se��o seria cortada, for�a uma quebra de p�gina
+                // Se a seção bancária está muito próxima do final da página (menos de 300px de espaço)
+                // ou se a seção seria cortada, força uma quebra de página
                 if (sectionTop > (viewportHeight - 300) || (sectionTop + sectionHeight) > viewportHeight) {
                     pageBreakHelper.style.pageBreakAfter = 'always';
                     pageBreakHelper.style.breakAfter = 'page';
                     pageBreakHelper.style.height = '1px';
                     pageBreakHelper.style.display = 'block';
                     
-                    // Adiciona uma margem top maior na se��o banc�ria
+                    // Adiciona uma margem top maior na seção bancária
                     paymentSection.style.marginTop = '20px';
                     paymentSection.style.pageBreakBefore = 'auto';
                 }
             }
         }
         
-        // Auto-abrir a janela de impress�o quando a p�gina carregar
+        // Auto-abrir a janela de impressão quando a página carregar
         window.addEventListener('load', function() {
-            // Ajusta a quebra de p�gina primeiro
+            // Ajusta a quebra de página primeiro
             adjustBankingSectionPageBreak();
             
             setTimeout(function() {
@@ -896,7 +896,7 @@
             }, 500);
         });
         
-        // Reajusta quando a janela � redimensionada
+        // Reajusta quando a janela é redimensionada
         window.addEventListener('resize', adjustBankingSectionPageBreak);
     </script>
 </body>

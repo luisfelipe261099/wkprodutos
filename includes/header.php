@@ -24,7 +24,7 @@ $user_role_label = (isset($_SESSION['nivel_acesso']) && $_SESSION['nivel_acesso'
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Karla Wollinger - Sistema de Gest�o</title>
+    <title>Karla Wollinger - Sistema de Gestão</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
     <?php
@@ -59,7 +59,7 @@ $user_role_label = (isset($_SESSION['nivel_acesso']) && $_SESSION['nivel_acesso'
         </div>
 
         <div class="sidebar-nav">
-            <div class="nav-section-label">Vis�o Geral</div>
+            <div class="nav-section-label">Visão Geral</div>
             <div class="nav-item">
                 <a href="dashboard.php" class="nav-link <?php echo basename($_SERVER['PHP_SELF']) == 'dashboard.php' ? 'active' : ''; ?>">
                     <i class="fas fa-chart-line"></i>
@@ -67,7 +67,7 @@ $user_role_label = (isset($_SESSION['nivel_acesso']) && $_SESSION['nivel_acesso'
                 </a>
             </div>
 
-            <div class="nav-section-label">Gest�o Comercial</div>
+            <div class="nav-section-label">Gestão Comercial</div>
             <div class="nav-item">
                 <a href="clientes.php" class="nav-link <?php echo basename($_SERVER['PHP_SELF']) == 'clientes.php' ? 'active' : ''; ?>">
                     <i class="fas fa-handshake"></i>
@@ -78,7 +78,7 @@ $user_role_label = (isset($_SESSION['nivel_acesso']) && $_SESSION['nivel_acesso'
             <div class="nav-item">
                 <a href="produtos.php" class="nav-link <?php echo basename($_SERVER['PHP_SELF']) == 'produtos.php' ? 'active' : ''; ?>">
                     <i class="fas fa-warehouse"></i>
-                    <span>Cat�logo de Produtos</span>
+                    <span>Catálogo de Produtos</span>
                 </a>
             </div>
 
@@ -89,11 +89,11 @@ $user_role_label = (isset($_SESSION['nivel_acesso']) && $_SESSION['nivel_acesso'
                 </a>
             </div>
 
-            <div class="nav-section-label">Opera��es & Vendas</div>
+            <div class="nav-section-label">Operações & Vendas</div>
             <div class="nav-item">
                 <a href="orcamentos.php" class="nav-link <?php echo basename($_SERVER['PHP_SELF']) == 'orcamentos.php' ? 'active' : ''; ?>">
                     <i class="fas fa-calculator"></i>
-                    <span>Cota��es & Or�amentos</span>
+                    <span>Cotações & Orçamentos</span>
                 </a>
             </div>
 
@@ -111,7 +111,7 @@ $user_role_label = (isset($_SESSION['nivel_acesso']) && $_SESSION['nivel_acesso'
                 </a>
             </div>
 
-            <div class="nav-section-label">An�lise Financeira</div>
+            <div class="nav-section-label">Análise Financeira</div>
             <div class="nav-item">
                 <a href="financeiro.php" class="nav-link <?php echo basename($_SERVER['PHP_SELF']) == 'financeiro.php' ? 'active' : ''; ?>">
                     <i class="fas fa-chart-pie"></i>
@@ -127,11 +127,11 @@ $user_role_label = (isset($_SESSION['nivel_acesso']) && $_SESSION['nivel_acesso'
             </div>
 
             <?php if (isset($_SESSION['nivel_acesso']) && $_SESSION['nivel_acesso'] == 'admin'): ?>
-            <div class="nav-section-label">Administra��o</div>
+            <div class="nav-section-label">Administração</div>
             <div class="nav-item">
                 <a href="usuarios.php" class="nav-link <?php echo basename($_SERVER['PHP_SELF']) == 'usuarios.php' || basename($_SERVER['PHP_SELF']) == 'cadastro_usuario.php' ? 'active' : ''; ?>">
                     <i class="fas fa-user-tie"></i>
-                    <span>Gest�o de Usu�rios</span>
+                    <span>Gestão de Usuários</span>
                 </a>
             </div>
 
@@ -143,7 +143,7 @@ $user_role_label = (isset($_SESSION['nivel_acesso']) && $_SESSION['nivel_acesso'
             </div>
             <?php endif; ?>
 
-            <div class="nav-section-label">A��es R�pidas</div>
+            <div class="nav-section-label">Ações Rápidas</div>
 
             <div class="nav-item nav-action">
                 <a href="cadastro_cliente.php" class="nav-link">
@@ -185,7 +185,7 @@ $user_role_label = (isset($_SESSION['nivel_acesso']) && $_SESSION['nivel_acesso'
                 <i class="fas fa-sun"></i>
             </button>
             <div class="user-info">
-                <div class="user-name"><?php echo htmlspecialchars($_SESSION["nome"] ?? 'Usu�rio'); ?></div>
+                <div class="user-name"><?php echo htmlspecialchars($_SESSION["nome"] ?? 'Usuário'); ?></div>
                 <div class="user-role"><span class="role-pill"><?php echo $user_role_label; ?></span></div>
             </div>
             <div class="user-avatar">
@@ -198,7 +198,7 @@ $user_role_label = (isset($_SESSION['nivel_acesso']) && $_SESSION['nivel_acesso'
                 <ul class="dropdown-menu dropdown-menu-end">
                     <li><a class="dropdown-item" href="perfil.php"><i class="fas fa-user-circle me-2"></i> Meu Perfil</a></li>
                     <?php if (isset($_SESSION['nivel_acesso']) && $_SESSION['nivel_acesso'] == 'admin'): ?>
-                    <li><a class="dropdown-item" href="usuarios.php"><i class="fas fa-users-cog me-2"></i> Gerenciar Usu�rios</a></li>
+                    <li><a class="dropdown-item" href="usuarios.php"><i class="fas fa-users-cog me-2"></i> Gerenciar Usuários</a></li>
                     <?php endif; ?>
                     <li><hr class="dropdown-divider"></li>
                     <li><a class="dropdown-item" href="logout.php"><i class="fas fa-sign-out-alt me-2"></i> Sair</a></li>

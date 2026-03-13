@@ -1,6 +1,6 @@
 <?php
-// Configura��es do servidor SMTP para o sistema
-// ATEN��O: N�o compartilhe este arquivo ou fa�a upload para reposit�rios p�blicos
+// Configurações do servidor SMTP para o sistema
+// ATENÇÃO: Não compartilhe este arquivo ou faça upload para repositórios públicos
 
 return [
     'host' => 'smtp.hostinger.com',
