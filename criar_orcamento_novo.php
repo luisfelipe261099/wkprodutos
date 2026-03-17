@@ -190,19 +190,32 @@ include_once 'includes/header.php';
 
 <style>
 .page-header { margin-bottom: 2rem; }
-.modern-card { background: white; border-radius: 0.5rem; box-shadow: 0 1px 3px rgba(0,0,0,0.1); margin-bottom: 2rem; }
-.card-header-modern { background: #f8f9fa; padding: 1.5rem; border-bottom: 1px solid #dee2e6; border-radius: 0.5rem 0.5rem 0 0; font-weight: 600; }
+.modern-card { 
+    background: var(--app-surface, white); 
+    border-radius: var(--app-radius-lg, 0.5rem); 
+    border: 1px solid var(--app-border, rgba(0,0,0,0.1));
+    box-shadow: var(--app-shadow, 0 1px 3px rgba(0,0,0,0.1)); 
+    margin-bottom: 2rem; 
+}
+.card-header-modern { 
+    background: var(--app-surface-muted, #f8f9fa); 
+    padding: 1.5rem; 
+    border-bottom: 1px solid var(--app-border, #dee2e6); 
+    border-radius: var(--app-radius-lg, 0.5rem) var(--app-radius-lg, 0.5rem) 0 0; 
+    font-weight: 600;
+    color: var(--app-text, #333);
+}
 .card-body-modern { padding: 1.5rem; }
-.form-label { font-weight: 600; margin-bottom: 0.5rem; }
-.btn-primary { background: #007bff; border: none; }
-.btn-primary:hover { background: #0056b3; }
-.table-hover tbody tr:hover { background-color: #f5f5f5; }
+.form-label { font-weight: 600; margin-bottom: 0.5rem; color: var(--app-text, #333); }
+.btn-primary { background: var(--app-primary, #007bff); border: none; }
+.btn-primary:hover { background: var(--app-primary-soft, #0056b3); opacity: 0.9; }
+.table-hover tbody tr:hover { background-color: var(--app-surface-muted, #f5f5f5); }
 .badge { padding: 0.5rem 0.75rem; }
-.dropdown-item { padding: 0.75rem 1rem; }
-.dropdown-item:hover { background-color: #f8f9fa; }
-#produto_dropdown { max-height: 300px; overflow-y: auto; }
-.produto-item { padding: 0.75rem 1rem; cursor: pointer; border-bottom: 1px solid #eee; }
-.produto-item:hover { background-color: #f8f9fa; }
+.dropdown-item { padding: 0.75rem 1rem; background: var(--app-surface, white); color: var(--app-text, #333); }
+.dropdown-item:hover { background-color: var(--app-surface-muted, #f8f9fa); }
+#produto_dropdown { max-height: 300px; overflow-y: auto; background: var(--app-surface, white); border: 1px solid var(--app-border, #ccc); }
+.produto-item { padding: 0.75rem 1rem; cursor: pointer; border-bottom: 1px solid var(--app-border, #eee); }
+.produto-item:hover { background-color: var(--app-surface-muted, #f8f9fa); }
 </style>
 
 <div class="page-header">

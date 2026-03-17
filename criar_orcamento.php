@@ -252,19 +252,32 @@ include_once 'includes/header.php';
 
 <style>
 .page-header { margin-bottom: 2rem; }
-.modern-card { background: white; border-radius: 0.5rem; box-shadow: 0 1px 3px rgba(0,0,0,0.1); margin-bottom: 2rem; }
-.card-header-modern { background: #f8f9fa; padding: 1.5rem; border-bottom: 1px solid #dee2e6; border-radius: 0.5rem 0.5rem 0 0; font-weight: 600; }
+.modern-card { 
+    background: var(--app-surface, white); 
+    border-radius: var(--app-radius-lg, 0.5rem); 
+    border: 1px solid var(--app-border, rgba(0,0,0,0.1));
+    box-shadow: var(--app-shadow, 0 1px 3px rgba(0,0,0,0.1)); 
+    margin-bottom: 2rem; 
+}
+.card-header-modern { 
+    background: var(--app-surface-muted, #f8f9fa); 
+    padding: 1.5rem; 
+    border-bottom: 1px solid var(--app-border, #dee2e6); 
+    border-radius: var(--app-radius-lg, 0.5rem) var(--app-radius-lg, 0.5rem) 0 0; 
+    font-weight: 600;
+    color: var(--app-text, #333);
+}
 .card-body-modern { padding: 1.5rem; }
-.form-label { font-weight: 600; margin-bottom: 0.5rem; }
-.btn-primary { background: #007bff; border: none; }
-.btn-primary:hover { background: #0056b3; }
-.table-hover tbody tr:hover { background-color: #f5f5f5; }
+.form-label { font-weight: 600; margin-bottom: 0.5rem; color: var(--app-text, #333); }
+.btn-primary { background: var(--app-primary, #007bff); border: none; }
+.btn-primary:hover { background: var(--app-primary-soft, #0056b3); opacity: 0.9; }
+.table-hover tbody tr:hover { background-color: var(--app-surface-muted, #f5f5f5); }
 .badge { padding: 0.5rem 0.75rem; }
-.dropdown-item { padding: 0.75rem 1rem; }
-.dropdown-item:hover { background-color: #f8f9fa; }
-#produto_dropdown { max-height: 300px; overflow-y: auto; }
-.produto-item { padding: 0.75rem 1rem; cursor: pointer; border-bottom: 1px solid #eee; }
-.produto-item:hover { background-color: #f8f9fa; }
+.dropdown-item { padding: 0.75rem 1rem; background: var(--app-surface, white); color: var(--app-text, #333); }
+.dropdown-item:hover { background-color: var(--app-surface-muted, #f8f9fa); }
+#produto_dropdown { max-height: 300px; overflow-y: auto; background: var(--app-surface, white); border: 1px solid var(--app-border, #ccc); }
+.produto-item { padding: 0.75rem 1rem; cursor: pointer; border-bottom: 1px solid var(--app-border, #eee); }
+.produto-item:hover { background-color: var(--app-surface-muted, #f8f9fa); }
 
 /* Estilos para tabela com rolagem */
 .table-container {
@@ -281,12 +294,13 @@ include_once 'includes/header.php';
 .table-container thead {
     position: sticky;
     top: 0;
-    background: #f8f9fa;
+    background: var(--app-surface-muted, #f8f9fa);
     z-index: 10;
+    color: var(--app-text, inherit);
 }
 
 .table-container tbody tr:hover {
-    background-color: #f5f5f5;
+    background-color: var(--app-surface-muted, rgba(0,0,0,0.05));
 }
 
 /* Scrollbar customizada */
@@ -295,7 +309,7 @@ include_once 'includes/header.php';
 }
 
 .table-container::-webkit-scrollbar-track {
-    background: #f1f1f1;
+    background: var(--app-surface, #f1f1f1);
     border-radius: 10px;
 }
 
@@ -459,13 +473,13 @@ include_once 'includes/header.php';
             </div>
 
             <!-- Total fora da tabela com rolagem -->
-            <div class="mt-3 p-3 bg-light rounded">
+            <div class="mt-3 p-3 rounded" style="background: var(--app-surface-muted, #f8f9fa); border: 1px solid var(--app-border, #eee);">
                 <div class="row">
                     <div class="col-md-9 text-end">
-                        <strong style="font-size: 1.1rem;">Total do Orçamento:</strong>
+                        <strong style="font-size: 1.1rem; color: var(--app-text, inherit);">Total do Orçamento:</strong>
                     </div>
                     <div class="col-md-3">
-                        <strong style="font-size: 1.2rem; color: #007bff;" id="valor_total_display">R$ 0,00</strong>
+                        <strong style="font-size: 1.2rem; color: var(--app-primary, #007bff);" id="valor_total_display">R$ 0,00</strong>
                     </div>
                 </div>
             </div>
