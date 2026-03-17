@@ -33,7 +33,18 @@ $user_role_label = (isset($_SESSION['nivel_acesso']) && $_SESSION['nivel_acesso'
         echo "<style>\n" . file_get_contents($inline_style_new) . "\n</style>";
     }
     ?>
-    <script>try{if(localStorage.getItem('kw-theme')==='light')document.documentElement.setAttribute('data-theme','light')}catch(e){}</script>
+    <script>
+    try {
+        const theme = localStorage.getItem('kw-theme') || 'dark';
+        if (theme === 'light') {
+            document.documentElement.setAttribute('data-theme', 'light');
+            document.documentElement.setAttribute('data-bs-theme', 'light');
+        } else {
+            document.documentElement.removeAttribute('data-theme');
+            document.documentElement.setAttribute('data-bs-theme', 'dark');
+        }
+    } catch(e) {}
+    </script>
 </head>
 <body class="dashboard-layout">
     <!-- Mobile Overlay -->

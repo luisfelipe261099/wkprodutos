@@ -90,8 +90,10 @@
             function applyTheme(theme) {
                 if (theme === 'light') {
                     document.documentElement.setAttribute('data-theme', 'light');
+                    document.documentElement.setAttribute('data-bs-theme', 'light');
                 } else {
                     document.documentElement.removeAttribute('data-theme');
+                    document.documentElement.setAttribute('data-bs-theme', 'dark');
                 }
                 if (btn) {
                     var icon = btn.querySelector('i');

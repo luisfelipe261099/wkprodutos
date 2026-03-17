@@ -1,4 +1,4 @@
-﻿/* Importar Google Fonts */
+/* Importar Google Fonts */
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap');
 
 /* Reset completo */
@@ -2098,16 +2098,17 @@ code {
     }
 
     html {
-        background:
+        background-color: #050505 !important;
+        background-image: 
             radial-gradient(circle at top left, rgba(14, 165, 233, 0.1), transparent 24%),
             radial-gradient(circle at bottom right, rgba(59, 130, 246, 0.08), transparent 18%),
-            linear-gradient(180deg, #060606 0%, #000000 100%);
+            linear-gradient(180deg, #060606 0%, #000000 100%) !important;
     }
 
     body.dashboard-layout {
         min-height: 100vh;
         color: var(--app-text);
-        background: transparent;
+        background-color: #050505 !important;
     }
 
     body.dashboard-layout::before {
@@ -2651,9 +2652,16 @@ code {
     .select2-container--bootstrap-5 .select2-selection {
         min-height: 3rem;
         border-radius: 16px !important;
-        border-color: rgba(255, 255, 255, 0.08) !important;
-        background: rgba(255, 255, 255, 0.03) !important;
+        border-color: rgba(255, 255, 255, 0.12) !important;
+        background-color: #1a1a1e !important;
         color: #f8fafc !important;
+    }
+
+    .form-select {
+        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23ffffff' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M2 5l6 6 6-6'/%3e%3c/svg%3e") !important;
+        background-repeat: no-repeat !important;
+        background-position: right 0.75rem center !important;
+        background-size: 16px 12px !important;
     }
 
     .input-group > .form-control,
@@ -2680,8 +2688,9 @@ code {
     }
 
     .form-select option {
-        background: #111216;
-        color: #f8fafc;
+        background-color: #111114 !important; /* var(--app-surface-solid) */
+        color: #f8fafc !important;
+        padding: 10px;
     }
 
     .table-responsive {
@@ -2752,6 +2761,31 @@ code {
     .dropdown-item.active {
         background: rgba(255, 255, 255, 0.06);
         color: var(--app-text);
+    }
+
+    /* Select2 Dropdown Dark Mode */
+    .select2-dropdown {
+        background-color: #0d0d0f !important;
+        border-color: rgba(255, 255, 255, 0.1) !important;
+        color: #f8fafc !important;
+    }
+
+    .select2-results__option {
+        background-color: transparent !important;
+        color: #d1d5db !important;
+        padding: 8px 12px;
+    }
+
+    .select2-results__option--highlighted,
+    .select2-results__option[aria-selected="true"] {
+        background-color: rgba(14, 165, 233, 0.15) !important;
+        color: #ffffff !important;
+    }
+
+    .select2-search__field {
+        background-color: #1a1a1e !important;
+        border-color: rgba(255, 255, 255, 0.1) !important;
+        color: #f8fafc !important;
     }
 
     .alert {
