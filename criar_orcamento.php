@@ -421,6 +421,7 @@ include_once 'includes/header.php';
                         <option value="20" <?php echo $tipo_faturamento === '20' ? 'selected' : ''; ?>>20 dias</option>
                         <option value="20_dias" <?php echo $tipo_faturamento === '20_dias' ? 'selected' : ''; ?>>20 dias (antigo)</option>
                         <option value="21" <?php echo $tipo_faturamento === '21' ? 'selected' : ''; ?>>21 dias</option>
+                        <option value="28" <?php echo $tipo_faturamento === '28' ? 'selected' : ''; ?>>28 dias</option>
                         <option value="30" <?php echo $tipo_faturamento === '30' ? 'selected' : ''; ?>>30 dias</option>
                         <option value="30_dias" <?php echo $tipo_faturamento === '30_dias' ? 'selected' : ''; ?>>30 dias (antigo)</option>
                         <option value="45_dias" <?php echo $tipo_faturamento === '45_dias' ? 'selected' : ''; ?>>45 dias</option>
@@ -430,9 +431,12 @@ include_once 'includes/header.php';
                         <option value="20_30" <?php echo $tipo_faturamento === '20_30' ? 'selected' : ''; ?>>20/30 dias</option>
                         <option value="21_30" <?php echo $tipo_faturamento === '21_30' ? 'selected' : ''; ?>>21/30 dias</option>
                         <option value="20_30_45" <?php echo $tipo_faturamento === '20_30_45' ? 'selected' : ''; ?>>20/30/45 dias</option>
+                        <option value="21_28_35_42_49_56" <?php echo $tipo_faturamento === '21_28_35_42_49_56' ? 'selected' : ''; ?>>21/28/35/42/49/56 dias</option>
+                        <option value="28_35" <?php echo $tipo_faturamento === '28_35' ? 'selected' : ''; ?>>28/35 dias</option>
                         <option value="28_35_42" <?php echo $tipo_faturamento === '28_35_42' ? 'selected' : ''; ?>>28/35/42 dias</option>
                         <option value="28_35_42_59" <?php echo $tipo_faturamento === '28_35_42_59' ? 'selected' : ''; ?>>28/35/42/59 dias</option>
                         <option value="28_35_45" <?php echo $tipo_faturamento === '28_35_45' ? 'selected' : ''; ?>>28/35/45 dias</option>
+                        <option value="30_60_90" <?php echo $tipo_faturamento === '30_60_90' ? 'selected' : ''; ?>>30/60/90 dias</option>
                         <option value="30_45_60" <?php echo $tipo_faturamento === '30_45_60' ? 'selected' : ''; ?>>30/45/60 dias</option>
                     </select>
                 </div>
