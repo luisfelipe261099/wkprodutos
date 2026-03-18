@@ -2788,6 +2788,76 @@ code {
         color: #f8fafc !important;
     }
 
+    /* Form Controls Dark Mode */
+    .form-control {
+        background-color: #1a1a1e !important;
+        border-color: rgba(255, 255, 255, 0.1) !important;
+        color: #f8fafc !important;
+    }
+
+    .form-control:focus {
+        background-color: #242429 !important;
+        border-color: #3b82f6 !important;
+        color: #f8fafc !important;
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2) !important;
+    }
+
+    .form-control::placeholder {
+        color: #9ca3af !important;
+    }
+
+    .form-label {
+        color: #e5e7eb !important;
+    }
+
+    /* Selects and Textareas */
+    select.form-control,
+    textarea.form-control {
+        background-color: #1a1a1e !important;
+        border-color: rgba(255, 255, 255, 0.1) !important;
+        color: #f8fafc !important;
+    }
+
+    select.form-control:focus,
+    textarea.form-control:focus {
+        background-color: #242429 !important;
+        border-color: #3b82f6 !important;
+        color: #f8fafc !important;
+    }
+
+    /* Input groups */
+    .input-group .form-control {
+        background-color: #1a1a1e !important;
+        border-color: rgba(255, 255, 255, 0.1) !important;
+        color: #f8fafc !important;
+    }
+
+    .input-group .btn {
+        background: rgba(59, 130, 246, 0.1);
+        border-color: rgba(255, 255, 255, 0.1);
+        color: #3b82f6;
+    }
+
+    .input-group .btn:hover {
+        background: #3b82f6;
+        color: #fff;
+    }
+
+    /* Checkboxes and Radios in Dark Mode */
+    .form-check-input {
+        background-color: #1a1a1e !important;
+        border-color: rgba(255, 255, 255, 0.2) !important;
+    }
+
+    .form-check-input:checked {
+        background-color: #3b82f6 !important;
+        border-color: #3b82f6 !important;
+    }
+
+    .form-check-label {
+        color: #e5e7eb !important;
+    }
+
     .alert {
         border-radius: 18px;
     }
