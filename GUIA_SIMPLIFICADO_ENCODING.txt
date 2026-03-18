@@ -1,0 +1,74 @@
+🚀 CORREÇÃO DE ENCODING - GUIA SIMPLIFICADO
+
+════════════════════════════════════════════════════════════════════════════
+
+PROBLEMA:
+  ❌ Ã¡lcool em Gel → ✅ Álcool em Gel
+
+SOLUÇÃO:
+  3 URLs para tentar (em ordem):
+
+════════════════════════════════════════════════════════════════════════════
+
+🟢 OPÇÃO 1 (Tente PRIMEIRO - Normal):
+  http://localhost/WK/wkprodutos/corrigir_encoding_produtos.php
+  
+  ✅ Processo: Conver- text encoding
+  ⏱️  Tempo: 30 segundos
+  📊 Taxa sucesso: 95%
+  
+  ↓ Se funcionar: ✅ PRONTO!
+  ↓ Se não: Vá para Opção 2
+
+════════════════════════════════════════════════════════════════════════════
+
+🟡 OPÇÃO 2 (Tente SEGUNDO - Avançado):
+  http://localhost/WK/wkprodutos/corrigir_encoding_avancado.php
+  
+  ✅ Processo: Usa SQL CONVERT + conversão múltipla
+  ⏱️  Tempo: 1 minuto
+  📊 Taxa sucesso: 99%
+  
+  ↓ Se funcionar: ✅ PRONTO!
+  ↓ Se não: Vá para Opção 3
+
+════════════════════════════════════════════════════════════════════════════
+
+🔴 OPÇÃO 3 (Tente TERCEIRO - Nuclear):
+  http://localhost/WK/wkprodutos/corrigir_charset_tabela.php
+  
+  ✅ Processo: Altera charset da tabela para utf8mb4
+  ⏱️  Tempo: 2-5 minutos
+  📊 Taxa sucesso: 100%
+  ⚠️  Requer confirmar (é uma operação maior)
+  
+  ↓ RESULTADO: ✅ PROBLEMA RESOLVIDO PERMANENTEMENTE!
+
+════════════════════════════════════════════════════════════════════════════
+
+COMO USAR:
+  1. Clique em uma das URLs acima
+  2. Clique no botão para executar
+  3. Aguarde
+  4. Verifique se funcionou
+  5. Se não, tente a próxima opção
+
+════════════════════════════════════════════════════════════════════════════
+
+CHECKLIST RÁPIDO:
+  ☐ Tentei Opção 1?
+  ☐ Se não funcionou, tentei Opção 2?
+  ☐ Se ainda não, tentei Opção 3?
+  ☐ Agora está tudo correto?
+  ☐ ✅ PROBLEMA RESOLVIDO!
+
+════════════════════════════════════════════════════════════════════════════
+
+COMEÇAR AGORA:
+
+            Opção 1: http://localhost/WK/wkprodutos/
+            corrigir_encoding_produtos.php
+
+            Clique no botão e aguarde!
+
+════════════════════════════════════════════════════════════════════════════

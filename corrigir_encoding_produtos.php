@@ -130,7 +130,14 @@ echo '<!DOCTYPE html>
     <div class="container">
         <h1>🔧 Corrigir Encoding de Caracteres em Produtos</h1>
         
-        <p>Este script corrige caracteres com encoding incorreto como <code>Ã¡</code> (deveria ser <code>á</code>), <code>Ã•</code> (deveria ser <code>Ó</code>), etc.</p>';
+        <p>Este script corrige caracteres com encoding incorreto como <code>Ã¡</code> (deveria ser <code>á</code>), <code>Ã•</code> (deveria ser <code>Ó</code>), etc.</p>
+
+    <div class="info">
+        <strong>ℹ️ Níveis de Correção Disponíveis:</strong><br>
+        🟢 <strong>Nível 1:</strong> Correção Normal (está página) - Tenta converter codificação<br>
+        🟡 <strong>Nível 2:</strong> <a href="corrigir_encoding_avancado.php">Correção Avançada</a> - Usa múltiplas estratégias SQL<br>
+        🔴 <strong>Nível 3:</strong> <a href="corrigir_charset_tabela.php">Alterar Charset da Tabela</a> - Muda tabela para utf8mb4
+    </div>';
 
 // Processar correção se POST
 if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['corrigir'])) {
@@ -143,17 +150,53 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['corrigir'])) {
         $corrected_count = 0;
         $total_count = 0;
         
-        // Função para corrigir encoding UTF-8 duplicado (mojibake)
-        function fix_utf8($text) {
+        /**
+         * Função AVANÇADA para corrigir encoding UTF-8 duplicado (mojibake)
+         * Tenta múltiplas estratégias
+         */
+        function fix_utf8_advanced($text) {
             if ($text === null || $text === '') return $text;
             
-            // Se a string contém padrões típicos de mojibake (Ã¡, Ã•, Â°, etc)
-            if (preg_match('/[À-ÿ]{2,}/u', $text) === 0 && preg_match('/[ÃÂ]/u', $text)) {
-                // Tenta decodificar a string como se fosse UTF-8 lida como Latin-1
-                return @iconv('ISO-8859-1', 'UTF-8//IGNORE', $text);
+            // Se não há caracteres problemáticos, retorna como está
+            if (!preg_match('/[\xC0-\xFF]/u', $text)) {
+                return $text;
             }
             
-            return $text;
+            // Estratégia 1: Converter de UTF-8 lido como Latin-1
+            $attempt1 = @iconv('ISO-8859-1', 'UTF-8//IGNORE', $text);
+            
+            // Estratégia 2: Usar mb_convert_encoding (mais robusto)
+            $attempt2 = @mb_convert_encoding($text, 'UTF-8', 'ISO-8859-1');
+            
+            // Estratégia 3: Dupla conversão para limpar
+            $attempt3 = @utf8_decode(@utf8_encode($text));
+            
+            // Estratégia 4: HTML entity + decode
+            $attempt4 = @html_entity_decode(htmlentities($text, ENT_QUOTES, 'ISO-8859-1'), ENT_QUOTES, 'UTF-8');
+            
+            // Verificar qual tentativa é mais normal
+            $attempts = [
+                'original' => $text,
+                'attempt1' => $attempt1,
+                'attempt2' => $attempt2,
+                'attempt3' => $attempt3,
+                'attempt4' => $attempt4,
+            ];
+            
+            // Escolher a melhor conversão (a que tem menos Ã¡, Ã©, etc)
+            $best = 'original';
+            $best_score = substr_count($text, 'Ã') + substr_count($text, 'Â') + substr_count($text, 'Ä');
+            
+            foreach ($attempts as $key => $attempt) {
+                if ($attempt === false) continue;
+                $score = substr_count($attempt, 'Ã') + substr_count($attempt, 'Â') + substr_count($attempt, 'Ä');
+                if ($score < $best_score) {
+                    $best = $key;
+                    $best_score = $score;
+                }
+            }
+            
+            return $attempts[$best];
         }
         
         while ($row = $result->fetch_assoc()) {
@@ -163,10 +206,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['corrigir'])) {
             $original_sku = $row['sku'];
             $original_fornecedor = $row['fornecedor'];
             
-            $novo_nome = fix_utf8($original_nome);
-            $nova_descricao = fix_utf8($original_descricao);
-            $novo_sku = fix_utf8($original_sku);
-            $novo_fornecedor = fix_utf8($original_fornecedor);
+            $novo_nome = fix_utf8_advanced($original_nome);
+            $nova_descricao = fix_utf8_advanced($original_descricao);
+            $novo_sku = fix_utf8_advanced($original_sku);
+            $novo_fornecedor = fix_utf8_advanced($original_fornecedor);
             
             // Se houve mudança em qualquer campo, atualizar
             if ($novo_nome !== $original_nome || $nova_descricao !== $original_descricao || 
@@ -195,6 +238,15 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['corrigir'])) {
             Total de produtos verificados: ' . $total_count . '<br>
             Produtos corrigidos: ' . $corrected_count . '
         </div>';
+        
+        // Adicionar botão para rodar novamente (caso ainda haja problema)
+        if ($corrected_count > 0) {
+            echo '<div class="warning" style="margin-top: 20px;">
+                <strong>ℹ️ Próxima Ação:</strong><br>
+                Verifique se os nomes foram corrigidos corretamente.<br>
+                Se ainda houver caracteres errados, clique em "Voltar" e execute novamente.
+            </div>';
+        }
     } else {
         echo '<div class="error">❌ Erro ao buscar produtos: ' . $conn->error . '</div>';
     }

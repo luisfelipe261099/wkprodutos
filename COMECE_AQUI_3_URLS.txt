@@ -1,0 +1,62 @@
+✨ CORREÇÃO DE ENCODING - 3 URLS PRONTAS
+
+════════════════════════════════════════════════════════════════════════════
+
+Se você está vendo caracteres errados como:
+  Ã¡lcool, Ã©, Â°, Ã§, Ã•
+
+Use UMA DAS URLS ABAIXO (em ordem):
+
+════════════════════════════════════════════════════════════════════════════
+
+1️⃣  PRIMEIRA TENTATIVA (Método Normal):
+
+    http://localhost/WK/wkprodutos/corrigir_encoding_produtos.php
+
+    👉 COPIE E COLE NO NAVEGADOR
+
+
+2️⃣  SEGUNDA TENTATIVA (Se a 1ª não funcionar):
+
+    http://localhost/WK/wkprodutos/corrigir_encoding_avancado.php
+
+    👉 COPIE E COLE NO NAVEGADOR
+
+
+3️⃣  TERCEIRA TENTATIVA (Se as anteriores não funcionarem):
+
+    http://localhost/WK/wkprodutos/corrigir_charset_tabela.php
+
+    👉 COPIE E COLE NO NAVEGADOR
+
+════════════════════════════════════════════════════════════════════════════
+
+PROCESSO:
+  1. Cole UMA DELAS no navegador
+  2. Clique no botão para executar
+  3. Aguarde concluir
+  4. Verifique se os caracteres ficaram corretos
+  5. Se não, tente a próxima URL
+
+════════════════════════════════════════════════════════════════════════════
+
+VERIFICAÇÃO:
+  ✓ Abra a lista de produtos
+  ✓ Procure por "Álcool", "Água", "Éter", etc
+  ✓ Se os acentos estão certos = ✅ FUNCIONOU!
+  ✓ Se ainda tem Ã¡, Ã©, Â° = Tente próxima URL
+
+════════════════════════════════════════════════════════════════════════════
+
+TEMPO ESTIMADO:
+  URL 1: 30 segundos
+  URL 2: 1-2 minutos
+  URL 3: 3-5 minutos
+
+════════════════════════════════════════════════════════════════════════════
+
+COMECE AGORA:
+
+  Copie a URL 1 acima e abra no navegador!
+
+════════════════════════════════════════════════════════════════════════════
