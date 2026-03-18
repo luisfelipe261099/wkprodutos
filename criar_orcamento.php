@@ -18,6 +18,16 @@ ini_set('display_errors', 1);
 
 require_once 'includes/db_connect.php';
 
+// Auto-corrigir estrutura da tabela se necessário
+$result_check_id = $conn->query("DESCRIBE `orcamentos` `id`");
+if ($result_check_id && $row_id = $result_check_id->fetch_assoc()) {
+    // Verificar se AUTO_INCREMENT está configurado
+    if (strpos($row_id['Extra'], 'auto_increment') === false) {
+        // Tentar corrigir automaticamente
+        $conn->query('ALTER TABLE `orcamentos` MODIFY COLUMN `id` INT(11) NOT NULL AUTO_INCREMENT');
+    }
+}
+
 // Verificar se as colunas de pagamento existem
 $colunas_pagamento_existem = true;
 $result_check = $conn->query("SHOW COLUMNS FROM orcamentos LIKE 'forma_pagamento'");

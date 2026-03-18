@@ -1776,7 +1776,7 @@ CREATE TABLE `movimentacoes_financeiras` (
 --
 
 CREATE TABLE `orcamentos` (
-  `id` int(11) NOT NULL,
+  `id` int(11) NOT NULL AUTO_INCREMENT,
   `cliente_id` int(11) NOT NULL,
   `data_orcamento` datetime DEFAULT current_timestamp(),
   `data_atualizacao` datetime DEFAULT NULL,
@@ -1789,7 +1789,8 @@ CREATE TABLE `orcamentos` (
   `empresa_id` int(11) DEFAULT NULL,
   `comissao_percentual` decimal(5,2) DEFAULT 0.00,
   `valor_comissao` decimal(10,2) DEFAULT 0.00,
-  `data_criacao` date NOT NULL
+  `data_criacao` date NOT NULL,
+  PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
