@@ -25,8 +25,8 @@ $dbPass = env_or_default('DB_PASSWORD', 'T3cn0l0g1a@');
 $dbName = env_or_default('DB_NAME', 'u182607388_karla_wollinge');
 $dbPort = (int) env_or_default('DB_PORT', '3306');
 
-$appEnv = env_or_default('APP_ENV', 'production');
-$isProduction = $appEnv === 'production';
+$appEnv = 'development'; // env_or_default('APP_ENV', 'production');
+$isProduction = false; // $appEnv === 'production';
 
 // Suporta DATABASE_URL no formato: mysql://user:pass@host:3306/dbname
 $databaseUrl = getenv('DATABASE_URL');
