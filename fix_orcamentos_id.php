@@ -1,33 +1,55 @@
 <?php
-require_once 'includes/db_connect.php';
+/**
+ * ⚠️ SCRIPT DESCONTINUADO - Incompatível com ambientes serverless
+ * 
+ * Plataformas como Vercel/PlanetScale bloqueiam ALTER TABLE
+ * A solução está em criar_orcamento.php com fallback automático
+ */
 
-echo "=== CORRIGINDO TABELA ORCAMENTOS ===\n\n";
+die(view_msg());
 
-// Verificar estrutura atual
-echo "Estrutura atual da tabela orcamentos:\n";
-$result = $conn->query('SHOW CREATE TABLE orcamentos');
-if ($result) {
-    $row = $result->fetch_row();
-    echo $row[1] . "\n\n";
+function view_msg() {
+    return <<<'HTML'
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Script Descontinuado</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 40px; background: #f5f5f5; }
+        .container { max-width: 700px; margin: 0 auto; }
+        .alert { background: #ffebee; border: 1px solid #f44336; padding: 20px; border-radius: 4px; }
+        h2 { color: #f44336; }
+        .success { background: #e8f5e9; border: 1px solid #4caf50; padding: 20px; border-radius: 4px; margin-top: 20px; }
+        .info { background: #e3f2fd; border: 1px solid #2196F3; padding: 20px; border-radius: 4px; margin-top: 20px; }
+        a { color: #2196F3; text-decoration: none; font-weight: bold; }
+        code { background: #f0f0f0; padding: 2px 6px; border-radius: 3px; font-family: monospace; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="alert">
+            <h2>⚠️ Script Descontinuado</h2>
+            <p><strong>fix_orcamentos_id.php</strong> usa ALTER TABLE, bloqueado em Vercel/PlanetScale.</p>
+        </div>
+
+        <div class="success">
+            <h3>✅ Sistema Corrigido</h3>
+            <p><strong>Acesse:</strong> <a href="criar_orcamento.php">criar_orcamento.php</a></p>
+            <p>Gera IDs automaticamente sem ALTER TABLE!</p>
+        </div>
+
+        <div class="info">
+            <h3>💡 Por que?</h3>
+            <p>Ambientes serverless restringem ALTER TABLE por segurança e performance.</p>
+        </div>
+
+        <p style="text-align: center; margin-top: 30px;">
+            <a href="criar_orcamento.php">← Voltar para Criar Orçamento</a>
+        </p>
+    </div>
+</body>
+</html>
+HTML;
 }
-
-// Alterar a tabela para adicionar AUTO_INCREMENT
-echo "Alterando a tabela...\n";
-$alter_sql = 'ALTER TABLE orcamentos MODIFY COLUMN id INT(11) NOT NULL AUTO_INCREMENT PRIMARY KEY';
-if ($conn->query($alter_sql)) {
-    echo "✓ Tabela alterada com sucesso!\n\n";
-} else {
-    echo "✗ Erro ao alterar: " . $conn->error . "\n";
-    exit(1);
-}
-
-// Verificar se agora a estrutura está correta
-echo "Nova estrutura da tabela:\n";
-$result = $conn->query('SHOW CREATE TABLE orcamentos');
-if ($result) {
-    $row = $result->fetch_row();
-    echo $row[1] . "\n\n";
-}
-
-echo "=== CORRECAO CONCLUIDA ===\n";
 ?>
