@@ -490,10 +490,10 @@ include_once 'includes/header.php';
                 <table class="table table-hover">
                     <thead class="table-light">
                         <tr>
-                            <th style="width: 40%;">Produto</th>
-                            <th style="width: 12%;">Quantidade</th>
-                            <th style="width: 15%;">Preço Unit.</th>
-                            <th style="width: 15%;">Subtotal</th>
+                            <th style="width: 45%;">Produto</th>
+                            <th style="width: 11%;">Quantidade</th>
+                            <th style="width: 13%;">Preço Unit.</th>
+                            <th style="width: 13%;">Subtotal</th>
                             <th style="width: 18%;">Ações</th>
                         </tr>
                     </thead>

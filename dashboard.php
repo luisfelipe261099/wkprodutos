@@ -11,6 +11,10 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
 // Inclui o arquivo de conexão com o banco de dados.
 require_once 'includes/db_connect.php';
 
+// ✅ Verificar encoding de produtos - Alerta automático se houver problema
+require_once 'includes/encoding_helper.php';
+checkAndAlertEncoding($conn);
+
 // --- Lógica para buscar dados dinâmicos para o Dashboard ---
 
 // 1. Total de Vendas Concluídas Hoje

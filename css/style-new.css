@@ -4173,6 +4173,40 @@ code {
 
 }
 
+/* ===== TABELAS E TEXTOS LONGOS ===== */
+
+/* Previne truncamento de nomes de produtos em tabelas */
+.table-hover td {
+    word-wrap: break-word;
+    word-break: break-word;
+    overflow-wrap: break-word;
+    white-space: normal;
+}
+
+/* Garante que textos longos em células quebrem para próxima linha */
+.table-container .table td {
+    word-wrap: break-word;
+    word-break: break-word;
+    overflow-wrap: break-word;
+    white-space: normal;
+    vertical-align: middle;
+}
+
+/* Especificamente para a coluna de produto */
+.table-hover td:first-child,
+.table-container .table td:first-child {
+    white-space: normal;
+}
+
+/* Evita overflow em nomes muito longos */
+.modern-card [class*="produto"],
+.table-hover td,
+.table td {
+    max-width: 100%;
+    overflow: visible;
+}
+
+
 /* ===== MOBILE & TABLET RESPONSIVIDADE MELHORADA ===== */
 
 /* Extra Small Devices (< 480px) */

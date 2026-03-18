@@ -233,8 +233,8 @@ function gerarOrcamentoPDFString($orcamento_id, $conn) {
         $pdf->SetTextColor(28, 79, 140);
         $pdf->Cell(0, 10, $pdf->convertToLatin1('ITENS DA PROPOSTA'), 0, 1, 'L');
         $pdf->Ln(5);
-        $headers = ['Item', 'Produto/Servico', 'Empresa', 'Qtd', 'Valor Unit.', 'Subtotal'];
-        $widths = [15, 65, 30, 15, 25, 30];
+        $headers = ['Item', 'Produto/Serviço', 'Empresa', 'Qtd', 'Valor Unit.', 'Subtotal'];
+        $widths = [12, 90, 28, 12, 22, 28]; // Aumentado coluna de produto para 90mm para não truncar nomes
         $table_data = [];
         $item_num = 1;
         foreach ($itens as $item) {

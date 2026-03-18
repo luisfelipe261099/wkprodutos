@@ -474,8 +474,8 @@ function gerarPDFModerno($orcamento, $itens, $empresas_logos = []) {
         $num_itens = count($itens);
         // Sempre usa fonte compacta para caber em 1 página
         $table_font_size = 6;
-        $headers = ['#', 'Produto/Servico', 'Empresa', 'Qtd', 'Vlr Unit.', 'Subtotal'];
-        $widths = [10, 70, 35, 12, 25, 28]; // Larguras otimizadas
+        $headers = ['#', 'Produto/Serviço', 'Empresa', 'Qtd', 'Vlr Unit.', 'Subtotal'];
+        $widths = [8, 90, 30, 10, 22, 30]; // Aumentado coluna de produto para 90mm para não truncar nomes
         
         $table_data = [];
         $total = 0;

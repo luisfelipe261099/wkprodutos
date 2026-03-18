@@ -126,5 +126,12 @@
             }
         }());
     </script>
+
+    <!-- ✅ Alerta de Encoding se houver problema -->
+    <?php
+    if (function_exists('displayEncodingAlert')) {
+        echo displayEncodingAlert();
+    }
+    ?>
 </body>
 </html>

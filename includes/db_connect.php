@@ -1,5 +1,11 @@
 <?php
 
+// ✅ GARANTIR UTF-8 EM TODOS OS HEADERS HTTP
+if (headers_sent() === false) {
+    header('Content-Type: text/html; charset=utf-8');
+    header('X-Content-Type-Options: nosniff');
+}
+
 // Le variaveis de ambiente com fallback para desenvolvimento local.
 function env_or_default(string $key, string $default): string {
     $value = getenv($key);
@@ -87,6 +93,10 @@ if (!$connected) {
     die('ERRO: Nao foi possivel conectar ao banco de dados. [' . $connectErrno . '] ' . $connectError);
 }
 
+// ✅ CHARSET UTF-8MB4 - Garantir que todos os dados sejam salvos corretamente com acentos e caracteres especiais
 $conn->set_charset('utf8mb4');
+mysqli_query($conn, "SET NAMES utf8mb4 COLLATE utf8mb4_unicode_ci");
+mysqli_query($conn, "SET CHARACTER SET utf8mb4");
+mysqli_query($conn, "SET COLLATION_CONNECTION = utf8mb4_unicode_ci");
 
 ?>
