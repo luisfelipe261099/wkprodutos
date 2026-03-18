@@ -3937,4 +3937,238 @@ code {
         box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15), 0 2px 8px rgba(0, 0, 0, 0.08) !important;
     }
 
+    /* Dark Mode Specific Styles */
+    html[data-theme="dark"] .dropdown-menu {
+        background: #1a1a1e !important;
+        border-color: rgba(255, 255, 255, 0.1) !important;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5), 0 2px 8px rgba(0, 0, 0, 0.3) !important;
+    }
+
+    html[data-theme="dark"] .dropdown-item {
+        color: #e5e7eb !important;
+    }
+
+    html[data-theme="dark"] .dropdown-item:hover,
+    html[data-theme="dark"] .dropdown-item:focus {
+        background: rgba(59, 130, 246, 0.15) !important;
+        color: #f8fafc !important;
+    }
+
+    html[data-theme="dark"] .dropdown-divider {
+        border-color: rgba(255, 255, 255, 0.08) !important;
+    }
+
+    /* Offcanvas Dark Mode */
+    html[data-theme="dark"] .offcanvas {
+        background: #0d0d0f !important;
+        border-color: rgba(255, 255, 255, 0.1) !important;
+        color: #f8fafc !important;
+    }
+
+    html[data-theme="dark"] .offcanvas-header {
+        background: #0d0d0f !important;
+        border-color: rgba(255, 255, 255, 0.1) !important;
+    }
+
+    html[data-theme="dark"] .offcanvas-header .btn-close {
+        filter: invert(1) !important;
+    }
+
+    html[data-theme="dark"] .offcanvas-body {
+        background: #0d0d0f !important;
+        color: #e5e7eb !important;
+    }
+
+    html[data-theme="dark"] .offcanvas a,
+    html[data-theme="dark"] .offcanvas .nav-link {
+        color: #e5e7eb !important;
+    }
+
+    html[data-theme="dark"] .offcanvas a:hover,
+    html[data-theme="dark"] .offcanvas .nav-link:hover {
+        color: #3b82f6 !important;
+    }
+
+    html[data-theme="dark"] .offcanvas .nav-link.active {
+        color: #3b82f6 !important;
+        background: rgba(59, 130, 246, 0.1) !important;
+    }
+
+    /* Page Structure Dark Mode */
+    html[data-theme="dark"] body {
+        background: #0d0d0f !important;
+        color: #e5e7eb !important;
+    }
+
+    html[data-theme="dark"] .main-content {
+        background: #0d0d0f !important;
+    }
+
+    html[data-theme="dark"] .topbar {
+        background: #1a1a1e !important;
+        border-color: rgba(255, 255, 255, 0.08) !important;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3) !important;
+    }
+
+    html[data-theme="dark"] .topbar-user {
+        color: #e5e7eb !important;
+    }
+
+    html[data-theme="dark"] .user-info {
+        color: #e5e7eb !important;
+    }
+
+    html[data-theme="dark"] .user-name {
+        color: #f8fafc !important;
+    }
+
+    html[data-theme="dark"] .user-role {
+        color: #9ca3af !important;
+    }
+
+    html[data-theme="dark"] .sidebar-toggle {
+        color: #9ca3af !important;
+    }
+
+    html[data-theme="dark"] .sidebar-toggle:hover {
+        background: rgba(59, 130, 246, 0.1) !important;
+        color: #3b82f6 !important;
+    }
+
+    html[data-theme="dark"] .page-header {
+        color: #e5e7eb !important;
+    }
+
+    html[data-theme="dark"] .page-title {
+        color: #f8fafc !important;
+    }
+
+    html[data-theme="dark"] .page-subtitle {
+        color: #9ca3af !important;
+    }
+
+    /* Card and Table Dark Mode */
+    html[data-theme="dark"] .card,
+    html[data-theme="dark"] .modern-card {
+        background: #1a1a1e !important;
+        border-color: rgba(255, 255, 255, 0.08) !important;
+    }
+
+    html[data-theme="dark"] .table-modern {
+        background: #1a1a1e !important;
+    }
+
+    html[data-theme="dark"] .table-modern thead th {
+        background: #242429 !important;
+        color: #e5e7eb !important;
+        border-color: rgba(255, 255, 255, 0.08) !important;
+    }
+
+    html[data-theme="dark"] .table-modern tbody td {
+        color: #e5e7eb !important;
+        border-color: rgba(255, 255, 255, 0.06) !important;
+    }
+
+    html[data-theme="dark"] .table-modern tbody tr:hover {
+        background: #242429 !important;
+    }
+
+    html[data-theme="dark"] .card-header-modern {
+        background: #242429 !important;
+        border-color: rgba(255, 255, 255, 0.08) !important;
+        color: #f8fafc !important;
+    }
+
+    html[data-theme="dark"] .card-body-modern {
+        background: #1a1a1e !important;
+        color: #e5e7eb !important;
+    }
+
+    /* Modal and Popover Dark Mode */
+    html[data-theme="dark"] .modal-content {
+        background: #1a1a1e !important;
+        border-color: rgba(255, 255, 255, 0.08) !important;
+        color: #e5e7eb !important;
+    }
+
+    html[data-theme="dark"] .modal-header {
+        background: #242429 !important;
+        border-color: rgba(255, 255, 255, 0.08) !important;
+        color: #f8fafc !important;
+    }
+
+    html[data-theme="dark"] .modal-header .btn-close {
+        filter: invert(1) !important;
+    }
+
+    html[data-theme="dark"] .modal-body {
+        color: #e5e7eb !important;
+    }
+
+    html[data-theme="dark"] .modal-footer {
+        border-color: rgba(255, 255, 255, 0.08) !important;
+    }
+
+    /* List Groups Dark Mode */
+    html[data-theme="dark"] .list-group {
+        background: transparent !important;
+    }
+
+    html[data-theme="dark"] .list-group-item {
+        background: #1a1a1e !important;
+        border-color: rgba(255, 255, 255, 0.08) !important;
+        color: #e5e7eb !important;
+    }
+
+    html[data-theme="dark"] .list-group-item:hover {
+        background: #242429 !important;
+    }
+
+    html[data-theme="dark"] .list-group-item.active {
+        background: #3b82f6 !important;
+        border-color: #3b82f6 !important;
+    }
+
+    /* Pagination Dark Mode */
+    html[data-theme="dark"] .pagination-shell {
+        border-top-color: rgba(255, 255, 255, 0.07) !important;
+    }
+
+    html[data-theme="dark"] .pagination-summary {
+        background: rgba(14, 165, 233, 0.08) !important;
+        border-color: rgba(14, 165, 233, 0.15) !important;
+        color: #d1d5db !important;
+    }
+
+    /* Generic Background Fixes for Dark Mode */
+    html[data-theme="dark"] section,
+    html[data-theme="dark"] .section,
+    html[data-theme="dark"] .container-section,
+    html[data-theme="dark"] [style*="background: #fff"],
+    html[data-theme="dark"] [style*="background:#fff"],
+    html[data-theme="dark"] [style*="background: white"],
+    html[data-theme="dark"] [style*="background:white"],
+    html[data-theme="dark"] [style*="background: #f8fafc"],
+    html[data-theme="dark"] [style*="background:#f8fafc"] {
+        background: #0d0d0f !important;
+    }
+
+    /* Ensure all text is readable in dark mode */
+    html[data-theme="dark"] section > *:not([class*="table"]):not([class*="card"]):not([class*="chart"]),
+    html[data-theme="dark"] .section > *:not([class*="table"]):not([class*="card"]):not([class*="chart"]) {
+        color: #e5e7eb !important;
+    }
+
+    /* Borders in dark mode */
+    html[data-theme="dark"] section {
+        border-color: rgba(255, 255, 255, 0.08) !important;
+    }
+
+    /* Preserve white color where needed (buttons, badges, etc) */
+    html[data-theme="dark"] .btn-white,
+    html[data-theme="dark"] .badge-light {
+        background: #ffffff !important;
+        color: #0d0d0f !important;
+    }
+
 
