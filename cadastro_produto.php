@@ -9,6 +9,15 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
 
 require_once 'includes/db_connect.php';
 
+// Função auxiliar para gerar o próximo ID de produto (compatível com TiDB)
+function getProximoProdutoId($conexao) {
+    $result = $conexao->query("SELECT MAX(id) as max_id FROM produtos");
+    if ($result && $row = $result->fetch_assoc()) {
+        return intval($row['max_id']) + 1;
+    }
+    return 1;
+}
+
 // Variáveis para o formulário
 $id = $nome = $descricao = $sku = $preco_venda = $percentual_lucro = $quantidade_estoque = $estoque_minimo = $fornecedor = $empresa_id = $imagem_produto = "";
 $title = "Cadastrar Novo Produto";
@@ -41,11 +50,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $message_type = "danger";
     } else {
         if (empty($id)) { // Inserir Novo Produto
-            // O campo `percentual_lucro` já existe na sua tabela, então o SQL está correto.
-            $sql = "INSERT INTO produtos (nome, descricao, sku, preco_venda, percentual_lucro, quantidade_estoque, estoque_minimo, fornecedor, empresa_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+            // Gerar ID manualmente (compatível com TiDB Cloud)
+            $novo_id = getProximoProdutoId($conn);
+            
+            $sql = "INSERT INTO produtos (id, nome, descricao, sku, preco_venda, percentual_lucro, quantidade_estoque, estoque_minimo, fornecedor, empresa_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
             if ($stmt = $conn->prepare($sql)) {
-                // CORREÇÃO APLICADA: Os tipos de 'preco_venda' e 'percentual_lucro' são 'd' (decimal), para não arredondar.
-                $stmt->bind_param("sssddiisi", $nome, $descricao, $sku, $preco_venda, $percentual_lucro, $quantidade_estoque, $estoque_minimo, $fornecedor, $empresa_id);
+                $stmt->bind_param("isssddiisi", $novo_id, $nome, $descricao, $sku, $preco_venda, $percentual_lucro, $quantidade_estoque, $estoque_minimo, $fornecedor, $empresa_id);
                 if ($stmt->execute()) {
                     $message = "Produto cadastrado com sucesso!";
                     $message_type = "success";
