@@ -30,6 +30,18 @@ function getProximoOrcamentoId($conexao) {
     return 1;
 }
 
+/**
+ * Função auxiliar para obter o MAX(id) de uma tabela
+ * Usada para gerar sequências de IDs em massa
+ */
+function obterMaxIdDaTabela($conexao, $tabela) {
+    $result = $conexao->query("SELECT MAX(id) as max_id FROM `$tabela`");
+    if ($result && $row = $result->fetch_assoc()) {
+        return intval($row['max_id']) ?? 0;
+    }
+    return 0;
+}
+
 // Verificar se as colunas de pagamento existem
 $colunas_pagamento_existem = true;
 $result_check = $conn->query("SHOW COLUMNS FROM orcamentos LIKE 'forma_pagamento'");
@@ -111,70 +123,30 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         try {
             if (empty($orcamento_id)) {
                 // CRIAR NOVO ORÇAMENTO
-                $orcamento_inserido = false;
+                // ✅ Estratégia: Sempre gerar ID manualmente (funciona com ou sem AUTO_INCREMENT)
+                $novo_orcamento_id = getProximoOrcamentoId($conn);
+                $data_vencimento_param = !empty($data_vencimento) ? $data_vencimento : null;
                 
                 if ($colunas_pagamento_existem) {
-                    // Primeira tentativa: inserir sem especificar ID (deixar AUTO_INCREMENT funcionar)
-                    $sql = "INSERT INTO orcamentos (cliente_id, valor_total, status_orcamento, observacoes, forma_pagamento, tipo_faturamento, data_vencimento, data_orcamento) VALUES (?, ?, ?, ?, ?, ?, ?, NOW())";
+                    $sql = "INSERT INTO orcamentos (id, cliente_id, valor_total, status_orcamento, observacoes, forma_pagamento, tipo_faturamento, data_vencimento, data_orcamento, data_criacao) VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW(), CURDATE())";
                     if ($stmt = $conn->prepare($sql)) {
-                        $data_vencimento_param = !empty($data_vencimento) ? $data_vencimento : null;
-                        $stmt->bind_param("idsssss", $cliente_id, $valor_total, $status_orcamento, $observacoes, $forma_pagamento, $tipo_faturamento, $data_vencimento_param);
-                        if ($stmt->execute()) {
-                            $orcamento_id = $conn->insert_id;
-                            $orcamento_inserido = true;
-                            $stmt->close();
-                        } else {
-                            // Se falhar (pode ser por falta de AUTO_INCREMENT), tenta com ID manual
-                            $stmt->close();
-                            if (strpos($stmt->error, 'default value') !== false || $conn->insert_id == 0) {
-                                $proximo_id = getProximoOrcamentoId($conn);
-                                $sql = "INSERT INTO orcamentos (id, cliente_id, valor_total, status_orcamento, observacoes, forma_pagamento, tipo_faturamento, data_vencimento, data_orcamento) VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW())";
-                                if ($stmt = $conn->prepare($sql)) {
-                                    $stmt->bind_param("iidsssss", $proximo_id, $cliente_id, $valor_total, $status_orcamento, $observacoes, $forma_pagamento, $tipo_faturamento, $data_vencimento_param);
-                                    if ($stmt->execute()) {
-                                        $orcamento_id = $proximo_id;
-                                        $orcamento_inserido = true;
-                                    } else {
-                                        throw new Exception("Erro ao registrar orçamento: " . $stmt->error);
-                                    }
-                                    $stmt->close();
-                                }
-                            } else {
-                                throw new Exception("Erro ao registrar orçamento: " . $stmt->error);
-                            }
+                        $stmt->bind_param("iidsssss", $novo_orcamento_id, $cliente_id, $valor_total, $status_orcamento, $observacoes, $forma_pagamento, $tipo_faturamento, $data_vencimento_param);
+                        if (!$stmt->execute()) {
+                            throw new Exception("Erro ao registrar orçamento: " . $stmt->error);
                         }
+                        $stmt->close();
                     }
                 } else {
-                    // Primeira tentativa: inserir sem ID
-                    $sql = "INSERT INTO orcamentos (cliente_id, valor_total, status_orcamento, observacoes, data_orcamento) VALUES (?, ?, ?, ?, NOW())";
+                    $sql = "INSERT INTO orcamentos (id, cliente_id, valor_total, status_orcamento, observacoes, data_orcamento, data_criacao) VALUES (?, ?, ?, ?, ?, NOW(), CURDATE())";
                     if ($stmt = $conn->prepare($sql)) {
-                        $stmt->bind_param("idss", $cliente_id, $valor_total, $status_orcamento, $observacoes);
-                        if ($stmt->execute()) {
-                            $orcamento_id = $conn->insert_id;
-                            $orcamento_inserido = true;
-                            $stmt->close();
-                        } else {
-                            $stmt->close();
-                            if (strpos($stmt->error, 'default value') !== false || $conn->insert_id == 0) {
-                                // Se falhar, tenta com ID manual
-                                $proximo_id = getProximoOrcamentoId($conn);
-                                $sql = "INSERT INTO orcamentos (id, cliente_id, valor_total, status_orcamento, observacoes, data_orcamento) VALUES (?, ?, ?, ?, ?, NOW())";
-                                if ($stmt = $conn->prepare($sql)) {
-                                    $stmt->bind_param("iidss", $proximo_id, $cliente_id, $valor_total, $status_orcamento, $observacoes);
-                                    if ($stmt->execute()) {
-                                        $orcamento_id = $proximo_id;
-                                        $orcamento_inserido = true;
-                                    } else {
-                                        throw new Exception("Erro ao registrar orçamento: " . $stmt->error);
-                                    }
-                                    $stmt->close();
-                                }
-                            } else {
-                                throw new Exception("Erro ao registrar orçamento: " . $stmt->error);
-                            }
+                        $stmt->bind_param("iidss", $novo_orcamento_id, $cliente_id, $valor_total, $status_orcamento, $observacoes);
+                        if (!$stmt->execute()) {
+                            throw new Exception("Erro ao registrar orçamento: " . $stmt->error);
                         }
+                        $stmt->close();
                     }
                 }
+                $orcamento_id = $novo_orcamento_id;
             } else {
                 // ATUALIZAR ORÇAMENTO EXISTENTE
                 if ($colunas_pagamento_existem) {
@@ -208,12 +180,16 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     $stmt_delete->close();
                 }
             }
-
+            
             // Inserir itens do orçamento (novos ou atualizados)
-            $sql_itens = "INSERT INTO itens_orcamento (orcamento_id, produto_id, quantidade, preco_unitario) VALUES (?, ?, ?, ?)";
+            // ✅ Estratégia: Gerar IDs dos itens COM ANTECEDÊNCIA, depois inserir
+            $max_item_atual = obterMaxIdDaTabela($conn, 'itens_orcamento');
+            
+            $sql_itens = "INSERT INTO itens_orcamento (id, orcamento_id, produto_id, quantidade, preco_unitario) VALUES (?, ?, ?, ?, ?)";
             if ($stmt_itens = $conn->prepare($sql_itens)) {
-                foreach ($itens_do_orcamento_post as $item) {
-                    $stmt_itens->bind_param("iiid", $orcamento_id, $item['id'], $item['quantidade'], $item['preco_unitario']);
+                foreach ($itens_do_orcamento_post as $index => $item) {
+                    $item_id = $max_item_atual + $index + 1;
+                    $stmt_itens->bind_param("iiiid", $item_id, $orcamento_id, $item['id'], $item['quantidade'], $item['preco_unitario']);
                     if (!$stmt_itens->execute()) {
                         throw new Exception("Erro ao inserir item: " . $stmt_itens->error);
                     }
