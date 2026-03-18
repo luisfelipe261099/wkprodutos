@@ -135,24 +135,45 @@ echo '<!DOCTYPE html>
     <div class="info">
         <strong>ℹ️ Níveis de Correção Disponíveis:</strong><br>
         🟢 <strong>Nível 1:</strong> Correção Normal (está página) - Tenta converter codificação<br>
+        ⚡ <strong>Nível 1B:</strong> <a href="corrigir_encoding_rapido_sql.php">Correção Rápida (SQL REPLACE)</a> - MUITO MAIS RÁPIDO, sem travamento!<br>
         🟡 <strong>Nível 2:</strong> <a href="corrigir_encoding_avancado.php">Correção Avançada</a> - Usa múltiplas estratégias SQL<br>
         🔴 <strong>Nível 3:</strong> <a href="corrigir_charset_tabela.php">Alterar Charset da Tabela</a> - Muda tabela para utf8mb4
     </div>';
 
 // Processar correção se POST
 if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['corrigir'])) {
-    echo '<div class="info">⏳ Processando... Por favor aguarde.</div>';
+    // Aumentar timeout para scripts longos
+    set_time_limit(300);
     
-    // Buscar todos os produtos
+    // Habilitar output buffering com flush
+    if (ob_get_level() == 0) ob_start();
+    
+    echo '<div class="info">⏳ Processando... Por favor aguarde.</div>';
+    flush();
+    ob_flush();
+    
+    // Buscar TODOS os produtos (melhor que consultar em loop)
     $result = $conn->query("SELECT id, nome, descricao, sku, fornecedor FROM produtos");
     
-    if ($result) {
+    if (!$result) {
+        echo '<div class="error">❌ Erro ao buscar produtos: ' . $conn->error . '</div>';
+        flush();
+        ob_flush();
+    } else {
         $corrected_count = 0;
         $total_count = 0;
+        $produtos = [];
+        
+        // Fetch todos os dados em memória (mais rápido)
+        while ($row = $result->fetch_assoc()) {
+            $produtos[] = $row;
+        }
+        $result->close();
+        
+        $total_count = count($produtos);
         
         /**
-         * Função AVANÇADA para corrigir encoding UTF-8 duplicado (mojibake)
-         * Tenta múltiplas estratégias
+         * Função AVANÇADA para corrigir encoding UTF-8
          */
         function fix_utf8_advanced($text) {
             if ($text === null || $text === '') return $text;
@@ -162,93 +183,80 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['corrigir'])) {
                 return $text;
             }
             
-            // Estratégia 1: Converter de UTF-8 lido como Latin-1
-            $attempt1 = @iconv('ISO-8859-1', 'UTF-8//IGNORE', $text);
+            // Tentativa 1: iconv direto
+            $t1 = @iconv('ISO-8859-1', 'UTF-8//IGNORE', $text);
             
-            // Estratégia 2: Usar mb_convert_encoding (mais robusto)
-            $attempt2 = @mb_convert_encoding($text, 'UTF-8', 'ISO-8859-1');
+            // Tentativa 2: mb_convert_encoding
+            $t2 = @mb_convert_encoding($text, 'UTF-8', 'ISO-8859-1');
             
-            // Estratégia 3: Dupla conversão para limpar
-            $attempt3 = @utf8_decode(@utf8_encode($text));
+            // Tentativa 3: Dupla conversão
+            $t3 = @utf8_decode(@utf8_encode($text));
             
-            // Estratégia 4: HTML entity + decode
-            $attempt4 = @html_entity_decode(htmlentities($text, ENT_QUOTES, 'ISO-8859-1'), ENT_QUOTES, 'UTF-8');
+            // Tentativa 4: HTML entity
+            $t4 = @html_entity_decode(htmlentities($text, ENT_QUOTES, 'ISO-8859-1'), ENT_QUOTES, 'UTF-8');
             
-            // Verificar qual tentativa é mais normal
-            $attempts = [
-                'original' => $text,
-                'attempt1' => $attempt1,
-                'attempt2' => $attempt2,
-                'attempt3' => $attempt3,
-                'attempt4' => $attempt4,
-            ];
-            
-            // Escolher a melhor conversão (a que tem menos Ã¡, Ã©, etc)
-            $best = 'original';
+            // Escolher a melhor
+            $attempts = array_filter([$t1, $t2, $t3, $t4]);
+            $best = $text;
             $best_score = substr_count($text, 'Ã') + substr_count($text, 'Â') + substr_count($text, 'Ä');
             
-            foreach ($attempts as $key => $attempt) {
+            foreach ($attempts as $attempt) {
                 if ($attempt === false) continue;
                 $score = substr_count($attempt, 'Ã') + substr_count($attempt, 'Â') + substr_count($attempt, 'Ä');
                 if ($score < $best_score) {
-                    $best = $key;
+                    $best = $attempt;
                     $best_score = $score;
                 }
             }
             
-            return $attempts[$best];
+            return $best;
         }
         
-        while ($row = $result->fetch_assoc()) {
-            $total_count++;
-            $original_nome = $row['nome'];
-            $original_descricao = $row['descricao'];
-            $original_sku = $row['sku'];
-            $original_fornecedor = $row['fornecedor'];
+        // Processar em lotes de 50 para melhor performance
+        $lote = 50;
+        for ($i = 0; $i < count($produtos); $i += $lote) {
+            $lote_produtos = array_slice($produtos, $i, $lote);
             
-            $novo_nome = fix_utf8_advanced($original_nome);
-            $nova_descricao = fix_utf8_advanced($original_descricao);
-            $novo_sku = fix_utf8_advanced($original_sku);
-            $novo_fornecedor = fix_utf8_advanced($original_fornecedor);
-            
-            // Se houve mudança em qualquer campo, atualizar
-            if ($novo_nome !== $original_nome || $nova_descricao !== $original_descricao || 
-                $novo_sku !== $original_sku || $novo_fornecedor !== $original_fornecedor) {
+            foreach ($lote_produtos as $row) {
+                $original_nome = $row['nome'];
+                $original_descricao = $row['descricao'];
+                $original_sku = $row['sku'];
+                $original_fornecedor = $row['fornecedor'];
                 
-                $sql = "UPDATE produtos SET nome = ?, descricao = ?, sku = ?, fornecedor = ? WHERE id = ?";
+                $novo_nome = fix_utf8_advanced($original_nome);
+                $nova_descricao = fix_utf8_advanced($original_descricao);
+                $novo_sku = fix_utf8_advanced($original_sku);
+                $novo_fornecedor = fix_utf8_advanced($original_fornecedor);
                 
-                if ($stmt = $conn->prepare($sql)) {
-                    $stmt->bind_param("ssssi", $novo_nome, $nova_descricao, $novo_sku, $novo_fornecedor, $row['id']);
-                    if ($stmt->execute()) {
-                        $corrected_count++;
-                        echo '<div class="success">
-                            ✅ <strong>Produto ID ' . $row['id'] . ':</strong><br>
-                            <span class="old-name">' . htmlspecialchars($original_nome) . '</span><br>
-                            ➜ <span class="new-name">' . htmlspecialchars($novo_nome) . '</span>
-                        </div>';
-                    } else {
-                        echo '<div class="error">❌ Erro ao atualizar produto ' . $row['id'] . ': ' . $stmt->error . '</div>';
+                // Se houve mudança, atualizar
+                if ($novo_nome !== $original_nome || $nova_descricao !== $original_descricao || 
+                    $novo_sku !== $original_sku || $novo_fornecedor !== $original_fornecedor) {
+                    
+                    $sql = "UPDATE produtos SET nome = ?, descricao = ?, sku = ?, fornecedor = ? WHERE id = ?";
+                    
+                    if ($stmt = $conn->prepare($sql)) {
+                        $stmt->bind_param("ssssi", $novo_nome, $nova_descricao, $novo_sku, $novo_fornecedor, $row['id']);
+                        if ($stmt->execute()) {
+                            $corrected_count++;
+                        }
+                        $stmt->close();
                     }
-                    $stmt->close();
                 }
             }
+            
+            // Mostrar progresso
+            $percentual = intval(($i + $lote) / count($produtos) * 100);
+            echo '<div class="info">⏳ Progresso: ' . min($i + $lote, count($produtos)) . '/' . count($produtos) . ' produtos processados (' . $percentual . '%)</div>';
+            flush();
+            ob_flush();
         }
         
         echo '<div class="success"><strong>✅ Processamento Concluído!</strong><br>
             Total de produtos verificados: ' . $total_count . '<br>
             Produtos corrigidos: ' . $corrected_count . '
         </div>';
-        
-        // Adicionar botão para rodar novamente (caso ainda haja problema)
-        if ($corrected_count > 0) {
-            echo '<div class="warning" style="margin-top: 20px;">
-                <strong>ℹ️ Próxima Ação:</strong><br>
-                Verifique se os nomes foram corrigidos corretamente.<br>
-                Se ainda houver caracteres errados, clique em "Voltar" e execute novamente.
-            </div>';
-        }
-    } else {
-        echo '<div class="error">❌ Erro ao buscar produtos: ' . $conn->error . '</div>';
+        flush();
+        ob_flush();
     }
     
     echo '<br><a href="corrigir_encoding_produtos.php" class="btn">Voltar</a>';
