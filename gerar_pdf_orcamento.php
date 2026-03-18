@@ -505,7 +505,59 @@ function gerarPDFModerno($orcamento, $itens, $empresas_logos = []) {
         }
         
         // Espaçamento reduzido para o total
-        $pdf->Ln(5); // Reduzido de 10 para 5
+        $pdf->Ln(3); // Reduzido de 10 para 3
+        
+        // --- SEÇÃO DE FORNECEDORES ---
+        // Extrair fornecedores únicos dos itens
+        $fornecedores_unicos = [];
+        foreach ($itens as $item) {
+            if (!empty($item['nome_empresa'])) {
+                $fornecedores_unicos[$item['nome_empresa']] = $item['logo_empresa'] ?? '';
+            }
+        }
+        
+        if (!empty($fornecedores_unicos)) {
+            $fornecedores_text = implode(", ", array_keys($fornecedores_unicos));
+            $fornecedor_y = $pdf->GetY();
+            
+            // Se houver logo do fornecedor e for um único fornecedor, mostrar em fundo especial
+            if (count($fornecedores_unicos) === 1) {
+                $logo_path = reset($fornecedores_unicos);
+                $fornecedor_nome = key($fornecedores_unicos);
+                
+                if (!empty($logo_path) && file_exists($logo_path)) {
+                    // Caixa com logo
+                    $pdf->SetFillColor(230, 240, 250);
+                    $pdf->SetDrawColor(28, 79, 140);
+                    $pdf->SetLineWidth(0.3);
+                    $pdf->Rect(15, $fornecedor_y, 85, 15, 'DF');
+                    
+                    $pdf->SetFont('Arial', 'B', 8);
+                    $pdf->SetTextColor(28, 79, 140);
+                    $pdf->SetXY(17, $fornecedor_y + 1);
+                    $pdf->Cell(40, 3, 'FORNECEDOR PRINCIPAL:', 0, 1);
+                    
+                    // Logo e nome lado a lado
+                    $pdf->SetXY(17, $fornecedor_y + 5);
+                    $pdf->Image($logo_path, 17, $fornecedor_y + 5, 8, 0);
+                    
+                    $pdf->SetXY(27, $fornecedor_y + 6);
+                    $pdf->SetFont('Arial', 'B', 9);
+                    $pdf->Cell(70, 4, $pdf->convertToLatin1(strtoupper($fornecedor_nome)), 0, 1);
+                    
+                    $pdf->Ln(17);
+                } else {
+                    // Caixa só com texto (sem logo)
+                    $pdf->ShadowBox(15, $fornecedor_y, 85, 10, 'FORNECEDOR PRINCIPAL', $pdf->convertToLatin1(strtoupper($fornecedor_nome)), [230, 240, 250]);
+                    $pdf->Ln(12);
+                }
+            } else {
+                // Múltiplos fornecedores
+                $pdf->ShadowBox(15, $fornecedor_y, 85, 10, 'FORNECEDOR(ES)', $fornecedores_text, [230, 240, 250]);
+                $pdf->Ln(12);
+            }
+        }
+        
         $total_y = $pdf->GetY();
         
         $valor_total = $orcamento['valor_total'] ?? $total;
