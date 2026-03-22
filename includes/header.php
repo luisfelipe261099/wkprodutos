@@ -45,6 +45,11 @@ $user_role_label = (isset($_SESSION['nivel_acesso']) && $_SESSION['nivel_acesso'
     if (file_exists($responsive_fixes)) {
         echo "<style>\n" . file_get_contents($responsive_fixes) . "\n</style>";
     }
+
+    $sidebar_fixes = __DIR__ . '/../css/sidebar-mobile-fix.css';
+    if (file_exists($sidebar_fixes)) {
+        echo "<style>\n" . file_get_contents($sidebar_fixes) . "\n</style>";
+    }
     ?>
     <script>
     try {

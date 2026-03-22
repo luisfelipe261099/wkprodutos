@@ -2,7 +2,154 @@
 
 document.addEventListener('DOMContentLoaded', function() {
     initMobileEnhancements();
+    initSidebarMobile();
 });
+
+function initSidebarMobile() {
+    console.log('Initializing mobile sidebar');
+    
+    const sidebarToggle = document.querySelector('.sidebar-toggle');
+    const sidebar = document.querySelector('.sidebar');
+    let overlay = document.querySelector('.mobile-overlay');
+    const closeSidebar = document.querySelector('.sidebar-close');
+    
+    // Criar overlay se não existir
+    if (!overlay) {
+        overlay = document.createElement('div');
+        overlay.className = 'mobile-overlay';
+        document.body.appendChild(overlay);
+    }
+    
+    function openSidebar() {
+        console.log('Opening sidebar');
+        if (sidebar && overlay) {
+            sidebar.classList.add('show');
+            overlay.classList.add('show');
+            document.body.classList.add('sidebar-open');
+            document.documentElement.classList.add('sidebar-open');
+            
+            // Prevenir scroll
+            const scrollTop = document.documentElement.scrollTop || document.body.scrollTop;
+            document.body.style.top = `-${scrollTop}px`;
+            document.body.style.position = 'fixed';
+            document.body.style.width = '100%';
+        }
+    }
+    
+    function closeSidebarFunction() {
+        console.log('Closing sidebar');
+        if (sidebar && overlay) {
+            sidebar.classList.remove('show');
+            overlay.classList.remove('show');
+            document.body.classList.remove('sidebar-open');
+            document.documentElement.classList.remove('sidebar-open');
+            
+            // Restaurar scroll
+            const scrollTop = parseInt(document.body.style.top || '0') * -1;
+            document.body.style.position = '';
+            document.body.style.top = '';
+            document.body.style.width = '';
+            document.documentElement.scrollTop = scrollTop;
+            document.body.scrollTop = scrollTop;
+        }
+    }
+    
+    // Toggle button
+    if (sidebarToggle) {
+        sidebarToggle.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            console.log('Sidebar toggle clicked');
+            
+            if (sidebar && sidebar.classList.contains('show')) {
+                closeSidebarFunction();
+            } else {
+                openSidebar();
+            }
+        });
+
+        // Touch feedback
+        sidebarToggle.addEventListener('touchstart', function(e) {
+            this.style.transform = 'scale(0.95)';
+        }, { passive: true });
+        
+        sidebarToggle.addEventListener('touchend', function(e) {
+            setTimeout(() => {
+                this.style.transform = '';
+            }, 150);
+        }, { passive: true });
+    }
+    
+    // Fechar com overlay
+    if (overlay) {
+        overlay.addEventListener('click', function(e) {
+            e.preventDefault();
+            closeSidebarFunction();
+        });
+    }
+    
+    // Fechar com botão X
+    if (closeSidebar) {
+        closeSidebar.addEventListener('click', function(e) {
+            e.preventDefault();
+            closeSidebarFunction();
+        });
+        
+        // Touch feedback
+        closeSidebar.addEventListener('touchstart', function(e) {
+            this.style.transform = 'scale(0.95)';
+        }, { passive: true });
+        
+        closeSidebar.addEventListener('touchend', function(e) {
+            setTimeout(() => {
+                this.style.transform = '';
+            }, 150);
+        }, { passive: true });
+    }
+    
+    // Fechar ao pressionar ESC
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && sidebar && sidebar.classList.contains('show')) {
+            closeSidebarFunction();
+        }
+    });
+    
+    // Resetar ao redimensionar
+    window.addEventListener('resize', function() {
+        if (window.innerWidth > 768 && sidebar) {
+            closeSidebarFunction();
+        }
+    });
+
+    // Swipe to close
+    let startX = 0;
+    let currentX = 0;
+    let isDragging = false;
+
+    if (sidebar) {
+        sidebar.addEventListener('touchstart', function(e) {
+            startX = e.touches[0].clientX;
+            isDragging = true;
+        }, { passive: true });
+
+        sidebar.addEventListener('touchmove', function(e) {
+            if (!isDragging) return;
+            
+            currentX = e.touches[0].clientX;
+            const diffX = startX - currentX;
+            
+            // Swipe da direita para esquerda
+            if (diffX > 100) {
+                closeSidebarFunction();
+                isDragging = false;
+            }
+        }, { passive: true });
+
+        sidebar.addEventListener('touchend', function() {
+            isDragging = false;
+        }, { passive: true });
+    }
+}
 
 function initMobileEnhancements() {
     // Detectar se é dispositivo móvel
@@ -38,15 +185,15 @@ function improveTouchExperience() {
     touchElements.forEach(element => {
         element.addEventListener('touchstart', function() {
             this.style.opacity = '0.7';
-        });
+        }, { passive: true });
         
         element.addEventListener('touchend', function() {
             this.style.opacity = '';
-        });
+        }, { passive: true });
         
         element.addEventListener('touchcancel', function() {
             this.style.opacity = '';
-        });
+        }, { passive: true });
     });
 }
 
