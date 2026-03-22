@@ -50,7 +50,16 @@ $user_role_label = (isset($_SESSION['nivel_acesso']) && $_SESSION['nivel_acesso'
     if (file_exists($sidebar_fixes)) {
         echo "<style>\n" . file_get_contents($sidebar_fixes) . "\n</style>";
     }
+
+    // CSS DE EMERGÊNCIA - CARREGADO POR ÚLTIMO
+    $force_mobile = __DIR__ . '/../css/force-mobile-sidebar.css';
+    if (file_exists($force_mobile)) {
+        echo "<style>\n" . file_get_contents($force_mobile) . "\n</style>";
+    }
     ?>
+    
+    <!-- Script de inicialização forçada -->
+    <script src="js/force-sidebar-init.js"></script>
     <script>
     try {
         const theme = localStorage.getItem('kw-theme') || 'dark';
