@@ -57,9 +57,6 @@ $user_role_label = (isset($_SESSION['nivel_acesso']) && $_SESSION['nivel_acesso'
         echo "<style>\n" . file_get_contents($force_mobile) . "\n</style>";
     }
     ?>
-    
-    <!-- Script de inicialização forçada -->
-    <script src="js/force-sidebar-init.js"></script>
     <script>
     try {
         const theme = localStorage.getItem('kw-theme') || 'dark';
