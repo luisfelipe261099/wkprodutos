@@ -1,4 +1,10 @@
 <?php
+// Incluir helpers de UI (fmt_brl, render_pagination, etc.)
+$ui_helper_path = __DIR__ . '/ui_helpers.php';
+if (file_exists($ui_helper_path)) {
+    require_once $ui_helper_path;
+}
+
 $current_page = basename($_SERVER['PHP_SELF'] ?? 'dashboard.php');
 $page_titles = [
     'dashboard.php' => 'Dashboard',
@@ -9,7 +15,17 @@ $page_titles = [
     'financeiro.php' => 'Financeiro',
     'relatorios.php' => 'Relatórios',
     'perfil.php' => 'Perfil',
-    'agendamentos.php' => 'Agendamentos'
+    'agendamentos.php' => 'Agendamentos',
+    'cadastro_cliente.php' => 'Novo Cliente',
+    'cadastro_produto.php' => 'Novo Produto',
+    'registrar_venda.php' => 'Nova Venda',
+    'criar_orcamento.php' => 'Novo Orçamento',
+    'detalhes_venda.php' => 'Detalhes da Venda',
+    'detalhes_orcamento.php' => 'Detalhes do Orçamento',
+    'usuarios.php' => 'Usuários',
+    'empresas_representadas.php' => 'Empresas',
+    'marketplace.php' => 'Marketplace',
+    'acompanhamento_clientes.php' => 'Acompanhamento'
 ];
 $current_page_title = $page_titles[$current_page] ?? 'Sistema';
 $user_role_label = (isset($_SESSION['nivel_acesso']) && $_SESSION['nivel_acesso'] === 'admin') ? 'Administrador' : 'Operação';
@@ -18,9 +34,9 @@ $user_role_label = (isset($_SESSION['nivel_acesso']) && $_SESSION['nivel_acesso'
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
     <meta name="format-detection" content="telephone=no">
-    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
     <title>Karla Wollinger - <?php echo htmlspecialchars($current_page_title); ?></title>
     
     <!-- Bootstrap CSS -->
@@ -29,8 +45,18 @@ $user_role_label = (isset($_SESSION['nivel_acesso']) && $_SESSION['nivel_acesso'
     <!-- Font Awesome -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" rel="stylesheet">
     
-    <!-- CSS Principal -->
-    <link rel="stylesheet" href="css/main.css">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    
+    <!-- CSS Principal (inline para garantir carregamento) -->
+    <?php
+    $main_css = __DIR__ . '/../css/main.css';
+    if (file_exists($main_css)) {
+        echo "<style>\n" . file_get_contents($main_css) . "\n</style>";
+    } else {
+        echo '<link rel="stylesheet" href="css/main.css">';
+    }
+    ?>
 </head>
 <body>
     <!-- Sidebar -->
