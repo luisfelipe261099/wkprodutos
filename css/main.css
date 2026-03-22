@@ -657,7 +657,25 @@ html, body {
 .gap-1 { gap: 0.25rem; }
 .gap-2 { gap: 0.5rem; }
 .gap-3 { gap: 1rem; }
+.gap-4 { gap: 1.5rem; }
+.gap-5 { gap: 3rem; }
 
+.flex-wrap { flex-wrap: wrap; }
+
+/* Text colors */
+.text-primary { color: #3b82f6 !important; }
+.text-success { color: #10b981 !important; }
+.text-warning { color: #f59e0b !important; }
+.text-danger { color: #ef4444 !important; }
+.text-muted { color: #6b7280 !important; }
+.text-white { color: #ffffff !important; }
+.text-dark { color: #1f2937 !important; }
+
+/* Font sizes */
+.fa-2x { font-size: 2em; }
+.fa-3x { font-size: 3em; }
+
+/* Margin and padding utilities */
 .mb-0 { margin-bottom: 0; }
 .mb-1 { margin-bottom: 0.25rem; }
 .mb-2 { margin-bottom: 0.5rem; }

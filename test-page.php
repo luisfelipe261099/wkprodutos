@@ -7,7 +7,7 @@ include 'includes/header.php';
         <div class="card">
             <div class="card-header">
                 <h3 class="mb-0">
-                    <i class="fas fa-tachometer-alt"></i>
+                    <i class="fas fa-tachometer-alt text-primary"></i>
                     Bem-vindo ao Sistema
                 </h3>
             </div>
@@ -51,7 +51,7 @@ include 'includes/header.php';
                     </div>
                 </div>
                 
-                <div class="alert alert-success">
+                <div class="alert alert-success mb-4">
                     <i class="fas fa-check-circle"></i>
                     <strong>Sistema Atualizado!</strong> Novo layout responsivo funcionando perfeitamente.
                 </div>
