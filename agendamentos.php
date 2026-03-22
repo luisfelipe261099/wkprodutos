@@ -85,8 +85,7 @@ include_once 'includes/header.php';
     </div>
 <?php endif; ?>
 
-<!-- Stats Cards -->
-<div class="row g-3 mb-4">
+<div class="row g-3 mb-4 stats-grid">
     <div class="col-6 col-md-2">
         <div class="stats-card">
             <div class="stats-icon primary"><i class="fas fa-calendar-alt"></i></div>
@@ -173,22 +172,27 @@ include_once 'includes/header.php';
                             }
                             ?>
                             <tr>
-                                <td><?php echo htmlspecialchars($row['id']); ?></td>
-                                <td><?php echo htmlspecialchars($row['nome_cliente']); ?></td>
-                                <td><?php echo date('d/m/Y H:i', strtotime($row['data_hora_entrega'])); ?></td>
-                                <td><?php echo htmlspecialchars($row['endereco_entrega']); ?></td>
-                                <td><?php echo $referencia; ?></td>
-                                <td><span class="badge <?php echo $status_class; ?>"><?php echo htmlspecialchars(ucfirst(str_replace('_', ' ', $row['status_entrega']))); ?></span></td>
-                                <td class="text-center">
-                                    <a href="detalhes_agendamento.php?id=<?php echo $row['id']; ?>" class="btn btn-info btn-sm me-1" title="Ver Detalhes">
-                                        <i class="fas fa-eye"></i>
-                                    </a>
-                                    <a href="agendar_entrega.php?id=<?php echo $row['id']; ?>" class="btn btn-primary btn-sm me-1" title="Editar">
-                                        <i class="fas fa-edit"></i>
-                                    </a>
-                                    <button type="button" class="btn btn-warning btn-sm" title="Alterar Status" data-bs-toggle="modal" data-bs-target="#modalStatusAgendamento" data-id="<?php echo $row['id']; ?>" data-current-status="<?php echo $row['status_entrega']; ?>">
-                                        <i class="fas fa-sync-alt"></i> Status
-                                    </button>
+                                <td data-label="ID"><?php echo htmlspecialchars($row['id']); ?></td>
+                                <td data-label="Cliente"><?php echo htmlspecialchars($row['nome_cliente']); ?></td>
+                                <td data-label="Data/Hora"><?php echo date('d/m/Y H:i', strtotime($row['data_hora_entrega'])); ?></td>
+                                <td data-label="Endereço" class="d-none d-lg-table-cell"><?php echo htmlspecialchars($row['endereco_entrega']); ?></td>
+                                <td data-label="Referência" class="d-none d-md-table-cell"><?php echo $referencia; ?></td>
+                                <td data-label="Status"><span class="badge <?php echo $status_class; ?>"><?php echo htmlspecialchars(ucfirst(str_replace('_', ' ', $row['status_entrega']))); ?></span></td>
+                                <td class="text-center" data-label="Ações">
+                                    <div class="btn-group btn-group-sm mobile-agendamento-actions" role="group">
+                                        <a href="detalhes_agendamento.php?id=<?php echo $row['id']; ?>" class="btn btn-info btn-sm" title="Ver Detalhes">
+                                            <i class="fas fa-eye"></i>
+                                            <span class="d-md-none ms-1">Detalhes</span>
+                                        </a>
+                                        <a href="agendar_entrega.php?id=<?php echo $row['id']; ?>" class="btn btn-primary btn-sm" title="Editar">
+                                            <i class="fas fa-edit"></i>
+                                            <span class="d-md-none ms-1">Editar</span>
+                                        </a>
+                                        <button type="button" class="btn btn-warning btn-sm" title="Alterar Status" data-bs-toggle="modal" data-bs-target="#modalStatusAgendamento" data-id="<?php echo $row['id']; ?>" data-current-status="<?php echo $row['status_entrega']; ?>">
+                                            <i class="fas fa-sync-alt"></i>
+                                            <span class="d-md-none ms-1">Status</span>
+                                        </button>
+                                    </div>
                                 </td>
                             </tr>
                             <?php

@@ -3,6 +3,11 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="js/script.js"></script>
+    <script src="js/mobile-enhancements.js"></script>
+    
+    <?php if (isset($_GET['debug']) && $_GET['debug'] == '1'): ?>
+    <script src="js/responsive-debug.js"></script>
+    <?php endif; ?>
 
     <script>
         (function () {
@@ -13,6 +18,8 @@
             const toggleButton = document.getElementById('sidebarToggle');
             const closeButton = document.getElementById('sidebarClose');
             const desktopMedia = window.matchMedia('(min-width: 1025px)');
+            const tabletMedia = window.matchMedia('(min-width: 769px) and (max-width: 1024px)');
+            const mobileMedia = window.matchMedia('(max-width: 768px)');
 
             if (!sidebar || !mainContent || !topbar || !overlay || !toggleButton) {
                 return;
@@ -22,17 +29,20 @@
                 sidebar.classList.add('show');
                 overlay.classList.add('show');
                 document.body.classList.add('sidebar-open');
+                document.body.style.overflow = 'hidden'; // Previne scroll do body
             }
 
             function closeMobileSidebar() {
                 sidebar.classList.remove('show');
                 overlay.classList.remove('show');
                 document.body.classList.remove('sidebar-open');
+                document.body.style.overflow = ''; // Restaura scroll
             }
 
             function syncLayout() {
                 if (desktopMedia.matches) {
                     closeMobileSidebar();
+                    document.body.style.overflow = '';
                 } else {
                     sidebar.classList.remove('collapsed');
                     mainContent.classList.remove('expanded');
@@ -40,7 +50,10 @@
                 }
             }
 
-            toggleButton.addEventListener('click', function () {
+            toggleButton.addEventListener('click', function (e) {
+                e.preventDefault();
+                e.stopPropagation();
+                
                 if (desktopMedia.matches) {
                     sidebar.classList.toggle('collapsed');
                     mainContent.classList.toggle('expanded');
@@ -56,10 +69,15 @@
                 }
             });
 
+            // Melhorar eventos de toque
             overlay.addEventListener('click', closeMobileSidebar);
+            overlay.addEventListener('touchstart', closeMobileSidebar);
 
             if (closeButton) {
-                closeButton.addEventListener('click', closeMobileSidebar);
+                closeButton.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    closeMobileSidebar();
+                });
             }
 
             document.addEventListener('keydown', function (event) {
@@ -68,16 +86,33 @@
                 }
             });
 
+            // Fechar sidebar ao clicar em link no mobile/tablet
             sidebar.querySelectorAll('.nav-link').forEach(function (link) {
                 link.addEventListener('click', function () {
-                    if (!desktopMedia.matches) {
-                        closeMobileSidebar();
+                    if (mobileMedia.matches || tabletMedia.matches) {
+                        setTimeout(closeMobileSidebar, 300); // Delay para animação suave
                     }
                 });
             });
 
-            window.addEventListener('resize', syncLayout);
+            // Melhor handling de resize
+            let resizeTimer;
+            window.addEventListener('resize', function() {
+                clearTimeout(resizeTimer);
+                resizeTimer = setTimeout(syncLayout, 100);
+            });
+            
             syncLayout();
+
+            // Prevenir zoom duplo toque no iOS
+            let lastTouchEnd = 0;
+            document.addEventListener('touchend', function (event) {
+                const now = (new Date()).getTime();
+                if (now - lastTouchEnd <= 300) {
+                    event.preventDefault();
+                }
+                lastTouchEnd = now;
+            }, false);
         }());
     </script>
 

@@ -23,7 +23,10 @@ $user_role_label = (isset($_SESSION['nivel_acesso']) && $_SESSION['nivel_acesso'
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0">
+    <meta name="format-detection" content="telephone=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <title>Karla Wollinger - Sistema de Gestão</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
@@ -31,6 +34,16 @@ $user_role_label = (isset($_SESSION['nivel_acesso']) && $_SESSION['nivel_acesso'
     $inline_style_new = __DIR__ . '/../css/style-new.css';
     if (file_exists($inline_style_new)) {
         echo "<style>\n" . file_get_contents($inline_style_new) . "\n</style>";
+    }
+    
+    $mobile_fixes = __DIR__ . '/../css/mobile-fixes.css';
+    if (file_exists($mobile_fixes)) {
+        echo "<style>\n" . file_get_contents($mobile_fixes) . "\n</style>";
+    }
+
+    $responsive_fixes = __DIR__ . '/../css/responsive-fixes.css';
+    if (file_exists($responsive_fixes)) {
+        echo "<style>\n" . file_get_contents($responsive_fixes) . "\n</style>";
     }
     ?>
     <script>

@@ -1,0 +1,239 @@
+/* 
+   Correções específicas para Mobile - Karla Wollinger System
+   Arquivo: mobile-fixes.css
+*/
+
+/* Prevenir zoom duplo toque */
+* {
+    -webkit-tap-highlight-color: transparent;
+    -webkit-touch-callout: none;
+}
+
+/* Melhorar inputs em mobile */
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="number"],
+input[type="tel"],
+input[type="url"],
+textarea,
+select {
+    font-size: 16px !important; /* Previne zoom no iOS */
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+}
+
+/* Botões mais acessíveis em touch */
+.btn,
+button,
+[role="button"] {
+    min-height: 44px;
+    min-width: 44px;
+    touch-action: manipulation;
+}
+
+/* Melhorar scrolling em mobile */
+.sidebar,
+.main-content {
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+}
+
+/* Correções para tabelas responsivas */
+@media (max-width: 768px) {
+    .table-responsive {
+        border: none;
+        overflow-x: hidden;
+    }
+    
+    .table {
+        border: none;
+    }
+    
+    .table thead {
+        display: none;
+    }
+    
+    .table tbody tr {
+        display: block;
+        border: 1px solid #e2e8f0;
+        border-radius: 12px;
+        margin-bottom: 1rem;
+        padding: 1rem;
+        background: #fff;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    
+    .table tbody td {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.5rem 0;
+        border: none;
+        border-bottom: 1px solid #f1f5f9;
+        font-size: 0.9rem;
+    }
+    
+    .table tbody td:last-child {
+        border-bottom: none;
+        margin-top: 0.5rem;
+    }
+    
+    .table tbody td[data-label]:before {
+        content: attr(data-label);
+        font-weight: 600;
+        color: #64748b;
+        font-size: 0.85rem;
+    }
+}
+
+/* Dark theme adjustments */
+html[data-theme="dark"] .table tbody tr {
+    background: #1e293b;
+    border-color: rgba(255,255,255,0.1);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+}
+
+html[data-theme="dark"] .table tbody td {
+    border-bottom-color: rgba(255,255,255,0.1);
+}
+
+html[data-theme="dark"] .table tbody td[data-label]:before {
+    color: #94a3b8;
+}
+
+/* Melhorias para modal em mobile */
+@media (max-width: 576px) {
+    .modal {
+        padding: 0;
+    }
+    
+    .modal-dialog {
+        margin: 0;
+        max-width: 100%;
+        height: 100vh;
+        display: flex;
+        align-items: flex-end;
+    }
+    
+    .modal-content {
+        border-radius: 12px 12px 0 0;
+        border: none;
+        max-height: 90vh;
+        overflow-y: auto;
+    }
+    
+    .modal-header {
+        border-bottom: 1px solid #e2e8f0;
+        padding: 1.25rem;
+    }
+    
+    .modal-body {
+        padding: 1.25rem;
+        overflow-y: auto;
+    }
+    
+    .modal-footer {
+        border-top: 1px solid #e2e8f0;
+        padding: 1.25rem;
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+    
+    .modal-footer .btn {
+        width: 100%;
+        margin: 0;
+    }
+}
+
+/* Melhorias para cards stats em mobile */
+@media (max-width: 768px) {
+    .stats-card {
+        text-align: center;
+        padding: 1.5rem 1rem;
+    }
+    
+    .stats-icon {
+        margin: 0 auto 0.75rem;
+    }
+    
+    .stats-value {
+        display: block;
+        margin-bottom: 0.5rem;
+    }
+}
+
+/* Melhorias para paginação */
+@media (max-width: 576px) {
+    .pagination {
+        justify-content: center;
+        flex-wrap: wrap;
+        gap: 0.25rem;
+    }
+    
+    .pagination .page-item {
+        margin: 0;
+    }
+    
+    .pagination .page-link {
+        padding: 0.5rem 0.75rem;
+        font-size: 0.85rem;
+        min-width: 40px;
+        text-align: center;
+        border-radius: 6px;
+    }
+    
+    /* Esconder números intermediários em mobile */
+    .pagination .page-item:not(.active):not(:first-child):not(:last-child):not(.page-item:nth-child(2)):not(.page-item:nth-last-child(2)) {
+        display: none;
+    }
+}
+
+/* Melhorias para sidebar mobile */
+@media (max-width: 1024px) {
+    body.sidebar-open {
+        overflow: hidden;
+        position: fixed;
+        width: 100%;
+    }
+    
+    .sidebar {
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+    
+    .sidebar .nav-link {
+        transition: background-color 0.2s ease;
+    }
+    
+    .sidebar .nav-link:active {
+        background-color: rgba(59, 130, 246, 0.1);
+    }
+}
+
+/* Correções específicas para iOS */
+@supports (-webkit-touch-callout: none) {
+    .form-control,
+    .form-select {
+        transform: translateZ(0); /* Force hardware acceleration */
+    }
+    
+    /* Fix para viewport em iOS */
+    html {
+        height: -webkit-fill-available;
+    }
+    
+    body {
+        min-height: 100vh;
+        min-height: -webkit-fill-available;
+    }
+}
+
+/* Melhorias para Android */
+@media screen and (-webkit-device-pixel-ratio: 3) {
+    .btn,
+    .form-control {
+        border-width: 0.33px; /* Adjust border for high DPI */
+    }
+}
