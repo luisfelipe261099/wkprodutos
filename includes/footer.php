@@ -3,237 +3,268 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     
-    <!-- SCRIPT DE SIDEBAR MOBILE FINAL - VERSÃO DEFINITIVA -->
+    <!-- SCRIPT MOBILE SIDEBAR - VERSÃO AGRESSIVA FINAL -->
     <script>
-    console.log('🚀 === INICIANDO SIDEBAR MOBILE FINAL ===');
+    console.log('🚀 === INICIANDO SIDEBAR MOBILE AGRESSIVO ===');
     
-    // Função principal de inicialização
-    function inicializarSidebarMobile() {
-        console.log('📱 Verificando dispositivo...');
+    function forcarSidebarMobile() {
+        console.log('💪 FORÇANDO configuração mobile...');
         
-        // Verificar se é mobile
-        const isMobile = window.innerWidth <= 768;
-        console.log(`📱 É mobile? ${isMobile} (largura: ${window.innerWidth}px)`);
+        // FORÇAR DETECÇÃO MOBILE (ignorar largura da tela)
+        const forceMobile = true; // SEMPRE considerar como mobile
+        console.log(`📱 Modo forçado: ${forceMobile}`);
         
-        if (!isMobile) {
-            console.log('🖥️ Desktop detectado - não configurando sidebar mobile');
-            return;
+        // BUSCAR ELEMENTOS COM FORÇA BRUTA
+        console.log('🔍 Procurando elementos com força bruta...');
+        
+        const possibleToggles = [
+            '.sidebar-toggle',
+            '#sidebarToggle', 
+            '[data-toggle="sidebar"]',
+            '.navbar-toggler',
+            '.menu-toggle',
+            'button[aria-controls="sidebar"]'
+        ];
+        
+        const possibleSidebars = [
+            '.sidebar',
+            '#sidebar',
+            'nav.sidebar',
+            'aside.sidebar'
+        ];
+        
+        let toggle = null;
+        let sidebar = null;
+        
+        // Procurar toggle
+        for (let selector of possibleToggles) {
+            toggle = document.querySelector(selector);
+            if (toggle) {
+                console.log(`✅ Toggle encontrado: ${selector}`);
+                break;
+            }
         }
         
-        console.log('🔍 Procurando elementos da sidebar...');
+        // Procurar sidebar
+        for (let selector of possibleSidebars) {
+            sidebar = document.querySelector(selector);
+            if (sidebar) {
+                console.log(`✅ Sidebar encontrada: ${selector}`);
+                break;
+            }
+        }
         
-        // Buscar elementos com múltiplos seletores
-        let toggle = document.querySelector('.sidebar-toggle');
-        if (!toggle) toggle = document.querySelector('#sidebarToggle');
-        if (!toggle) toggle = document.querySelector('[data-toggle="sidebar"]');
-        if (!toggle) toggle = document.querySelector('.navbar-toggler');
-        if (!toggle) toggle = document.querySelector('.menu-toggle');
-        
-        let sidebar = document.querySelector('.sidebar');
-        if (!sidebar) sidebar = document.querySelector('nav.sidebar');
-        if (!sidebar) sidebar = document.querySelector('#sidebar');
-        if (!sidebar) sidebar = document.querySelector('aside.sidebar');
-        
-        console.log('🔍 Elementos encontrados:', {
-            toggle: toggle ? `✅ ${toggle.className || toggle.id || 'sem classe'}` : '❌ não encontrado',
-            sidebar: sidebar ? `✅ ${sidebar.className || sidebar.id || 'sem classe'}` : '❌ não encontrado'
-        });
+        // LOG DE DEBUG DETALHADO
+        console.log('🔍 ELEMENTOS DISPONÍVEIS NO DOM:');
+        const allButtons = document.querySelectorAll('button');
+        console.log(`   - Botões: ${allButtons.length}`, Array.from(allButtons).map(b => b.className || b.id || 'sem classe'));
+        const allNavs = document.querySelectorAll('nav, aside, .sidebar');
+        console.log(`   - Navegação: ${allNavs.length}`, Array.from(allNavs).map(n => n.className || n.id || 'sem classe'));
         
         if (!toggle) {
-            console.error('❌ ERRO: Toggle button não encontrado!');
-            console.log('🔍 Elementos disponíveis:', Array.from(document.querySelectorAll('button, [data-toggle]')).map(el => el.className || el.id || el.tagName));
-            return;
+            console.error('❌ ERRO CRÍTICO: Toggle não encontrado!');
+            console.log('🆘 Criando toggle de emergência...');
+            
+            // CRIAR TOGGLE DE EMERGÊNCIA
+            const emergencyToggle = document.createElement('button');
+            emergencyToggle.innerHTML = '☰';
+            emergencyToggle.className = 'emergency-toggle';
+            emergencyToggle.style.cssText = `
+                position: fixed !important;
+                top: 10px !important;
+                left: 10px !important;
+                z-index: 9999 !important;
+                background: #ff0000 !important;
+                color: white !important;
+                border: none !important;
+                padding: 15px !important;
+                border-radius: 50% !important;
+                font-size: 18px !important;
+                cursor: pointer !important;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.3) !important;
+            `;
+            document.body.appendChild(emergencyToggle);
+            toggle = emergencyToggle;
+            console.log('🆘 Toggle de emergência criado!');
         }
         
         if (!sidebar) {
-            console.error('❌ ERRO: Sidebar não encontrada!');
-            console.log('🔍 Elementos disponíveis:', Array.from(document.querySelectorAll('nav, aside, .side')).map(el => el.className || el.id || el.tagName));
-            return;
+            console.error('❌ ERRO CRÍTICO: Sidebar não encontrada!');
+            return false;
         }
         
-        console.log('✅ Elementos encontrados com sucesso!');
+        console.log('✅ Elementos confirmados - iniciando configuração...');
         
-        // Criar overlay se não existir
-        let overlay = document.querySelector('.mobile-overlay');
+        // CRIAR OVERLAY AGRESSIVO
+        let overlay = document.querySelector('.mobile-overlay') || document.querySelector('.sidebar-overlay');
         if (!overlay) {
-            console.log('📱 Criando overlay...');
             overlay = document.createElement('div');
-            overlay.className = 'mobile-overlay';
+            overlay.className = 'mobile-overlay emergency-overlay';
             document.body.appendChild(overlay);
-            console.log('✅ Overlay criado');
-        } else {
-            console.log('✅ Overlay já existe');
+            console.log('✅ Overlay de emergência criado');
         }
         
-        // Aplicar estilos forçados via JavaScript
-        console.log('🎨 Aplicando estilos...');
+        // APLICAR ESTILOS CSS FORÇADOS DIRETAMENTE
+        console.log('🎨 Aplicando estilos FORÇADOS...');
         
-        // Sidebar
-        Object.assign(sidebar.style, {
-            position: 'fixed',
-            top: '0',
-            left: '0',
-            width: '85vw',
-            maxWidth: '300px',
-            height: '100vh',
-            transform: 'translateX(-100%)',
-            transition: 'transform 0.3s ease',
-            zIndex: '1050',
-            background: 'linear-gradient(180deg, #1e293b 0%, #0f172a 100%)',
-            boxShadow: '6px 0 30px rgba(0, 0, 0, 0.6)',
-            overflowY: 'auto',
-            overflowX: 'hidden',
-            margin: '0',
-            padding: '0',
-            border: 'none'
-        });
+        // FORÇAR SIDEBAR
+        sidebar.style.cssText = `
+            position: fixed !important;
+            top: 0 !important;
+            left: 0 !important;
+            width: 85vw !important;
+            max-width: 300px !important;
+            height: 100vh !important;
+            transform: translateX(-100%) !important;
+            transition: transform 0.3s ease !important;
+            z-index: 1050 !important;
+            background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%) !important;
+            box-shadow: 6px 0 30px rgba(0, 0, 0, 0.7) !important;
+            overflow-y: auto !important;
+            overflow-x: hidden !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            border: none !important;
+            display: block !important;
+            visibility: visible !important;
+        `;
         
-        // Overlay
-        Object.assign(overlay.style, {
-            position: 'fixed',
-            top: '0',
-            left: '0',
-            width: '100vw',
-            height: '100vh',
-            background: 'rgba(0, 0, 0, 0.75)',
-            zIndex: '1040',
-            display: 'none',
-            opacity: '0',
-            transition: 'opacity 0.3s ease',
-            backdropFilter: 'blur(4px)',
-            cursor: 'pointer'
-        });
+        // FORÇAR OVERLAY
+        overlay.style.cssText = `
+            position: fixed !important;
+            top: 0 !important;
+            left: 0 !important;
+            width: 100vw !important;
+            height: 100vh !important;
+            background: rgba(0, 0, 0, 0.6) !important;
+            z-index: 1040 !important;
+            display: none !important;
+            opacity: 0 !important;
+            transition: opacity 0.3s ease !important;
+            backdrop-filter: blur(3px) !important;
+            cursor: pointer !important;
+        `;
         
-        // Topbar
+        // FORÇAR TOPBAR
         const topbar = document.querySelector('.topbar') || document.querySelector('.navbar') || document.querySelector('header');
         if (topbar) {
-            Object.assign(topbar.style, {
-                position: 'fixed',
-                top: '0',
-                left: '0',
-                right: '0',
-                height: '60px',
-                zIndex: '1030',
-                background: 'rgba(255, 255, 255, 0.98)',
-                backdropFilter: 'blur(20px)',
-                display: 'flex',
-                alignItems: 'center',
-                padding: '0 1rem'
-            });
-            console.log('✅ Topbar estilizada');
+            topbar.style.cssText += `
+                position: fixed !important;
+                top: 0 !important;
+                left: 0 !important;
+                right: 0 !important;
+                height: 60px !important;
+                z-index: 1030 !important;
+                background: rgba(255, 255, 255, 0.98) !important;
+                backdrop-filter: blur(20px) !important;
+                display: flex !important;
+                align-items: center !important;
+                padding: 0 1rem !important;
+            `;
+            console.log('✅ Topbar forçada');
         }
         
-        // Main content
+        // FORÇAR MAIN CONTENT
         const mainContent = document.querySelector('.main-content') || document.querySelector('main') || document.querySelector('.content');
         if (mainContent) {
-            Object.assign(mainContent.style, {
-                marginLeft: '0',
-                marginTop: '60px',
-                padding: '1rem',
-                width: '100%'
-            });
-            console.log('✅ Main content estilizado');
+            mainContent.style.cssText += `
+                margin-left: 0 !important;
+                margin-top: 60px !important;
+                padding: 1rem !important;
+                width: 100% !important;
+            `;
+            console.log('✅ Main content forçado');
         }
         
         console.log('✅ Estilos aplicados com sucesso!');
         
-        // Variável de estado
+        // VARIÁVEIS GLOBAIS
         let sidebarAberta = false;
         
-        // Funções de controle
-        function abrirSidebar() {
-            console.log('🔓 Abrindo sidebar...');
+        // FUNÇÕES DE CONTROLE AGRESSIVAS
+        window.abrirSidebarAgressiva = function() {
+            console.log('🔓 ABRINDO sidebar agressivamente...');
             sidebarAberta = true;
+            
             sidebar.style.transform = 'translateX(0)';
+            sidebar.classList.add('show');
+            
             overlay.style.display = 'block';
             setTimeout(() => overlay.style.opacity = '1', 10);
-            sidebar.classList.add('show');
+            overlay.classList.add('show');
+            
             document.body.style.overflow = 'hidden';
-            console.log('✅ Sidebar aberta');
-        }
+            document.body.classList.add('sidebar-open');
+            
+            console.log('✅ Sidebar ABERTA com sucesso!');
+        };
         
-        function fecharSidebar() {
-            console.log('🔒 Fechando sidebar...');
+        window.fecharSidebarAgressiva = function() {
+            console.log('🔒 FECHANDO sidebar agressivamente...');
             sidebarAberta = false;
+            
             sidebar.style.transform = 'translateX(-100%)';
-            overlay.style.opacity = '0';
-            setTimeout(() => overlay.style.display = 'none', 300);
             sidebar.classList.remove('show');
+            
+            overlay.style.opacity = '0';
+            setTimeout(() => {
+                overlay.style.display = 'none';
+                overlay.classList.remove('show');
+            }, 300);
+            
             document.body.style.overflow = '';
-            console.log('✅ Sidebar fechada');
-        }
+            document.body.classList.remove('sidebar-open');
+            
+            console.log('✅ Sidebar FECHADA com sucesso!');
+        };
         
-        function alternarSidebar() {
-            console.log('🔄 Alternando sidebar...');
+        window.alternarSidebarAgressiva = function() {
+            console.log('🔄 ALTERNANDO sidebar...');
             if (sidebarAberta) {
-                fecharSidebar();
+                window.fecharSidebarAgressiva();
             } else {
-                abrirSidebar();
+                window.abrirSidebarAgressiva();
             }
-        }
+        };
         
-        // Expor funções globalmente para debug
-        window.abrirSidebar = abrirSidebar;
-        window.fecharSidebar = fecharSidebar;
-        window.alternarSidebar = alternarSidebar;
+        // EVENTOS AGRESSIVOS
+        console.log('🎯 Configurando eventos agressivos...');
         
-        // Clonar toggle button para remover eventos existentes
-        console.log('🔄 Configurando eventos...');
+        // CLONAR TOGGLE para remover eventos existentes
         const novoToggle = toggle.cloneNode(true);
         toggle.parentNode.replaceChild(novoToggle, toggle);
-        toggle = novoToggle;
         
-        // Event listeners
-        toggle.addEventListener('click', function(e) {
-            e.preventDefault();
-            e.stopPropagation();
-            console.log('👆 Toggle clicado - click');
-            alternarSidebar();
+        // EVENT LISTENERS MÚLTIPLOS
+        ['click', 'touchend', 'touchstart'].forEach(eventType => {
+            novoToggle.addEventListener(eventType, function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                e.stopImmediatePropagation();
+                console.log(`👆 Toggle ${eventType} - ATIVADO!`);
+                window.alternarSidebarAgressiva();
+            }, { passive: false });
         });
         
-        toggle.addEventListener('touchend', function(e) {
-            e.preventDefault();
-            e.stopPropagation();
-            console.log('👆 Toggle tocado - touchend');
-            alternarSidebar();
-        });
-        
+        // OVERLAY CLICK
         overlay.addEventListener('click', function(e) {
             e.preventDefault();
-            console.log('👆 Overlay clicado');
-            fecharSidebar();
+            console.log('👆 Overlay clicado - FECHANDO');
+            window.fecharSidebarAgressiva();
         });
         
-        // ESC key
+        // ESC KEY
         document.addEventListener('keydown', function(e) {
             if (e.key === 'Escape' && sidebarAberta) {
-                console.log('⌨️ ESC pressionado');
-                fecharSidebar();
+                console.log('⌨️ ESC - FECHANDO');
+                window.fecharSidebarAgressiva();
             }
         });
         
-        // Resize
-        window.addEventListener('resize', function() {
-            if (window.innerWidth > 768 && sidebarAberta) {
-                console.log('📱➡️🖥️ Mudou para desktop');
-                fecharSidebar();
-            }
-        });
+        console.log('✅ Eventos configurados!');
         
-        console.log('✅ Event listeners configurados');
-        
-        // Fechar modal de encoding
-        setTimeout(function() {
-            const encodingModal = document.querySelector('div[style*="position: fixed"]');
-            if (encodingModal && encodingModal.textContent.includes('Encoding')) {
-                console.log('📝 Fechando modal de encoding...');
-                encodingModal.style.display = 'none';
-            }
-        }, 1000);
-        
-        // Botão de teste visual
+        // BOTÃO DE TESTE SUPER VISÍVEL
         const botaoTeste = document.createElement('button');
-        botaoTeste.innerHTML = '☰ TESTE';
+        botaoTeste.innerHTML = '🧪 TESTE SIDEBAR';
         botaoTeste.style.cssText = `
             position: fixed !important;
             bottom: 20px !important;
@@ -243,78 +274,79 @@
             color: white !important;
             border: none !important;
             padding: 15px 20px !important;
-            border-radius: 30px !important;
+            border-radius: 25px !important;
             font-size: 14px !important;
             font-weight: bold !important;
             cursor: pointer !important;
             box-shadow: 0 8px 25px rgba(255, 71, 87, 0.4) !important;
-            transition: all 0.3s ease !important;
-            touch-action: manipulation !important;
+            animation: pulse 2s infinite !important;
         `;
         
-        botaoTeste.onmouseover = function() {
-            this.style.transform = 'translateY(-2px) scale(1.05)';
-            this.style.boxShadow = '0 12px 35px rgba(255, 71, 87, 0.6)';
-        };
-        
-        botaoTeste.onmouseout = function() {
-            this.style.transform = 'translateY(0) scale(1)';
-            this.style.boxShadow = '0 8px 25px rgba(255, 71, 87, 0.4)';
-        };
+        // Animação pulsante
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes pulse {
+                0% { transform: scale(1); }
+                50% { transform: scale(1.05); }
+                100% { transform: scale(1); }
+            }
+        `;
+        document.head.appendChild(style);
         
         botaoTeste.onclick = function() {
-            console.log('🧪 Botão de teste clicado!');
-            alternarSidebar();
+            console.log('🧪 BOTÃO DE TESTE CLICADO!');
+            window.alternarSidebarAgressiva();
         };
         
         document.body.appendChild(botaoTeste);
-        console.log('🧪 Botão de teste adicionado');
+        console.log('🧪 Botão de teste SUPER VISÍVEL adicionado');
         
-        console.log('🎉 === SIDEBAR MOBILE CONFIGURADA COM SUCESSO! ===');
-        console.log('🧪 Comandos de teste disponíveis:');
-        console.log('   - window.abrirSidebar()');
-        console.log('   - window.fecharSidebar()');
-        console.log('   - window.alternarSidebar()');
+        // FECHAR MODAL DE ENCODING
+        setTimeout(function() {
+            const encodingModal = document.querySelector('div[style*="position: fixed"]');
+            if (encodingModal && encodingModal.textContent.includes('Encoding')) {
+                console.log('📝 Fechando modal de encoding...');
+                encodingModal.style.display = 'none';
+            }
+        }, 1000);
+        
+        console.log('🎉 === SIDEBAR MOBILE AGRESSIVO CONFIGURADO! ===');
+        console.log('🧪 COMANDOS DE TESTE:');
+        console.log('   - window.abrirSidebarAgressiva()');
+        console.log('   - window.fecharSidebarAgressiva()');
+        console.log('   - window.alternarSidebarAgressiva()');
         
         return true;
     }
     
-    // Executar com múltiplas estratégias
-    console.log('⏰ Configurando múltiplas tentativas...');
+    // EXECUTAR COM MÚLTIPLAS ESTRATÉGIAS AGRESSIVAS
+    console.log('⚡ Executando com estratégias múltiplas...');
     
-    // Tentativa 1: DOM já carregado
-    if (document.readyState === 'complete') {
-        console.log('✅ DOM já carregado - inicializando imediatamente');
-        inicializarSidebarMobile();
+    // Estratégia 1: Imediata
+    if (document.readyState !== 'loading') {
+        console.log('⚡ DOM pronto - executando imediatamente');
+        forcarSidebarMobile();
     }
     
-    // Tentativa 2: DOMContentLoaded
+    // Estratégia 2: DOMContentLoaded
     document.addEventListener('DOMContentLoaded', function() {
-        console.log('✅ DOMContentLoaded disparado');
-        inicializarSidebarMobile();
+        console.log('⚡ DOMContentLoaded - executando');
+        setTimeout(forcarSidebarMobile, 100);
     });
     
-    // Tentativa 3: Load event
+    // Estratégia 3: Load completo
     window.addEventListener('load', function() {
-        console.log('✅ Window load disparado');
-        inicializarSidebarMobile();
+        console.log('⚡ Window load - executando');
+        setTimeout(forcarSidebarMobile, 200);
     });
     
-    // Tentativas com timeout
-    setTimeout(() => {
-        console.log('⏰ Timeout 500ms - tentativa');
-        inicializarSidebarMobile();
-    }, 500);
-    
-    setTimeout(() => {
-        console.log('⏰ Timeout 1000ms - tentativa');
-        inicializarSidebarMobile();
-    }, 1000);
-    
-    setTimeout(() => {
-        console.log('⏰ Timeout 2000ms - tentativa final');
-        inicializarSidebarMobile();
-    }, 2000);
+    // Estratégias 4-7: Timeouts agressivos
+    [500, 1000, 2000, 3000].forEach((delay, index) => {
+        setTimeout(() => {
+            console.log(`⚡ Timeout ${delay}ms (tentativa ${index + 4})`);
+            forcarSidebarMobile();
+        }, delay);
+    });
     </script>
     }
     
