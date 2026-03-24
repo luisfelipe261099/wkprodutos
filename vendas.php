@@ -541,38 +541,60 @@ include_once 'includes/header.php';
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     // Inicializar busca para vendas
-    SearchUtils.initializeSearch({
-        inputId: 'searchInput',
-        tableId: 'vendasTable',
-        mobileCardsSelector: '.mobile-sale-card',
-        searchColumns: [0, 1, 2, 4, 5] // ID, Cliente, Data, Forma Pagamento, Status
-    });
+    if (window.SearchUtils && typeof window.SearchUtils.initializeSearch === 'function') {
+        window.SearchUtils.initializeSearch({
+            inputId: 'searchInput',
+            tableId: 'vendasTable',
+            mobileCardsSelector: '.mobile-sale-card',
+            searchColumns: [0, 1, 2, 4, 5] // ID, Cliente, Data, Forma Pagamento, Status
+        });
+    }
 
     // Modal para mudar status
     const changeStatusModal = document.getElementById('changeStatusModal');
     if (changeStatusModal) {
-        changeStatusModal.addEventListener('show.bs.modal', function (event) {
-            const button = event.relatedTarget;
-            if (!button) {
+        const modalVendaIdInput = changeStatusModal.querySelector('#modal_venda_id');
+        const modalStatusSelect = changeStatusModal.querySelector('#modal_novo_status');
+
+        function preencherModalStatus(triggerElement) {
+            if (!triggerElement || !modalVendaIdInput || !modalStatusSelect) {
                 return;
             }
 
-            const vendaId = button.getAttribute('data-venda-id');
-            const currentStatus = button.getAttribute('data-current-status');
+            const vendaId = triggerElement.getAttribute('data-venda-id');
+            const currentStatus = triggerElement.getAttribute('data-current-status');
 
-            const modalVendaIdInput = changeStatusModal.querySelector('#modal_venda_id');
-            const modalStatusSelect = changeStatusModal.querySelector('#modal_novo_status');
-
-            modalVendaIdInput.value = vendaId;
+            modalVendaIdInput.value = vendaId || '';
             if (currentStatus) {
                 modalStatusSelect.value = currentStatus;
+            }
+        }
+
+        document.addEventListener('click', function (event) {
+            const triggerElement = event.target.closest('[data-bs-target="#changeStatusModal"]');
+            if (triggerElement) {
+                preencherModalStatus(triggerElement);
+            }
+        });
+
+        changeStatusModal.addEventListener('show.bs.modal', function (event) {
+            const triggerElement = event.relatedTarget ? event.relatedTarget.closest('[data-bs-target="#changeStatusModal"]') : null;
+            if (!triggerElement) {
+                return;
+            }
+
+            preencherModalStatus(triggerElement);
+        });
+
+        changeStatusModal.addEventListener('hidden.bs.modal', function () {
+            if (modalVendaIdInput) {
+                modalVendaIdInput.value = '';
             }
         });
 
         const changeStatusForm = changeStatusModal.querySelector('form');
         if (changeStatusForm) {
             changeStatusForm.addEventListener('submit', function (event) {
-                const modalVendaIdInput = changeStatusModal.querySelector('#modal_venda_id');
                 const vendaId = parseInt(modalVendaIdInput.value, 10);
 
                 if (!Number.isInteger(vendaId) || vendaId <= 0) {
