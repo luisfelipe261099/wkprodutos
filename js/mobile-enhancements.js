@@ -220,13 +220,8 @@ function optimizeForms() {
         });
     });
     
-    // Melhorar select2 em mobile
-    if (typeof $ !== 'undefined' && $.fn.select2) {
-        $('.form-select, select').select2({
-            dropdownAutoWidth: true,
-            width: '100%'
-        });
-    }
+    // Nao inicializa Select2 globalmente em todos os selects.
+    // As telas que precisam desse comportamento devem configurar explicitamente.
 }
 
 function enhanceTables() {
