@@ -463,6 +463,81 @@ include_once 'includes/header.php';
     justify-content: flex-end;
     margin-top: 1.5rem;
 }
+.mobile-billing-selector {
+    display: none;
+}
+
+.mobile-billing-toggle {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    text-align: left;
+    background: var(--app-surface, white);
+    border: 1px solid var(--app-border, #d1d5db);
+    border-radius: 0.75rem;
+    padding: 0.9rem 1rem;
+    color: var(--app-text, #111827);
+}
+
+.mobile-billing-toggle-text {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+}
+
+.mobile-billing-toggle-label {
+    font-size: 0.75rem;
+    color: #6b7280;
+}
+
+.mobile-billing-toggle-value {
+    font-weight: 600;
+}
+
+.mobile-billing-panel {
+    margin-top: 0.75rem;
+    border: 1px solid var(--app-border, #d1d5db);
+    border-radius: 0.75rem;
+    background: var(--app-surface, white);
+    padding: 0.75rem;
+}
+
+.mobile-billing-search {
+    margin-bottom: 0.75rem;
+}
+
+.mobile-billing-options {
+    display: grid;
+    gap: 0.5rem;
+    max-height: 260px;
+    overflow-y: auto;
+}
+
+.mobile-billing-option {
+    width: 100%;
+    text-align: left;
+    border: 1px solid var(--app-border, #d1d5db);
+    border-radius: 0.75rem;
+    background: var(--app-surface, white);
+    padding: 0.85rem 0.9rem;
+    color: var(--app-text, #111827);
+}
+
+.mobile-billing-option.active {
+    border-color: var(--app-primary, #2563eb);
+    background: rgba(37, 99, 235, 0.08);
+    color: var(--app-primary, #2563eb);
+}
+
+.mobile-billing-empty {
+    padding: 0.85rem 0.9rem;
+    border-radius: 0.75rem;
+    background: var(--app-surface-muted, #f8f9fa);
+    color: #6b7280;
+    text-align: center;
+}
 
 /* Estilos para tabela com rolagem */
 .table-container {
@@ -522,6 +597,14 @@ include_once 'includes/header.php';
         display: flex;
         flex-direction: column;
         justify-content: center;
+    }
+
+    .desktop-billing-select {
+        display: none;
+    }
+
+    .mobile-billing-selector {
+        display: block;
     }
 
     .table-container {
@@ -619,11 +702,31 @@ include_once 'includes/header.php';
                 </div>
                 <div class="col-md-4">
                     <label class="form-label">Tipo de Faturamento</label>
-                    <select name="tipo_faturamento" class="form-control">
+                    <select name="tipo_faturamento" id="tipo_faturamento_select" class="form-control desktop-billing-select">
                         <?php foreach ($tipos_faturamento_permitidos as $opcao_tipo): ?>
                             <option value="<?php echo htmlspecialchars($opcao_tipo); ?>" <?php echo $tipo_faturamento === $opcao_tipo ? 'selected' : ''; ?>><?php echo htmlspecialchars($labels_tipo_faturamento[$opcao_tipo] ?? $opcao_tipo); ?></option>
                         <?php endforeach; ?>
                     </select>
+                    <div class="mobile-billing-selector">
+                        <button type="button" class="mobile-billing-toggle" id="mobileBillingToggle" aria-expanded="false" aria-controls="mobileBillingPanel">
+                            <span class="mobile-billing-toggle-text">
+                                <span class="mobile-billing-toggle-label">Tipo selecionado</span>
+                                <span class="mobile-billing-toggle-value" id="mobileBillingSelectedLabel"><?php echo htmlspecialchars($labels_tipo_faturamento[$tipo_faturamento] ?? ($labels_tipo_faturamento[$tipos_faturamento_permitidos[0]] ?? 'Selecione')); ?></span>
+                            </span>
+                            <i class="fas fa-chevron-down"></i>
+                        </button>
+                        <div class="mobile-billing-panel" id="mobileBillingPanel" hidden>
+                            <input type="text" class="form-control mobile-billing-search" id="mobileBillingSearch" placeholder="Buscar tipo de faturamento...">
+                            <div class="mobile-billing-options" id="mobileBillingOptions">
+                                <?php foreach ($tipos_faturamento_permitidos as $opcao_tipo): ?>
+                                    <button type="button" class="mobile-billing-option <?php echo $tipo_faturamento === $opcao_tipo ? 'active' : ''; ?>" data-value="<?php echo htmlspecialchars($opcao_tipo); ?>" data-label="<?php echo htmlspecialchars($labels_tipo_faturamento[$opcao_tipo] ?? $opcao_tipo); ?>">
+                                        <?php echo htmlspecialchars($labels_tipo_faturamento[$opcao_tipo] ?? $opcao_tipo); ?>
+                                    </button>
+                                <?php endforeach; ?>
+                            </div>
+                            <div class="mobile-billing-empty" id="mobileBillingEmpty" hidden>Nenhum tipo encontrado.</div>
+                        </div>
+                    </div>
                 </div>
                 <div class="col-md-4">
                     <label class="form-label">Data de Vencimento <span id="label_boleto" style="display:none; color: #dc3545;">(Obrigatório para Boleto)</span></label>
@@ -801,6 +904,13 @@ const clienteDropdown = document.getElementById('cliente_dropdown');
 const clienteIdInput = document.getElementById('cliente_id');
 const formOrcamento = document.getElementById('formOrcamento');
 const itensSelecionadosJson = document.getElementById('itens_selecionados_json');
+const tipoFaturamentoSelect = document.getElementById('tipo_faturamento_select');
+const mobileBillingToggle = document.getElementById('mobileBillingToggle');
+const mobileBillingPanel = document.getElementById('mobileBillingPanel');
+const mobileBillingSelectedLabel = document.getElementById('mobileBillingSelectedLabel');
+const mobileBillingSearch = document.getElementById('mobileBillingSearch');
+const mobileBillingOptions = document.getElementById('mobileBillingOptions');
+const mobileBillingEmpty = document.getElementById('mobileBillingEmpty');
 
 console.log('✅ Elementos DOM carregados');
 
@@ -815,6 +925,52 @@ function criarDropdownItem(conteudoHtml, onSelect) {
         onSelect();
     }, { passive: false });
     return div;
+}
+
+function atualizarLabelTipoFaturamentoMobile() {
+    if (!tipoFaturamentoSelect || !mobileBillingSelectedLabel) {
+        return;
+    }
+
+    const selectedOption = tipoFaturamentoSelect.options[tipoFaturamentoSelect.selectedIndex];
+    mobileBillingSelectedLabel.textContent = selectedOption ? selectedOption.textContent : 'Selecione';
+
+    if (!mobileBillingOptions) {
+        return;
+    }
+
+    mobileBillingOptions.querySelectorAll('.mobile-billing-option').forEach((button) => {
+        button.classList.toggle('active', button.getAttribute('data-value') === tipoFaturamentoSelect.value);
+    });
+}
+
+function fecharSeletorTipoFaturamentoMobile() {
+    if (!mobileBillingPanel || !mobileBillingToggle) {
+        return;
+    }
+
+    mobileBillingPanel.hidden = true;
+    mobileBillingToggle.setAttribute('aria-expanded', 'false');
+}
+
+function filtrarOpcoesTipoFaturamentoMobile() {
+    if (!mobileBillingSearch || !mobileBillingOptions || !mobileBillingEmpty) {
+        return;
+    }
+
+    const termo = mobileBillingSearch.value.toLowerCase().trim();
+    let visibleCount = 0;
+
+    mobileBillingOptions.querySelectorAll('.mobile-billing-option').forEach((button) => {
+        const label = (button.getAttribute('data-label') || '').toLowerCase();
+        const matches = !termo || label.includes(termo);
+        button.hidden = !matches;
+        if (matches) {
+            visibleCount++;
+        }
+    });
+
+    mobileBillingEmpty.hidden = visibleCount > 0;
 }
 
 // Renderizar tabela de itens ao carregar a página (ÚNICA CHAMADA)
@@ -1218,7 +1374,44 @@ document.addEventListener('click', function(event) {
         produtoDropdown.style.display = 'none';
         clienteDropdown.style.display = 'none';
     }
+
+    if (!event.target.closest('.mobile-billing-selector')) {
+        fecharSeletorTipoFaturamentoMobile();
+    }
 });
+
+if (tipoFaturamentoSelect && mobileBillingToggle && mobileBillingPanel && mobileBillingOptions) {
+    atualizarLabelTipoFaturamentoMobile();
+
+    mobileBillingToggle.addEventListener('click', function() {
+        const isOpen = !mobileBillingPanel.hidden;
+        mobileBillingPanel.hidden = isOpen;
+        mobileBillingToggle.setAttribute('aria-expanded', String(!isOpen));
+
+        if (!isOpen && mobileBillingSearch) {
+            mobileBillingSearch.value = '';
+            filtrarOpcoesTipoFaturamentoMobile();
+            mobileBillingSearch.focus();
+        }
+    });
+
+    mobileBillingOptions.addEventListener('click', function(event) {
+        const optionButton = event.target.closest('.mobile-billing-option');
+        if (!optionButton) {
+            return;
+        }
+
+        tipoFaturamentoSelect.value = optionButton.getAttribute('data-value') || '';
+        atualizarLabelTipoFaturamentoMobile();
+        fecharSeletorTipoFaturamentoMobile();
+    });
+
+    tipoFaturamentoSelect.addEventListener('change', atualizarLabelTipoFaturamentoMobile);
+
+    if (mobileBillingSearch) {
+        mobileBillingSearch.addEventListener('input', filtrarOpcoesTipoFaturamentoMobile);
+    }
+}
 </script>
 
 <?php include_once 'includes/footer.php'; ?>
