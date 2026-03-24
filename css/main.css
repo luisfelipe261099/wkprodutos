@@ -358,6 +358,15 @@ html, body {
     -webkit-overflow-scrolling: touch;
 }
 
+.table-responsive-custom {
+    display: block;
+}
+
+.mobile-sales-container,
+.mobile-orcamentos-container {
+    display: none;
+}
+
 /* Status Badges */
 .status-badge {
     display: inline-block;
@@ -639,6 +648,15 @@ html, body {
         min-width: 600px;
         font-size: 0.875rem;
     }
+
+    .table-responsive-custom {
+        display: none;
+    }
+
+    .mobile-sales-container,
+    .mobile-orcamentos-container {
+        display: block;
+    }
     
     .table thead th,
     .table tbody td {
@@ -694,6 +712,15 @@ html, body {
     
     .nav-link i {
         font-size: 1rem;
+    }
+
+    .table-responsive-custom {
+        display: block;
+    }
+
+    .mobile-sales-container,
+    .mobile-orcamentos-container {
+        display: none;
     }
 }
 
