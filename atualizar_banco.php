@@ -134,6 +134,7 @@ try {
                  '20',
                  '20_dias',
                  '21',
+                 '28',
                  '30',
                  '30_dias',
                  '45_dias',
@@ -143,9 +144,12 @@ try {
                  '20_30',
                  '21_30',
                  '20_30_45',
+                 '21_28_35_42_49_56',
+                 '28_35',
                  '28_35_42',
                  '28_35_42_59',
                  '28_35_45',
+                 '30_60_90',
                  '30_45_60'
              ) 
              DEFAULT 'avista'";
@@ -153,11 +157,12 @@ try {
     if ($conn->query($sql2) === TRUE) {
         echo '<div class="success">✅ Tipos de faturamento atualizados com sucesso!</div>';
         echo '<div class="info"><strong>Novos tipos adicionados:</strong><br>';
-        echo '• 7, 15, 20, 21, 30 dias<br>';
+        echo '• 7, 15, 20, 21, 28, 30 dias<br>';
         echo '• 15/30, 20/30, 21/30 dias<br>';
         echo '• 20/30/45 dias<br>';
-        echo '• 28/35/42, 28/35/42/59, 28/35/45 dias<br>';
-        echo '• 30/45/60 dias</div>';
+        echo '• 21/28/35/42/49/56 dias<br>';
+        echo '• 28/35, 28/35/42, 28/35/42/59, 28/35/45 dias<br>';
+        echo '• 30/45/60, 30/60/90 dias</div>';
         $success[] = 'tipo_faturamento';
     } else {
         throw new Exception("Erro ao atualizar tipo_faturamento: " . $conn->error);

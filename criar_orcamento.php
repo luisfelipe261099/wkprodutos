@@ -42,11 +42,94 @@ function obterMaxIdDaTabela($conexao, $tabela) {
     return 0;
 }
 
+function obterOpcoesEnumDaColuna($conexao, $tabela, $coluna) {
+    $stmt = $conexao->prepare("SHOW COLUMNS FROM `$tabela` LIKE ?");
+    if (!$stmt) {
+        return [];
+    }
+
+    $stmt->bind_param("s", $coluna);
+    $stmt->execute();
+    $resultado = $stmt->get_result();
+    $colunaInfo = $resultado ? $resultado->fetch_assoc() : null;
+    $stmt->close();
+
+    if (!$colunaInfo || !isset($colunaInfo['Type'])) {
+        return [];
+    }
+
+    if (!preg_match("/^enum\((.*)\)$/i", $colunaInfo['Type'], $matches)) {
+        return [];
+    }
+
+    preg_match_all("/'((?:\\'|[^'])*)'/", $matches[1], $valores);
+
+    return array_map(static function ($valor) {
+        return str_replace("\\'", "'", $valor);
+    }, $valores[1] ?? []);
+}
+
+function normalizarTipoFaturamento($tipoSelecionado, array $tiposPermitidos) {
+    if ($tipoSelecionado === '' || in_array($tipoSelecionado, $tiposPermitidos, true)) {
+        return $tipoSelecionado;
+    }
+
+    $aliases = [
+        '15' => '15_dias',
+        '20' => '20_dias',
+        '30' => '30_dias',
+        '15_dias' => '15',
+        '20_dias' => '20',
+        '30_dias' => '30',
+    ];
+
+    if (isset($aliases[$tipoSelecionado]) && in_array($aliases[$tipoSelecionado], $tiposPermitidos, true)) {
+        return $aliases[$tipoSelecionado];
+    }
+
+    return null;
+}
+
 // Verificar se as colunas de pagamento existem
 $colunas_pagamento_existem = true;
 $result_check = $conn->query("SHOW COLUMNS FROM orcamentos LIKE 'forma_pagamento'");
 if (!$result_check || $result_check->num_rows == 0) {
     $colunas_pagamento_existem = false;
+}
+
+$labels_tipo_faturamento = [
+    'avista' => 'A vista',
+    '7' => '7 dias',
+    '15' => '15 dias',
+    '15_dias' => '15 dias (antigo)',
+    '20' => '20 dias',
+    '20_dias' => '20 dias (antigo)',
+    '21' => '21 dias',
+    '28' => '28 dias',
+    '30' => '30 dias',
+    '30_dias' => '30 dias (antigo)',
+    '45_dias' => '45 dias',
+    '60_dias' => '60 dias',
+    '90_dias' => '90 dias',
+    '15_30' => '15/30 dias',
+    '20_30' => '20/30 dias',
+    '21_30' => '21/30 dias',
+    '20_30_45' => '20/30/45 dias',
+    '21_28_35_42_49_56' => '21/28/35/42/49/56 dias',
+    '28_35' => '28/35 dias',
+    '28_35_42' => '28/35/42 dias',
+    '28_35_42_59' => '28/35/42/59 dias',
+    '28_35_45' => '28/35/45 dias',
+    '30_60_90' => '30/60/90 dias',
+    '30_45_60' => '30/45/60 dias',
+];
+
+$tipos_faturamento_permitidos = $colunas_pagamento_existem
+    ? obterOpcoesEnumDaColuna($conn, 'orcamentos', 'tipo_faturamento')
+    : [];
+
+if (empty($tipos_faturamento_permitidos)) {
+    $tipos_faturamento_permitidos = ['avista'];
 }
 
 $orcamento_id = $cliente_id = $data_orcamento = $valor_total = $status_orcamento = $observacoes = "";
@@ -106,6 +189,20 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $data_vencimento = trim($_POST["data_vencimento"] ?? '');
     $itens_selecionados_json = $_POST["itens_selecionados_json"] ?? '[]';
 
+    if ($colunas_pagamento_existem) {
+        $tipo_faturamento_normalizado = normalizarTipoFaturamento($tipo_faturamento, $tipos_faturamento_permitidos);
+        if ($tipo_faturamento_normalizado === null) {
+            $opcoes_legiveis = array_map(static function ($valor) use ($labels_tipo_faturamento) {
+                return $labels_tipo_faturamento[$valor] ?? $valor;
+            }, $tipos_faturamento_permitidos);
+
+            $message = "Tipo de faturamento invalido para a configuracao atual do banco. Opcoes disponiveis: " . implode(', ', $opcoes_legiveis) . ".";
+            $message_type = "danger";
+        } else {
+            $tipo_faturamento = $tipo_faturamento_normalizado;
+        }
+    }
+
     $itens_do_orcamento_post = json_decode($itens_selecionados_json, true);
 
     $calculated_valor_total = 0;
@@ -114,7 +211,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     }
     $valor_total = $calculated_valor_total;
 
-    if (empty($cliente_id) || empty($status_orcamento) || empty($itens_do_orcamento_post)) {
+    if (!empty($message)) {
+        // Mantem a mensagem de validacao do tipo de faturamento.
+    } elseif (empty($cliente_id) || empty($status_orcamento) || empty($itens_do_orcamento_post)) {
         $message = "Por favor, preencha todos os campos obrigatórios e adicione pelo menos um produto ao orçamento.";
         $message_type = "danger";
     } else {
@@ -414,30 +513,9 @@ include_once 'includes/header.php';
                 <div class="col-md-4">
                     <label class="form-label">Tipo de Faturamento</label>
                     <select name="tipo_faturamento" class="form-control">
-                        <option value="avista" <?php echo $tipo_faturamento === 'avista' ? 'selected' : ''; ?>>À vista</option>
-                        <option value="7" <?php echo $tipo_faturamento === '7' ? 'selected' : ''; ?>>7 dias</option>
-                        <option value="15" <?php echo $tipo_faturamento === '15' ? 'selected' : ''; ?>>15 dias</option>
-                        <option value="15_dias" <?php echo $tipo_faturamento === '15_dias' ? 'selected' : ''; ?>>15 dias (antigo)</option>
-                        <option value="20" <?php echo $tipo_faturamento === '20' ? 'selected' : ''; ?>>20 dias</option>
-                        <option value="20_dias" <?php echo $tipo_faturamento === '20_dias' ? 'selected' : ''; ?>>20 dias (antigo)</option>
-                        <option value="21" <?php echo $tipo_faturamento === '21' ? 'selected' : ''; ?>>21 dias</option>
-                        <option value="28" <?php echo $tipo_faturamento === '28' ? 'selected' : ''; ?>>28 dias</option>
-                        <option value="30" <?php echo $tipo_faturamento === '30' ? 'selected' : ''; ?>>30 dias</option>
-                        <option value="30_dias" <?php echo $tipo_faturamento === '30_dias' ? 'selected' : ''; ?>>30 dias (antigo)</option>
-                        <option value="45_dias" <?php echo $tipo_faturamento === '45_dias' ? 'selected' : ''; ?>>45 dias</option>
-                        <option value="60_dias" <?php echo $tipo_faturamento === '60_dias' ? 'selected' : ''; ?>>60 dias</option>
-                        <option value="90_dias" <?php echo $tipo_faturamento === '90_dias' ? 'selected' : ''; ?>>90 dias</option>
-                        <option value="15_30" <?php echo $tipo_faturamento === '15_30' ? 'selected' : ''; ?>>15/30 dias</option>
-                        <option value="20_30" <?php echo $tipo_faturamento === '20_30' ? 'selected' : ''; ?>>20/30 dias</option>
-                        <option value="21_30" <?php echo $tipo_faturamento === '21_30' ? 'selected' : ''; ?>>21/30 dias</option>
-                        <option value="20_30_45" <?php echo $tipo_faturamento === '20_30_45' ? 'selected' : ''; ?>>20/30/45 dias</option>
-                        <option value="21_28_35_42_49_56" <?php echo $tipo_faturamento === '21_28_35_42_49_56' ? 'selected' : ''; ?>>21/28/35/42/49/56 dias</option>
-                        <option value="28_35" <?php echo $tipo_faturamento === '28_35' ? 'selected' : ''; ?>>28/35 dias</option>
-                        <option value="28_35_42" <?php echo $tipo_faturamento === '28_35_42' ? 'selected' : ''; ?>>28/35/42 dias</option>
-                        <option value="28_35_42_59" <?php echo $tipo_faturamento === '28_35_42_59' ? 'selected' : ''; ?>>28/35/42/59 dias</option>
-                        <option value="28_35_45" <?php echo $tipo_faturamento === '28_35_45' ? 'selected' : ''; ?>>28/35/45 dias</option>
-                        <option value="30_60_90" <?php echo $tipo_faturamento === '30_60_90' ? 'selected' : ''; ?>>30/60/90 dias</option>
-                        <option value="30_45_60" <?php echo $tipo_faturamento === '30_45_60' ? 'selected' : ''; ?>>30/45/60 dias</option>
+                        <?php foreach ($tipos_faturamento_permitidos as $opcao_tipo): ?>
+                            <option value="<?php echo htmlspecialchars($opcao_tipo); ?>" <?php echo $tipo_faturamento === $opcao_tipo ? 'selected' : ''; ?>><?php echo htmlspecialchars($labels_tipo_faturamento[$opcao_tipo] ?? $opcao_tipo); ?></option>
+                        <?php endforeach; ?>
                     </select>
                 </div>
                 <div class="col-md-4">

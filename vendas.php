@@ -553,6 +553,10 @@ document.addEventListener('DOMContentLoaded', function() {
     if (changeStatusModal) {
         changeStatusModal.addEventListener('show.bs.modal', function (event) {
             const button = event.relatedTarget;
+            if (!button) {
+                return;
+            }
+
             const vendaId = button.getAttribute('data-venda-id');
             const currentStatus = button.getAttribute('data-current-status');
 
@@ -564,6 +568,19 @@ document.addEventListener('DOMContentLoaded', function() {
                 modalStatusSelect.value = currentStatus;
             }
         });
+
+        const changeStatusForm = changeStatusModal.querySelector('form');
+        if (changeStatusForm) {
+            changeStatusForm.addEventListener('submit', function (event) {
+                const modalVendaIdInput = changeStatusModal.querySelector('#modal_venda_id');
+                const vendaId = parseInt(modalVendaIdInput.value, 10);
+
+                if (!Number.isInteger(vendaId) || vendaId <= 0) {
+                    event.preventDefault();
+                    alert('Nao foi possivel identificar a venda para alterar o status. Feche o modal e tente novamente.');
+                }
+            });
+        }
     }
 });
 </script>
