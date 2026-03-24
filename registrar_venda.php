@@ -10,6 +10,7 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
 require_once 'includes/db_connect.php';
 
 $venda_id = $cliente_id = $data_venda = $valor_total = $forma_pagamento = $status_venda = "";
+$from_orcamento_id = '';
 $title = "Registrar Nova Venda";
 $submit_button_text = "Registrar Venda";
 $message = '';
@@ -19,6 +20,8 @@ $itens_da_venda = [];
 // --- LÓGICA DE PROCESSAMENTO DO FORMULÁRIO (POST) ---
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $venda_id_posted = trim($_POST["venda_id"] ?? '');
+    $from_orcamento_id_posted = intval($_POST["from_orcamento_id"] ?? 0);
+    $from_orcamento_id = $from_orcamento_id_posted > 0 ? $from_orcamento_id_posted : '';
     $cliente_id = trim($_POST["cliente_id"]);
     $forma_pagamento = trim($_POST["forma_pagamento"]);
     $status_venda = trim($_POST["status_venda"]);
@@ -101,6 +104,14 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 }
             } else {
                 $conn->query("DELETE FROM transacoes_financeiras WHERE referencia_id = {$current_venda_id} AND tabela_referencia = 'vendas'");
+            }
+
+            // Se veio de um orçamento, atualizar status para 'convertido_venda'
+            if ($is_new_sale && $from_orcamento_id_posted > 0) {
+                $stmt_upd_orc = $conn->prepare("UPDATE orcamentos SET status_orcamento = 'convertido_venda' WHERE id = ? AND status_orcamento != 'convertido_venda'");
+                $stmt_upd_orc->bind_param("i", $from_orcamento_id_posted);
+                $stmt_upd_orc->execute();
+                $stmt_upd_orc->close();
             }
 
             $conn->commit();
@@ -200,6 +211,7 @@ include_once 'includes/header.php';
     <div class="card-body">
         <form id="formVenda" action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]); ?>" method="post">
             <input type="hidden" name="venda_id" value="<?php echo htmlspecialchars($venda_id); ?>">
+            <input type="hidden" name="from_orcamento_id" value="<?php echo htmlspecialchars($from_orcamento_id ?? ''); ?>">
             <input type="hidden" name="itens_selecionados_json" id="itens_selecionados_json" value='<?php echo json_encode($itens_da_venda, JSON_HEX_APOS | JSON_HEX_QUOT); ?>'>
 
             <div class="row">

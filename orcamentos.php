@@ -237,9 +237,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
 
             // Adicionar mensagem de sucesso para a venda
             $_SESSION['message'] .= " Venda #{$venda_id} registrada automaticamente.";
+
+            // Atualizar status do orçamento para 'convertido_venda'
+            $stmt_update_to_converted = $conn->prepare("UPDATE orcamentos SET status_orcamento = 'convertido_venda' WHERE id = ?");
+            $stmt_update_to_converted->bind_param("i", $orcamento_id);
+            $stmt_update_to_converted->execute();
+            $stmt_update_to_converted->close();
             
             // Registrar no histórico do orçamento que a venda foi criada
-            registrarHistoricoOrcamento($conn, $orcamento_id, $novo_status, $novo_status, "Venda #{$venda_id} gerada automaticamente a partir deste orçamento.");
+            registrarHistoricoOrcamento($conn, $orcamento_id, $novo_status, 'convertido_venda', "Venda #{$venda_id} gerada automaticamente a partir deste orçamento.");
         }
 
         $conn->commit();
@@ -264,13 +270,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
     $conn->begin_transaction();
     try {
         // 1. Buscar dados do orçamento
-        $stmt_orcamento = $conn->prepare("SELECT * FROM orcamentos WHERE id = ? AND status_orcamento = 'aprovado'");
+        $stmt_orcamento = $conn->prepare("SELECT * FROM orcamentos WHERE id = ? AND status_orcamento NOT IN ('convertido_venda', 'rejeitado')");
         $stmt_orcamento->bind_param("i", $orcamento_id);
         $stmt_orcamento->execute();
         $orcamento = $stmt_orcamento->get_result()->fetch_assoc();
 
         if (!$orcamento) {
-            throw new Exception("Orçamento não encontrado ou não está aprovado.");
+            throw new Exception("Orçamento não encontrado ou já foi convertido/rejeitado.");
         }
 
         // 2. Criar nova venda
@@ -748,7 +754,6 @@ if (isset($erro_conversao)) {
                             <option value="pendente">Pendente</option>
                             <option value="aprovado">Aprovado (Converterá em Venda)</option>
                             <option value="rejeitado">Rejeitado</option>
-                            <option value="cancelado">Cancelado</option>
                         </select>
                     </div>
                     <div class="mb-3">
