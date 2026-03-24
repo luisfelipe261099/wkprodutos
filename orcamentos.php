@@ -595,17 +595,17 @@ if (isset($erro_conversao)) {
                                             <a href="gerar_pdf_orcamento.php?id=<?php echo $row['id']; ?>" class="btn btn-sm btn-outline-danger" title="Baixar PDF" target="_blank"><i class="fas fa-file-pdf"></i></a>
                                             <a href="orcamentos.php?action=send_email&id=<?php echo $row['id']; ?>" class="btn btn-sm btn-outline-secondary" title="Enviar por E-mail"><i class="fas fa-envelope"></i></a>
 
-                                            <?php if ($row['status_orcamento'] === 'aprovado'): ?>
+                                            <?php if (in_array($row['status_orcamento'], ['aprovado', 'pendente'])): ?>
                                                 <button type="button" class="btn btn-sm btn-success" title="Converter em Venda"
                                                         data-bs-toggle="modal" data-bs-target="#convertModal"
-                                                        data-id="<?php echo $row['id']; ?>"
-                                                        data-cliente="<?php echo htmlspecialchars($row['nome_cliente']); ?>"
-                                                        data-valor="<?php echo number_format($row['valor_total'], 2, ',', '.'); ?>">
+                                                        onclick="openConvertModal(<?php echo (int)$row['id']; ?>, '<?php echo htmlspecialchars($row['nome_cliente'], ENT_QUOTES); ?>', '<?php echo number_format($row['valor_total'], 2, ',', '.'); ?>')">
                                                     <i class="fas fa-shopping-cart"></i>
                                                 </button>
                                             <?php endif; ?>
 
-                                            <button type="button" class="btn btn-sm btn-outline-warning" title="Mudar Status" data-bs-toggle="modal" data-bs-target="#statusModal" data-id="<?php echo $row['id']; ?>" data-status="<?php echo $row['status_orcamento']; ?>">
+                                            <button type="button" class="btn btn-sm btn-outline-warning" title="Mudar Status"
+                                                    data-bs-toggle="modal" data-bs-target="#statusModal"
+                                                    onclick="openStatusModal(<?php echo (int)$row['id']; ?>, '<?php echo $row['status_orcamento']; ?>')">
                                                 <i class="fas fa-sync-alt"></i>
                                             </button>
 
@@ -682,16 +682,16 @@ if (isset($erro_conversao)) {
                             <a href="orcamentos.php?action=send_email&id=<?php echo $row['id']; ?>" class="btn btn-sm btn-outline-secondary" title="Enviar por E-mail">
                                 <i class="fas fa-envelope me-1"></i> E-mail
                             </a>
-                            <?php if ($row['status_orcamento'] === 'aprovado'): ?>
+                            <?php if (in_array($row['status_orcamento'], ['aprovado', 'pendente'])): ?>
                                 <button type="button" class="btn btn-sm btn-success" title="Converter em Venda"
                                         data-bs-toggle="modal" data-bs-target="#convertModal"
-                                        data-id="<?php echo $row['id']; ?>"
-                                        data-cliente="<?php echo htmlspecialchars($row['nome_cliente']); ?>"
-                                        data-valor="<?php echo number_format($row['valor_total'], 2, ',', '.'); ?>">
+                                        onclick="openConvertModal(<?php echo (int)$row['id']; ?>, '<?php echo htmlspecialchars($row['nome_cliente'], ENT_QUOTES); ?>', '<?php echo number_format($row['valor_total'], 2, ',', '.'); ?>')">
                                     <i class="fas fa-shopping-cart me-1"></i> Converter
                                 </button>
                             <?php endif; ?>
-                            <button type="button" class="btn btn-sm btn-outline-warning" title="Mudar Status" data-bs-toggle="modal" data-bs-target="#statusModal" data-id="<?php echo $row['id']; ?>" data-status="<?php echo $row['status_orcamento']; ?>">
+                            <button type="button" class="btn btn-sm btn-outline-warning" title="Mudar Status"
+                                    data-bs-toggle="modal" data-bs-target="#statusModal"
+                                    onclick="openStatusModal(<?php echo (int)$row['id']; ?>, '<?php echo $row['status_orcamento']; ?>')">
                                 <i class="fas fa-sync-alt me-1"></i> Status
                             </button>
                             <a href="orcamentos.php?action=delete&id=<?php echo $row['id']; ?>" class="btn btn-sm btn-outline-danger" title="Excluir Orçamento" onclick="return confirm('Tem certeza que deseja excluir este orçamento e todos os seus itens? Esta ação não pode ser desfeita.');">
@@ -838,68 +838,26 @@ if (ob_get_length()) ob_end_flush(); // Libera o buffer de saída
 
 <script src="js/search-utils.js"></script>
 <script>
-(function initOrcamentosPage() {
-    // Inicializar busca para orçamentos
-    if (typeof SearchUtils !== 'undefined') {
-        SearchUtils.initializeSearch({
-            inputId: 'searchInput',
-            tableId: 'orcamentosTable',
-            mobileCardsSelector: '.mobile-orcamento-card',
-            searchColumns: [0, 1, 2, 4] // ID, Cliente, Data, Status
-        });
-    }
+function openStatusModal(id, currentStatus) {
+    document.getElementById('modal_orcamento_id').value = id;
+    document.getElementById('modal_orcamento_id_display').textContent = '#' + id;
+    document.getElementById('modal_novo_status_orcamento').value = currentStatus;
+    document.getElementById('modal_observacoes_orcamento').value = '';
+}
 
-    const statusModal = document.getElementById('statusModal');
-    if (statusModal) {
-        statusModal.addEventListener('show.bs.modal', function (event) {
-            const trigger = event.relatedTarget;
-            if (!trigger) return;
-            // Sobe na árvore DOM caso o clique seja num elemento filho (ex: ícone <i>)
-            const button = trigger.closest('[data-id]') || trigger;
-            const orcamentoId = button.getAttribute('data-id');
-            const currentStatus = button.getAttribute('data-status');
+function openConvertModal(id, clienteNome, valorTotal) {
+    document.getElementById('convert_orcamento_id').value = id;
+    document.getElementById('convert_cliente_nome').textContent = clienteNome;
+    document.getElementById('convert_valor_total').textContent = valorTotal;
+    document.getElementById('forma_pagamento').value = '';
+}
 
-            if (!orcamentoId) return;
-
-            const modalOrcamentoIdInput = statusModal.querySelector('#modal_orcamento_id');
-            const modalOrcamentoIdDisplay = statusModal.querySelector('#modal_orcamento_id_display');
-            const modalStatusSelect = statusModal.querySelector('#modal_novo_status_orcamento');
-            const modalObservacoes = statusModal.querySelector('#modal_observacoes_orcamento');
-
-            modalOrcamentoIdInput.value = orcamentoId;
-            modalOrcamentoIdDisplay.textContent = '#' + orcamentoId;
-            modalObservacoes.value = ''; // Limpa observações anteriores
-
-            // Define o valor selecionado no select para o status atual
-            if (currentStatus) {
-                modalStatusSelect.value = currentStatus;
-            }
-        });
-    }
-
-    // Modal para converter orçamento em venda
-    const convertModal = document.getElementById('convertModal');
-    if (convertModal) {
-        convertModal.addEventListener('show.bs.modal', function (event) {
-            const trigger = event.relatedTarget;
-            if (!trigger) return;
-            const button = trigger.closest('[data-id]') || trigger;
-            const orcamentoId = button.getAttribute('data-id');
-            const clienteNome = button.getAttribute('data-cliente');
-            const valorTotal = button.getAttribute('data-valor');
-
-            if (!orcamentoId) return;
-
-            const modalOrcamentoIdInput = convertModal.querySelector('#convert_orcamento_id');
-            const modalClienteNome = convertModal.querySelector('#convert_cliente_nome');
-            const modalValorTotal = convertModal.querySelector('#convert_valor_total');
-            const modalFormaPagamento = convertModal.querySelector('#forma_pagamento');
-
-            modalOrcamentoIdInput.value = orcamentoId;
-            modalClienteNome.textContent = clienteNome;
-            modalValorTotal.textContent = valorTotal;
-            modalFormaPagamento.value = ''; // Limpa seleção anterior
-        });
-    }
-})();
+if (typeof SearchUtils !== 'undefined') {
+    SearchUtils.initializeSearch({
+        inputId: 'searchInput',
+        tableId: 'orcamentosTable',
+        mobileCardsSelector: '.mobile-orcamento-card',
+        searchColumns: [0, 1, 2, 4]
+    });
+}
 </script>
