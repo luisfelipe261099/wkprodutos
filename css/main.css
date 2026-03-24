@@ -362,6 +362,62 @@ html, body {
     display: block;
 }
 
+.mobile-items-container {
+    display: none;
+}
+
+.mobile-item-card {
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 1rem;
+    margin-bottom: 0.75rem;
+    background: #fff;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+}
+
+.mobile-item-title {
+    font-weight: 700;
+    color: #1e293b;
+    margin-bottom: 0.75rem;
+}
+
+.mobile-item-meta {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.75rem;
+    margin-bottom: 0.75rem;
+}
+
+.mobile-item-meta-label {
+    display: block;
+    font-size: 0.75rem;
+    color: #64748b;
+    margin-bottom: 0.2rem;
+}
+
+.mobile-item-meta-value {
+    font-weight: 600;
+}
+
+.mobile-item-actions,
+.mobile-sale-actions,
+.mobile-orcamento-actions,
+.mobile-agendamento-actions {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.mobile-item-actions .btn,
+.mobile-sale-actions .btn,
+.mobile-orcamento-actions .btn,
+.mobile-agendamento-actions .btn,
+.mobile-sale-actions a,
+.mobile-orcamento-actions a,
+.mobile-agendamento-actions a {
+    flex: 1 1 140px;
+}
+
 .mobile-sales-container,
 .mobile-orcamentos-container {
     display: none;
@@ -653,9 +709,66 @@ html, body {
         display: none;
     }
 
+    .mobile-items-container,
     .mobile-sales-container,
     .mobile-orcamentos-container {
         display: block;
+    }
+
+    .mobile-item-meta {
+        grid-template-columns: 1fr;
+        gap: 0.5rem;
+    }
+
+    .mobile-item-actions,
+    .mobile-sale-actions,
+    .mobile-orcamento-actions,
+    .mobile-agendamento-actions,
+    .btn-group,
+    .btn-group-sm {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .mobile-item-actions .btn,
+    .mobile-sale-actions .btn,
+    .mobile-orcamento-actions .btn,
+    .mobile-agendamento-actions .btn,
+    .mobile-sale-actions a,
+    .mobile-orcamento-actions a,
+    .mobile-agendamento-actions a,
+    .btn-group > .btn,
+    .btn-group-sm > .btn,
+    .btn-group > a,
+    .btn-group-sm > a {
+        width: 100%;
+        flex: 1 1 auto;
+    }
+
+    .modal-dialog {
+        width: calc(100vw - 1rem);
+        max-width: calc(100vw - 1rem);
+        margin: 0.5rem auto;
+    }
+
+    .modal-content {
+        border-radius: 14px;
+    }
+
+    .modal-body {
+        max-height: calc(100vh - 180px);
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .modal-footer {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    .modal-footer .btn,
+    .modal-footer a {
+        width: 100%;
     }
     
     .table thead th,

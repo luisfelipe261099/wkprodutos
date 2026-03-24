@@ -404,9 +404,65 @@ include_once 'includes/header.php';
 .badge { padding: 0.5rem 0.75rem; }
 .dropdown-item { padding: 0.75rem 1rem; background: var(--app-surface, white); color: var(--app-text, #333); }
 .dropdown-item:hover { background-color: var(--app-surface-muted, #f8f9fa); }
-#produto_dropdown { max-height: 300px; overflow-y: auto; background: var(--app-surface, white); border: 1px solid var(--app-border, #ccc); }
+.search-dropdown-wrapper { position: relative; }
+#cliente_dropdown,
+#produto_dropdown {
+    max-height: 300px;
+    overflow-y: auto;
+    background: var(--app-surface, white);
+    border: 1px solid var(--app-border, #ccc);
+    border-radius: 0.5rem;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+    position: absolute !important;
+    top: calc(100% + 0.35rem);
+    left: 0;
+    right: 0;
+    z-index: 1055;
+}
 .produto-item { padding: 0.75rem 1rem; cursor: pointer; border-bottom: 1px solid var(--app-border, #eee); }
 .produto-item:hover { background-color: var(--app-surface-muted, #f8f9fa); }
+.mobile-items-container { display: none; }
+.mobile-item-card {
+    border: 1px solid var(--app-border, #dee2e6);
+    border-radius: 0.75rem;
+    padding: 1rem;
+    margin-bottom: 0.75rem;
+    background: var(--app-surface, white);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+}
+.mobile-item-title {
+    font-weight: 700;
+    margin-bottom: 0.75rem;
+    color: var(--app-text, #333);
+}
+.mobile-item-meta {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.75rem;
+    margin-bottom: 0.75rem;
+}
+.mobile-item-meta-label {
+    display: block;
+    font-size: 0.75rem;
+    color: #6b7280;
+    margin-bottom: 0.2rem;
+}
+.mobile-item-meta-value {
+    font-weight: 600;
+}
+.mobile-item-actions {
+    display: flex;
+    gap: 0.5rem;
+}
+.mobile-item-actions .btn {
+    flex: 1;
+}
+.form-actions-bar {
+    display: flex;
+    gap: 0.75rem;
+    justify-content: flex-end;
+    margin-top: 1.5rem;
+}
 
 /* Estilos para tabela com rolagem */
 .table-container {
@@ -450,6 +506,55 @@ include_once 'includes/header.php';
 .table-container::-webkit-scrollbar-thumb:hover {
     background: #555;
 }
+
+@media (max-width: 768px) {
+    .card-body-modern {
+        padding: 1rem;
+    }
+
+    #cliente_dropdown,
+    #produto_dropdown {
+        max-height: 45vh;
+    }
+
+    .dropdown-item {
+        min-height: 48px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+    }
+
+    .table-container {
+        display: none;
+    }
+
+    .mobile-items-container {
+        display: block;
+    }
+
+    .mobile-item-meta {
+        grid-template-columns: 1fr;
+        gap: 0.5rem;
+    }
+
+    .mobile-item-actions {
+        flex-direction: column;
+    }
+
+    .form-actions-bar {
+        position: sticky;
+        bottom: 0;
+        background: var(--app-surface, white);
+        padding-top: 1rem;
+        flex-direction: column-reverse;
+        z-index: 20;
+    }
+
+    .form-actions-bar .btn,
+    .form-actions-bar a {
+        width: 100%;
+    }
+}
 </style>
 
 <div class="page-header">
@@ -475,9 +580,11 @@ include_once 'includes/header.php';
             <div class="row mb-3">
                 <div class="col-md-6">
                     <label class="form-label">Cliente *</label>
-                    <input type="text" class="form-control" id="cliente_search" placeholder="Buscar cliente..." autocomplete="off" value="<?php echo htmlspecialchars($cliente_nome_display); ?>">
-                    <input type="hidden" id="cliente_id" name="cliente_id" value="<?php echo htmlspecialchars($cliente_id); ?>">
-                    <div id="cliente_dropdown" class="dropdown-menu w-100" style="display: none; position: static; max-height: 200px; overflow-y: auto;"></div>
+                    <div class="search-dropdown-wrapper">
+                        <input type="text" class="form-control" id="cliente_search" placeholder="Buscar cliente..." autocomplete="off" value="<?php echo htmlspecialchars($cliente_nome_display); ?>">
+                        <input type="hidden" id="cliente_id" name="cliente_id" value="<?php echo htmlspecialchars($cliente_id); ?>">
+                        <div id="cliente_dropdown" class="dropdown-menu w-100" style="display: none;"></div>
+                    </div>
                 </div>
                 <div class="col-md-6">
                     <label class="form-label">Status *</label>
@@ -530,8 +637,10 @@ include_once 'includes/header.php';
             <div class="row mb-3">
                 <div class="col-md-8">
                     <label class="form-label">Buscar Produto</label>
-                    <input type="text" class="form-control" id="produto_search" placeholder="Digite o nome ou SKU..." autocomplete="off">
-                    <div id="produto_dropdown" class="dropdown-menu w-100" style="display: none; position: static;"></div>
+                    <div class="search-dropdown-wrapper">
+                        <input type="text" class="form-control" id="produto_search" placeholder="Digite o nome ou SKU..." autocomplete="off">
+                        <div id="produto_dropdown" class="dropdown-menu w-100" style="display: none;"></div>
+                    </div>
                 </div>
                 <div class="col-md-4">
                     <label class="form-label">Filtrar por Empresa</label>
@@ -584,6 +693,8 @@ include_once 'includes/header.php';
                 </table>
             </div>
 
+            <div id="mobileItensContainer" class="mobile-items-container"></div>
+
             <!-- Total fora da tabela com rolagem -->
             <div class="mt-3 p-3 rounded" style="background: var(--app-surface-muted, #f8f9fa); border: 1px solid var(--app-border, #eee);">
                 <div class="row">
@@ -596,7 +707,7 @@ include_once 'includes/header.php';
                 </div>
             </div>
 
-            <div class="d-flex gap-2 justify-content-end">
+            <div class="form-actions-bar">
                 <a href="orcamentos.php" class="btn btn-secondary">Cancelar</a>
                 <button type="submit" class="btn btn-primary"><?php echo $submit_button_text; ?></button>
             </div>
@@ -681,6 +792,7 @@ const quantidadeInput = document.getElementById('quantidade_item');
 const precoInput = document.getElementById('preco_unitario_item');
 const addItemBtn = document.getElementById('addItemBtn');
 const tabelaItens = document.getElementById('tabelaItens');
+const mobileItensContainer = document.getElementById('mobileItensContainer');
 const valorTotalDisplay = document.getElementById('valor_total_display');
 
 const itemsCount = document.getElementById('items_count');
@@ -691,6 +803,19 @@ const formOrcamento = document.getElementById('formOrcamento');
 const itensSelecionadosJson = document.getElementById('itens_selecionados_json');
 
 console.log('✅ Elementos DOM carregados');
+
+function criarDropdownItem(conteudoHtml, onSelect) {
+    const div = document.createElement('div');
+    div.className = 'dropdown-item';
+    div.innerHTML = conteudoHtml;
+    div.style.cursor = 'pointer';
+    div.addEventListener('click', onSelect);
+    div.addEventListener('touchstart', function(event) {
+        event.preventDefault();
+        onSelect();
+    }, { passive: false });
+    return div;
+}
 
 // Renderizar tabela de itens ao carregar a página (ÚNICA CHAMADA)
 renderizarTabela();
@@ -724,12 +849,11 @@ function buscarProdutos() {
     }
 
     resultados.forEach(produto => {
-        const div = document.createElement('div');
-        div.className = 'dropdown-item';
         const precoNum = Number(produto.preco) || 0;
-        div.innerHTML = `<strong>${produto.nome || ''}</strong><br><small>SKU: ${(produto.sku || '')} | R$ ${precoNum.toFixed(2)}</small>`;
-        div.style.cursor = 'pointer';
-        div.onclick = () => selecionarProduto(produto);
+        const div = criarDropdownItem(
+            `<strong>${produto.nome || ''}</strong><br><small>SKU: ${(produto.sku || '')} | R$ ${precoNum.toFixed(2)}</small>`,
+            () => selecionarProduto(produto)
+        );
         produtoDropdown.appendChild(div);
     });
 
@@ -743,6 +867,7 @@ function selecionarProduto(produto) {
     quantidadeInput.value = 1;
     produtoDropdown.style.display = 'none';
     quantidadeInput.focus();
+    quantidadeInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
 }
 
 
@@ -774,6 +899,9 @@ function adicionarItem() {
     quantidadeInput.value = 1;
     produtoSelecionado = null;
     renderizarTabela();
+    if (window.innerWidth <= 768 && mobileItensContainer) {
+        mobileItensContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
 }
 
 function removerItem(uuid) {
@@ -786,6 +914,9 @@ function removerItem(uuid) {
 
 function renderizarTabela() {
     tabelaItens.innerHTML = '';
+    if (mobileItensContainer) {
+        mobileItensContainer.innerHTML = '';
+    }
     let total = 0;
 
     itensOrcamento.forEach((item, idx) => {
@@ -811,7 +942,42 @@ function renderizarTabela() {
             </td>
         `;
         tabelaItens.appendChild(tr);
+
+        if (mobileItensContainer) {
+            const card = document.createElement('div');
+            card.className = 'mobile-item-card';
+            card.innerHTML = `
+                <div class="mobile-item-title">${item.nome}</div>
+                <div class="mobile-item-meta">
+                    <div>
+                        <span class="mobile-item-meta-label">Quantidade</span>
+                        <span class="mobile-item-meta-value">${item.quantidade}</span>
+                    </div>
+                    <div>
+                        <span class="mobile-item-meta-label">Preco unitario</span>
+                        <span class="mobile-item-meta-value">R$ ${item.preco_unitario.toFixed(2).replace('.', ',')}</span>
+                    </div>
+                    <div>
+                        <span class="mobile-item-meta-label">Subtotal</span>
+                        <span class="mobile-item-meta-value">R$ ${subtotal.toFixed(2).replace('.', ',')}</span>
+                    </div>
+                </div>
+                <div class="mobile-item-actions">
+                    <button type="button" class="btn btn-sm btn-warning" data-item-index="${idx}" data-action="edit-item">
+                        <i class="fas fa-edit"></i> Editar
+                    </button>
+                    <button type="button" class="btn btn-sm btn-danger" data-item-id="${itemId}" data-action="remove-item">
+                        <i class="fas fa-trash"></i> Remover
+                    </button>
+                </div>
+            `;
+            mobileItensContainer.appendChild(card);
+        }
     });
+
+    if (mobileItensContainer && itensOrcamento.length === 0) {
+        mobileItensContainer.innerHTML = '<div class="alert alert-info mb-0">Nenhum item adicionado ao orçamento.</div>';
+    }
 
     valorTotalDisplay.textContent = 'R$ ' + total.toFixed(2).replace('.', ',');
     itemsCount.textContent = itensOrcamento.length;
@@ -938,8 +1104,37 @@ btnSalvarEdicao.addEventListener('click', salvarEdicao);
 
 // Event listeners
 produtoSearch.addEventListener('input', buscarProdutos);
+produtoSearch.addEventListener('input', function() {
+    if (produtoSelecionado && this.value !== produtoSelecionado.nome) {
+        produtoSelecionado = null;
+        precoInput.value = '';
+    }
+});
 empresaFilter.addEventListener('change', buscarProdutos);
 addItemBtn.addEventListener('click', adicionarItem);
+clienteSearch.addEventListener('input', function() {
+    clienteIdInput.value = '';
+});
+
+if (mobileItensContainer) {
+    mobileItensContainer.addEventListener('click', function(event) {
+        const actionButton = event.target.closest('[data-action]');
+        if (!actionButton) {
+            return;
+        }
+
+        const action = actionButton.getAttribute('data-action');
+        if (action === 'edit-item') {
+            const itemIndex = parseInt(actionButton.getAttribute('data-item-index'), 10);
+            abrirModalEditar(itemIndex);
+            return;
+        }
+
+        if (action === 'remove-item') {
+            removerItem(actionButton.getAttribute('data-item-id'));
+        }
+    });
+}
 
 // Controle de exibição do campo de data de vencimento para boleto
 const formaPagamentoSelect = document.getElementById('forma_pagamento');
@@ -975,6 +1170,11 @@ formOrcamento.addEventListener('submit', function(e) {
         return;
     }
     itensSelecionadosJson.value = JSON.stringify(itensOrcamento);
+    const submitButton = formOrcamento.querySelector('button[type="submit"]');
+    if (submitButton) {
+        submitButton.disabled = true;
+        submitButton.textContent = 'Salvando...';
+    }
     formOrcamento.submit();
 });
 
@@ -1002,18 +1202,22 @@ clienteSearch.addEventListener('input', function() {
     }
 
     resultados.forEach(cliente => {
-        const div = document.createElement('div');
-        div.className = 'dropdown-item';
-        div.textContent = cliente.nome;
-        div.onclick = () => {
+        const div = criarDropdownItem(cliente.nome, () => {
             clienteSearch.value = cliente.nome;
             clienteIdInput.value = cliente.id;
             clienteDropdown.style.display = 'none';
-        };
+        });
         clienteDropdown.appendChild(div);
     });
 
     clienteDropdown.style.display = 'block';
+});
+
+document.addEventListener('click', function(event) {
+    if (!event.target.closest('.search-dropdown-wrapper')) {
+        produtoDropdown.style.display = 'none';
+        clienteDropdown.style.display = 'none';
+    }
 });
 </script>
 

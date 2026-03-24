@@ -767,9 +767,9 @@ if (isset($erro_conversao)) {
 </div>
 
 <div class="modal fade" id="statusModal" tabindex="-1" aria-labelledby="statusModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
         <div class="modal-content">
-            <form action="orcamentos.php" method="POST">
+            <form action="orcamentos.php" method="POST" id="statusModalForm">
                 <div class="modal-header">
                     <h5 class="modal-title" id="statusModalLabel">Alterar Status do Orçamento</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
@@ -806,9 +806,9 @@ if (isset($erro_conversao)) {
 
 <!-- Modal para Converter Orçamento em Venda -->
 <div class="modal fade" id="convertModal" tabindex="-1" aria-labelledby="convertModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
         <div class="modal-content">
-            <form action="orcamentos.php" method="POST">
+            <form action="orcamentos.php" method="POST" id="convertModalForm">
                 <div class="modal-header">
                     <h5 class="modal-title" id="convertModalLabel">
                         <i class="fas fa-shopping-cart me-2"></i>Converter Orçamento em Venda
@@ -889,6 +889,51 @@ if (typeof SearchUtils !== 'undefined') {
         tableId: 'orcamentosTable',
         mobileCardsSelector: '.mobile-orcamento-card',
         searchColumns: [0, 1, 2, 4]
+    });
+}
+
+const statusModalForm = document.getElementById('statusModalForm');
+if (statusModalForm) {
+    statusModalForm.addEventListener('submit', function(event) {
+        const orcamentoId = parseInt(document.getElementById('modal_orcamento_id').value, 10);
+        const submitButton = statusModalForm.querySelector('button[type="submit"]');
+
+        if (!Number.isInteger(orcamentoId) || orcamentoId <= 0) {
+            event.preventDefault();
+            alert('Nao foi possivel identificar o orcamento. Feche o modal e tente novamente.');
+            return;
+        }
+
+        if (submitButton) {
+            submitButton.disabled = true;
+            submitButton.textContent = 'Salvando...';
+        }
+    });
+}
+
+const convertModalForm = document.getElementById('convertModalForm');
+if (convertModalForm) {
+    convertModalForm.addEventListener('submit', function(event) {
+        const orcamentoId = parseInt(document.getElementById('convert_orcamento_id').value, 10);
+        const formaPagamento = document.getElementById('forma_pagamento').value;
+        const submitButton = convertModalForm.querySelector('button[type="submit"]');
+
+        if (!Number.isInteger(orcamentoId) || orcamentoId <= 0) {
+            event.preventDefault();
+            alert('Nao foi possivel identificar o orcamento para conversao.');
+            return;
+        }
+
+        if (!formaPagamento) {
+            event.preventDefault();
+            alert('Selecione a forma de pagamento para converter o orcamento.');
+            return;
+        }
+
+        if (submitButton) {
+            submitButton.disabled = true;
+            submitButton.textContent = 'Convertendo...';
+        }
     });
 }
 </script>

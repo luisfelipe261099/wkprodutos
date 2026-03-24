@@ -219,6 +219,48 @@ include_once 'includes/header.php';
 <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
 <link href="https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.3.0/dist/select2-bootstrap-5-theme.min.css" rel="stylesheet" />
 
+<style>
+.desktop-items-table {
+    display: block;
+}
+
+.form-venda-actions {
+    display: flex;
+    justify-content: space-between;
+    gap: 0.75rem;
+    margin-top: 1.5rem;
+}
+
+.select2-container {
+    width: 100% !important;
+}
+
+.select2-container .select2-selection--single {
+    min-height: 42px;
+    padding: 0.35rem 0.25rem;
+}
+
+@media (max-width: 768px) {
+    .desktop-items-table {
+        display: none;
+    }
+
+    .form-venda-actions {
+        flex-direction: column-reverse;
+    }
+
+    .form-venda-actions .btn,
+    .form-venda-actions a {
+        width: 100%;
+    }
+
+    #produto_select {
+        min-height: 48px;
+        height: 48px;
+    }
+}
+</style>
+
 <h2 class="mb-4"><i class="fas fa-<?php echo ($venda_id ? 'edit' : 'plus-circle'); ?> me-2"></i> <?php echo $title; ?></h2>
 
 <?php if (!empty($message)): ?>
@@ -319,7 +361,7 @@ include_once 'includes/header.php';
                 </div>
             </div>
 
-            <div class="table-responsive">
+            <div class="table-responsive desktop-items-table">
                 <table class="table table-bordered" id="tabelaItens">
                     <thead class="table-light">
                         <tr>
@@ -342,7 +384,9 @@ include_once 'includes/header.php';
                 </table>
             </div>
 
-            <div class="d-flex justify-content-between mt-4">
+            <div id="mobileItensVenda" class="mobile-items-container"></div>
+
+            <div class="form-venda-actions">
                 <button type="submit" class="btn btn-success btn-lg">
                     <i class="fas fa-<?php echo ($venda_id ? 'save' : 'check'); ?> me-2"></i> <?php echo $submit_button_text; ?>
                 </button>
@@ -363,8 +407,12 @@ document.addEventListener('DOMContentLoaded', function() {
     const precoUnitarioInput = document.getElementById('preco_unitario_item');
     const addItemBtn = document.getElementById('addItemBtn');
     const tabelaItensBody = document.querySelector('#tabelaItens tbody');
+    const mobileItensVenda = document.getElementById('mobileItensVenda');
     const valorTotalDisplay = document.getElementById('valor_total_display');
     const itensSelecionadosJsonInput = document.getElementById('itens_selecionados_json');
+    const formVenda = document.getElementById('formVenda');
+    const produtoSearch = document.getElementById('produto_search');
+    const clearSearchBtn = document.getElementById('clearSearchBtn');
 
     let itensDaVenda = JSON.parse(itensSelecionadosJsonInput.value.replace(/&quot;/g, '"'));
     let todosProdutos = []; // Array para armazenar todos os produtos
@@ -425,8 +473,15 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function renderizarItens() {
         tabelaItensBody.innerHTML = '';
+        if (mobileItensVenda) {
+            mobileItensVenda.innerHTML = '';
+        }
+
         if(itensDaVenda.length === 0){
             tabelaItensBody.innerHTML = '<tr><td colspan="5" class="text-center text-muted">Nenhum item adicionado à venda.</td></tr>';
+            if (mobileItensVenda) {
+                mobileItensVenda.innerHTML = '<div class="alert alert-info mb-0">Nenhum item adicionado à venda.</div>';
+            }
         } else {
             itensDaVenda.forEach((item, index) => {
                 const subtotal = item.quantidade * item.preco_unitario;
@@ -442,6 +497,36 @@ document.addEventListener('DOMContentLoaded', function() {
                     </tr>
                 `;
                 tabelaItensBody.insertAdjacentHTML('beforeend', row);
+
+                if (mobileItensVenda) {
+                    mobileItensVenda.insertAdjacentHTML('beforeend', `
+                        <div class="mobile-item-card">
+                            <div class="mobile-item-title">${item.nome}</div>
+                            <div class="mobile-item-meta">
+                                <div>
+                                    <span class="mobile-item-meta-label">Quantidade</span>
+                                    <span class="mobile-item-meta-value">${item.quantidade}</span>
+                                </div>
+                                <div>
+                                    <span class="mobile-item-meta-label">Preco unitario</span>
+                                    <span class="mobile-item-meta-value">${formatarMoeda(item.preco_unitario)}</span>
+                                </div>
+                                <div>
+                                    <span class="mobile-item-meta-label">Subtotal</span>
+                                    <span class="mobile-item-meta-value">${formatarMoeda(subtotal)}</span>
+                                </div>
+                            </div>
+                            <div class="mobile-item-actions">
+                                <button type="button" class="btn btn-warning btn-sm item-edit-mobile" data-index="${index}">
+                                    <i class="fas fa-edit"></i> Editar
+                                </button>
+                                <button type="button" class="btn btn-danger btn-sm remover-item-btn" data-index="${index}">
+                                    <i class="fas fa-trash-alt"></i> Remover
+                                </button>
+                            </div>
+                        </div>
+                    `);
+                }
             });
         }
         calcularTotal();
@@ -481,15 +566,62 @@ document.addEventListener('DOMContentLoaded', function() {
         produtoSelect.value = '';
         quantidadeInput.value = '1';
         precoUnitarioInput.value = '';
+        if (window.innerWidth <= 768 && mobileItensVenda) {
+            mobileItensVenda.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
     });
+
+    function removerItemPorIndice(indexToRemove) {
+        if (!Number.isInteger(indexToRemove) || indexToRemove < 0) {
+            return;
+        }
+        itensDaVenda.splice(indexToRemove, 1);
+        renderizarItens();
+    }
+
+    function editarItemPorIndice(index) {
+        const item = itensDaVenda[index];
+        if (!item) {
+            return;
+        }
+
+        const novaQuantidade = prompt('Informe a nova quantidade:', item.quantidade);
+        if (novaQuantidade === null) {
+            return;
+        }
+
+        const quantidade = parseInt(novaQuantidade, 10);
+        if (!Number.isInteger(quantidade) || quantidade <= 0) {
+            alert('Quantidade inválida.');
+            return;
+        }
+
+        item.quantidade = quantidade;
+        renderizarItens();
+    }
 
     tabelaItensBody.addEventListener('click', function(e) {
         if (e.target.closest('.remover-item-btn')) {
-            const indexToRemove = parseInt(e.target.closest('.remover-item-btn').dataset.index);
-            itensDaVenda.splice(indexToRemove, 1);
-            renderizarItens();
+            const indexToRemove = parseInt(e.target.closest('.remover-item-btn').dataset.index, 10);
+            removerItemPorIndice(indexToRemove);
         }
     });
+
+    if (mobileItensVenda) {
+        mobileItensVenda.addEventListener('click', function(e) {
+            const removeButton = e.target.closest('.remover-item-btn');
+            const editButton = e.target.closest('.item-edit-mobile');
+
+            if (removeButton) {
+                removerItemPorIndice(parseInt(removeButton.dataset.index, 10));
+                return;
+            }
+
+            if (editButton) {
+                editarItemPorIndice(parseInt(editButton.dataset.index, 10));
+            }
+        });
+    }
 
     tabelaItensBody.addEventListener('change', function(e) {
         const index = e.target.dataset.index;
@@ -502,16 +634,19 @@ document.addEventListener('DOMContentLoaded', function() {
         renderizarItens();
     });
 
-    document.getElementById('formVenda').addEventListener('submit', function(e) {
+    formVenda.addEventListener('submit', function(e) {
         if (itensDaVenda.length === 0) {
             alert('A venda deve conter pelo menos um item.');
             e.preventDefault();
+            return;
+        }
+
+        const submitButton = formVenda.querySelector('button[type="submit"]');
+        if (submitButton) {
+            submitButton.disabled = true;
+            submitButton.textContent = 'Salvando...';
         }
     });
-
-    // Event listeners para busca de produtos
-    const produtoSearch = document.getElementById('produto_search');
-    const clearSearchBtn = document.getElementById('clearSearchBtn');
 
     if (produtoSearch) {
         produtoSearch.addEventListener('input', filtrarProdutos);
@@ -530,25 +665,30 @@ document.addEventListener('DOMContentLoaded', function() {
             produtoSearch.focus();
         });
     }
+
+    if (window.innerWidth <= 768) {
+        produtoSelect.size = 1;
+    }
+
+    filtrarProdutos();
+    renderizarItens();
+
 });
 </script>
 
 <!-- Select2 JS -->
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
-
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        // Inicializar Select2 para o campo de cliente
-        $('#cliente_id').select2({
+document.addEventListener('DOMContentLoaded', function() {
+    if (window.jQuery && window.jQuery.fn && typeof window.jQuery.fn.select2 === 'function') {
+        window.jQuery('#cliente_id').select2({
             placeholder: 'Buscar cliente por nome...',
             allowClear: true,
             language: 'pt-BR',
             width: '100%',
-            theme: 'bootstrap-5'
+            theme: 'bootstrap-5',
+            dropdownAutoWidth: true
         });
-    });
-</script>
-    filtrarProdutos(); // Inicializar contagem
-    renderizarItens();
+    }
 });
 </script>

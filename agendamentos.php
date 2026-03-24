@@ -209,7 +209,7 @@ include_once 'includes/header.php';
 </div>
 
 <div class="modal fade" id="modalStatusAgendamento" tabindex="-1" aria-labelledby="modalStatusAgendamentoLabel" aria-hidden="true">
-    <div class="modal-dialog">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="modalStatusAgendamentoLabel">Alterar Status do Agendamento</h5>
@@ -242,15 +242,52 @@ include_once 'includes/header.php';
 <script>
     // Script para preencher o modal com os dados do agendamento
     var modalStatusAgendamento = document.getElementById('modalStatusAgendamento');
-    modalStatusAgendamento.addEventListener('show.bs.modal', function (event) {
-        var button = event.relatedTarget; // Botão que acionou o modal
-        var agendamentoId = button.getAttribute('data-id');
-        var currentStatus = button.getAttribute('data-current-status');
-
+    if (modalStatusAgendamento) {
         var modalIdInput = modalStatusAgendamento.querySelector('#agendamento_id_status');
         var modalStatusSelect = modalStatusAgendamento.querySelector('#novo_status_agendamento');
+        var modalForm = modalStatusAgendamento.querySelector('form');
 
-        modalIdInput.value = agendamentoId;
-        modalStatusSelect.value = currentStatus; // Pré-seleciona o status atual
-    });
+        function preencherModalAgendamento(triggerElement) {
+            if (!triggerElement || !modalIdInput || !modalStatusSelect) {
+                return;
+            }
+
+            modalIdInput.value = triggerElement.getAttribute('data-id') || '';
+            modalStatusSelect.value = triggerElement.getAttribute('data-current-status') || 'agendado';
+        }
+
+        document.addEventListener('click', function (event) {
+            var triggerElement = event.target.closest('[data-bs-target="#modalStatusAgendamento"]');
+            if (triggerElement) {
+                preencherModalAgendamento(triggerElement);
+            }
+        });
+
+        modalStatusAgendamento.addEventListener('show.bs.modal', function (event) {
+            var triggerElement = event.relatedTarget ? event.relatedTarget.closest('[data-bs-target="#modalStatusAgendamento"]') : null;
+            if (!triggerElement) {
+                return;
+            }
+
+            preencherModalAgendamento(triggerElement);
+        });
+
+        if (modalForm) {
+            modalForm.addEventListener('submit', function (event) {
+                var agendamentoId = parseInt(modalIdInput.value, 10);
+                var submitButton = modalForm.querySelector('button[type="submit"]');
+
+                if (!Number.isInteger(agendamentoId) || agendamentoId <= 0) {
+                    event.preventDefault();
+                    alert('Nao foi possivel identificar o agendamento. Feche o modal e tente novamente.');
+                    return;
+                }
+
+                if (submitButton) {
+                    submitButton.disabled = true;
+                    submitButton.textContent = 'Salvando...';
+                }
+            });
+        }
+    }
 </script>

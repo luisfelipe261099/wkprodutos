@@ -510,9 +510,9 @@ include_once 'includes/header.php';
 <!-- Modal Mudar Status -->
 <div class="modal fade" id="changeStatusModal" tabindex="-1" aria-labelledby="changeStatusModalLabel" aria-hidden="true">
     <?php //echo "DEBUG: vendas.php - Dentro do Modal Mudar Status<br>"; flush(); ?>
-    <div class="modal-dialog">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
         <div class="modal-content">
-            <form action="vendas.php" method="POST">
+            <form action="vendas.php" method="POST" id="changeStatusForm">
                 <input type="hidden" name="action" value="change_status">
                 <input type="hidden" name="venda_id" id="modal_venda_id">
                 <div class="modal-header">
@@ -592,14 +592,21 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
 
-        const changeStatusForm = changeStatusModal.querySelector('form');
+        const changeStatusForm = document.getElementById('changeStatusForm');
         if (changeStatusForm) {
             changeStatusForm.addEventListener('submit', function (event) {
                 const vendaId = parseInt(modalVendaIdInput.value, 10);
+                const submitButton = changeStatusForm.querySelector('button[type="submit"]');
 
                 if (!Number.isInteger(vendaId) || vendaId <= 0) {
                     event.preventDefault();
                     alert('Nao foi possivel identificar a venda para alterar o status. Feche o modal e tente novamente.');
+                    return;
+                }
+
+                if (submitButton) {
+                    submitButton.disabled = true;
+                    submitButton.textContent = 'Salvando...';
                 }
             });
         }
