@@ -177,6 +177,31 @@ try {
         echo '<div class="info"><strong>tipo_faturamento:</strong><br><code>' . htmlspecialchars($row2['Type']) . '</code></div>';
     }
     echo '</div>';
+
+    // 4. Corrigir AUTO_INCREMENT na tabela vendas
+    echo '<div class="step"><h3>Passo 4: Corrigindo AUTO_INCREMENT da tabela <code>vendas</code>...</h3>';
+
+    $result_id = $conn->query("SHOW COLUMNS FROM `vendas` LIKE 'id'");
+    $col_info = $result_id ? $result_id->fetch_assoc() : null;
+    if ($col_info && strpos(strtolower($col_info['Extra']), 'auto_increment') === false) {
+        // Busca o maior id existente para garantir que o AUTO_INCREMENT começa coreto
+        $max_id_row = $conn->query("SELECT IFNULL(MAX(id), 0) + 1 AS next_id FROM vendas")->fetch_assoc();
+        $next_id = (int)$max_id_row['next_id'];
+
+        $sql_fix_vendas = "ALTER TABLE `vendas` MODIFY COLUMN `id` int(11) NOT NULL AUTO_INCREMENT";
+        if ($conn->query($sql_fix_vendas) === TRUE) {
+            // Ajusta o AUTO_INCREMENT para não colidir com registros existentes
+            $conn->query("ALTER TABLE `vendas` AUTO_INCREMENT = {$next_id}");
+            echo '<div class="success">✅ AUTO_INCREMENT adicionado ao campo <code>id</code> da tabela <strong>vendas</strong> com sucesso! (próximo ID: ' . $next_id . ')</div>';
+            $success[] = 'vendas_auto_increment';
+        } else {
+            throw new Exception("Erro ao corrigir AUTO_INCREMENT da tabela vendas: " . $conn->error);
+        }
+    } else {
+        echo '<div class="info">ℹ️ Tabela <code>vendas</code> já possui AUTO_INCREMENT no campo <code>id</code>. Nenhuma alteração necessária.</div>';
+        $success[] = 'vendas_auto_increment';
+    }
+    echo '</div>';
     
     // Sucesso final
     echo '<div class="success" style="font-size: 18px; font-weight: bold;">
@@ -206,7 +231,7 @@ echo '
 </html>';
 
 // Se tudo deu certo, sugerir deletar o arquivo
-if (count($success) == 2 && count($errors) == 0) {
+if (count($errors) == 0) {
     echo '<script>
         console.log("✅ Atualização concluída com sucesso!");
         console.log("⚠️ LEMBRE-SE: Delete o arquivo atualizar_banco.php por segurança!");
