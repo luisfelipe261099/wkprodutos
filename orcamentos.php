@@ -196,26 +196,30 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
                 throw new Exception("Detalhes do orçamento não encontrados para criar a venda.");
             }
 
-            // 2. Inserir na tabela \'vendas\'
+            // 2. Inserir na tabela 'vendas'
             $data_venda = date('Y-m-d H:i:s'); // Data atual para a venda
             $status_venda_padrao = 'pendente'; // Status inicial da venda
 
-            // Campos da tabela vendas: cliente_id, data_venda, valor_total, forma_pagamento, status_venda, empresa_id, comissao_percentual, valor_comissao
-            $stmt_insert_venda = $conn->prepare("INSERT INTO vendas (cliente_id, data_venda, valor_total, forma_pagamento, status_venda, empresa_id, comissao_percentual, valor_comissao) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
-            $stmt_insert_venda->bind_param("isdssidd", 
-                $orcamento_details['cliente_id'], 
-                $data_venda, 
-                $orcamento_details['valor_total'], 
-                $orcamento_details['forma_pagamento'], 
-                $status_venda_padrao, 
-                $orcamento_details['empresa_id'], 
-                $orcamento_details['comissao_percentual'], 
+            // Gerar ID manualmente (compatível com TiDB Cloud sem AUTO_INCREMENT)
+            $next_id_row = $conn->query("SELECT IFNULL(MAX(id), 0) + 1 AS next_id FROM vendas")->fetch_assoc();
+            $venda_id = (int)$next_id_row['next_id'];
+
+            // Campos da tabela vendas: id, cliente_id, data_venda, valor_total, forma_pagamento, status_venda, empresa_id, comissao_percentual, valor_comissao
+            $stmt_insert_venda = $conn->prepare("INSERT INTO vendas (id, cliente_id, data_venda, valor_total, forma_pagamento, status_venda, empresa_id, comissao_percentual, valor_comissao) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)");
+            $stmt_insert_venda->bind_param("iisdssidd",
+                $venda_id,
+                $orcamento_details['cliente_id'],
+                $data_venda,
+                $orcamento_details['valor_total'],
+                $orcamento_details['forma_pagamento'],
+                $status_venda_padrao,
+                $orcamento_details['empresa_id'],
+                $orcamento_details['comissao_percentual'],
                 $orcamento_details['valor_comissao']
             );
             if (!$stmt_insert_venda->execute()) {
                 throw new Exception("Erro ao registrar a venda: " . $stmt_insert_venda->error);
             }
-            $venda_id = $stmt_insert_venda->insert_id;
             $stmt_insert_venda->close();
 
             // 3. Buscar itens do orçamento e inserir em 'itens_venda'
@@ -280,10 +284,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
         }
 
         // 2. Criar nova venda
-        $stmt_venda = $conn->prepare("INSERT INTO vendas (cliente_id, data_venda, valor_total, forma_pagamento, status_venda) VALUES (?, NOW(), ?, ?, 'concluida')");
-        $stmt_venda->bind_param("ids", $orcamento['cliente_id'], $orcamento['valor_total'], $forma_pagamento);
+        // Gerar ID manualmente (compatível com TiDB Cloud sem AUTO_INCREMENT)
+        $next_id_row = $conn->query("SELECT IFNULL(MAX(id), 0) + 1 AS next_id FROM vendas")->fetch_assoc();
+        $venda_id = (int)$next_id_row['next_id'];
+
+        $stmt_venda = $conn->prepare("INSERT INTO vendas (id, cliente_id, data_venda, valor_total, forma_pagamento, status_venda) VALUES (?, ?, NOW(), ?, ?, 'concluida')");
+        $stmt_venda->bind_param("iids", $venda_id, $orcamento['cliente_id'], $orcamento['valor_total'], $forma_pagamento);
         $stmt_venda->execute();
-        $venda_id = $conn->insert_id;
 
         // 3. Buscar itens do orçamento
         $stmt_itens_orc = $conn->prepare("SELECT * FROM itens_orcamento WHERE orcamento_id = ?");

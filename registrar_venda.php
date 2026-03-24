@@ -44,11 +44,14 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $current_venda_id = $venda_id_posted;
 
             if ($is_new_sale) {
-                $sql = "INSERT INTO vendas (cliente_id, valor_total, forma_pagamento, status_venda) VALUES (?, ?, ?, ?)";
+                // Gerar ID manualmente (compatível com TiDB Cloud sem AUTO_INCREMENT)
+                $next_id_row = $conn->query("SELECT IFNULL(MAX(id), 0) + 1 AS next_id FROM vendas")->fetch_assoc();
+                $current_venda_id = (int)$next_id_row['next_id'];
+
+                $sql = "INSERT INTO vendas (id, cliente_id, valor_total, forma_pagamento, status_venda) VALUES (?, ?, ?, ?, ?)";
                 $stmt = $conn->prepare($sql);
-                $stmt->bind_param("idss", $cliente_id, $valor_total, $forma_pagamento, $status_venda);
+                $stmt->bind_param("iidss", $current_venda_id, $cliente_id, $valor_total, $forma_pagamento, $status_venda);
                 if (!$stmt->execute()) throw new Exception("Erro ao registrar venda: " . $stmt->error);
-                $current_venda_id = $conn->insert_id;
                 $stmt->close();
             } else {
                 // Lógica para reverter estoque ao editar
