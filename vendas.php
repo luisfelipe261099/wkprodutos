@@ -88,7 +88,9 @@ if (isset($_POST['action']) && $_POST['action'] == 'change_status') {
                 $venda_data = $conn->query("SELECT valor_total FROM vendas WHERE id = $venda_id")->fetch_assoc();
                 $check_transacao = $conn->query("SELECT id FROM transacoes_financeiras WHERE referencia_id = $venda_id AND tabela_referencia = 'vendas'");
                 if ($check_transacao->num_rows == 0) {
-                     $conn->query("INSERT INTO transacoes_financeiras (tipo, valor, descricao, categoria, referencia_id, tabela_referencia, data_transacao) VALUES ('entrada', {$venda_data['valor_total']}, 'Receita da Venda #{$venda_id}', 'Vendas', {$venda_id}, 'vendas', NOW())");
+                     $next_transacao_id_row = $conn->query("SELECT IFNULL(MAX(id), 0) + 1 AS next_id FROM transacoes_financeiras")->fetch_assoc();
+                     $transacao_id = (int)$next_transacao_id_row['next_id'];
+                     $conn->query("INSERT INTO transacoes_financeiras (id, tipo, valor, descricao, categoria, referencia_id, tabela_referencia, data_transacao) VALUES ({$transacao_id}, 'entrada', {$venda_data['valor_total']}, 'Receita da Venda #{$venda_id}', 'Vendas', {$venda_id}, 'vendas', NOW())");
                 } else {
                      $conn->query("UPDATE transacoes_financeiras SET valor = {$venda_data['valor_total']} WHERE referencia_id = $venda_id AND tabela_referencia = 'vendas'");
                 }

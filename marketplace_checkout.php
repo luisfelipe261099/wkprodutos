@@ -58,27 +58,32 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     
     try {
         $conn->begin_transaction();
+
+        $next_pedido_id_row = $conn->query("SELECT IFNULL(MAX(id), 0) + 1 AS next_id FROM marketplace_pedidos")->fetch_assoc();
+        $pedido_id = (int)$next_pedido_id_row['next_id'];
         
         // Inserir pedido
-        $sql_pedido = "INSERT INTO marketplace_pedidos (cliente_id, token_acesso, valor_total, tipo_faturamento, data_entrega_agendada, endereco_entrega, observacoes) 
-                       VALUES (?, ?, ?, ?, ?, ?, ?)";
+        $sql_pedido = "INSERT INTO marketplace_pedidos (id, cliente_id, token_acesso, valor_total, tipo_faturamento, data_entrega_agendada, endereco_entrega, observacoes) 
+                       VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
         $stmt_pedido = $conn->prepare($sql_pedido);
-        $stmt_pedido->bind_param("isdssss", $link_data['cliente_id'], $token, $total_carrinho, $tipo_faturamento, $data_entrega, $endereco_entrega, $observacoes);
+        $stmt_pedido->bind_param("iisdssss", $pedido_id, $link_data['cliente_id'], $token, $total_carrinho, $tipo_faturamento, $data_entrega, $endereco_entrega, $observacoes);
         
         if (!$stmt_pedido->execute()) {
             throw new Exception("Erro ao criar pedido: " . $stmt_pedido->error);
         }
         
-        $pedido_id = $conn->insert_id;
-        
         // Inserir itens do pedido
+        $next_item_pedido_id_row = $conn->query("SELECT IFNULL(MAX(id), 0) + 1 AS next_id FROM marketplace_itens_pedido")->fetch_assoc();
+        $next_item_pedido_id = (int)$next_item_pedido_id_row['next_id'];
+
         foreach ($carrinho_itens as $item) {
             $subtotal = $item['quantidade'] * $item['preco_unitario'];
+            $item_pedido_id = $next_item_pedido_id++;
             
-            $sql_item = "INSERT INTO marketplace_itens_pedido (pedido_id, produto_id, quantidade, preco_unitario, subtotal) 
-                         VALUES (?, ?, ?, ?, ?)";
+            $sql_item = "INSERT INTO marketplace_itens_pedido (id, pedido_id, produto_id, quantidade, preco_unitario, subtotal) 
+                         VALUES (?, ?, ?, ?, ?, ?)";
             $stmt_item = $conn->prepare($sql_item);
-            $stmt_item->bind_param("iiidd", $pedido_id, $item['produto_id'], $item['quantidade'], $item['preco_unitario'], $subtotal);
+            $stmt_item->bind_param("iiiidd", $item_pedido_id, $pedido_id, $item['produto_id'], $item['quantidade'], $item['preco_unitario'], $subtotal);
             
             if (!$stmt_item->execute()) {
                 throw new Exception("Erro ao inserir item do pedido: " . $stmt_item->error);

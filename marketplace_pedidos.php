@@ -57,18 +57,21 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     $stmt_confirm->execute();
 
                     // Criar venda no sistema principal
-                    $forma_pagamento = ($pedido['tipo_faturamento'] == 'avista') ? 'A Vista' : 'Faturado ' . str_replace('_', ' ', $pedido['tipo_faturamento']);
+                    $forma_pagamento = ($pedido['tipo_faturamento'] == 'avista') ? 'pix' : 'faturamento';
 
-                    $sql_venda = "INSERT INTO vendas (cliente_id, valor_total, forma_pagamento, status_venda, data_venda)
-                                  VALUES (?, ?, ?, 'concluida', NOW())";
+                    $next_venda_id_row = $conn->query("SELECT IFNULL(MAX(id), 0) + 1 AS next_id FROM vendas")->fetch_assoc();
+                    $venda_id = (int)$next_venda_id_row['next_id'];
+
+                    $sql_venda = "INSERT INTO vendas (id, cliente_id, valor_total, forma_pagamento, status_venda, data_venda)
+                                  VALUES (?, ?, ?, ?, 'concluida', NOW())";
                     $stmt_venda = $conn->prepare($sql_venda);
-                    $stmt_venda->bind_param("ids", $pedido['cliente_id'], $pedido['valor_total'], $forma_pagamento);
+                    $stmt_venda->bind_param("iids", $venda_id, $pedido['cliente_id'], $pedido['valor_total'], $forma_pagamento);
 
                     if (!$stmt_venda->execute()) {
                         throw new Exception("Erro ao criar venda: " . $stmt_venda->error);
                     }
-
-                    $venda_id = $conn->insert_id;
+                    $next_item_venda_id_row = $conn->query("SELECT IFNULL(MAX(id), 0) + 1 AS next_id FROM itens_venda")->fetch_assoc();
+                    $next_item_venda_id = (int)$next_item_venda_id_row['next_id'];
 
                     // Buscar itens do pedido e criar itens da venda
                     $sql_itens = "SELECT * FROM marketplace_itens_pedido WHERE pedido_id = ?";
@@ -78,11 +81,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     $result_itens = $stmt_itens->get_result();
 
                     while ($item = $result_itens->fetch_assoc()) {
+                        $item_venda_id = $next_item_venda_id++;
                         // Inserir item da venda
-                        $sql_item_venda = "INSERT INTO itens_venda (venda_id, produto_id, quantidade, preco_unitario)
-                                           VALUES (?, ?, ?, ?)";
+                        $sql_item_venda = "INSERT INTO itens_venda (id, venda_id, produto_id, quantidade, preco_unitario)
+                                           VALUES (?, ?, ?, ?, ?)";
                         $stmt_item_venda = $conn->prepare($sql_item_venda);
-                        $stmt_item_venda->bind_param("iiid", $venda_id, $item['produto_id'], $item['quantidade'], $item['preco_unitario']);
+                        $stmt_item_venda->bind_param("iiiid", $item_venda_id, $venda_id, $item['produto_id'], $item['quantidade'], $item['preco_unitario']);
 
                         if (!$stmt_item_venda->execute()) {
                             throw new Exception("Erro ao criar item da venda: " . $stmt_item_venda->error);
@@ -103,16 +107,17 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     $categoria = "Vendas Marketplace";
                     $data_transacao = ($pedido['tipo_faturamento'] == 'avista') ? date('Y-m-d H:i:s') : $pedido['data_vencimento'] . ' 00:00:00';
 
-                    $sql_transacao = "INSERT INTO transacoes_financeiras (tipo, valor, descricao, categoria, referencia_id, tabela_referencia, data_transacao)
-                                      VALUES ('entrada', ?, ?, ?, ?, 'marketplace_pedidos', ?)";
+                    $next_transacao_id_row = $conn->query("SELECT IFNULL(MAX(id), 0) + 1 AS next_id FROM transacoes_financeiras")->fetch_assoc();
+                    $transacao_id = (int)$next_transacao_id_row['next_id'];
+
+                    $sql_transacao = "INSERT INTO transacoes_financeiras (id, tipo, valor, descricao, categoria, referencia_id, tabela_referencia, data_transacao)
+                                      VALUES (?, 'entrada', ?, ?, ?, ?, 'marketplace_pedidos', ?)";
                     $stmt_transacao = $conn->prepare($sql_transacao);
-                    $stmt_transacao->bind_param("dssis", $pedido['valor_total'], $descricao, $categoria, $pedido_id, $data_transacao);
+                    $stmt_transacao->bind_param("idssis", $transacao_id, $pedido['valor_total'], $descricao, $categoria, $pedido_id, $data_transacao);
 
                     if (!$stmt_transacao->execute()) {
                         throw new Exception("Erro ao criar transação financeira: " . $stmt_transacao->error);
                     }
-
-                    $transacao_id = $conn->insert_id;
 
                     // Vincular venda e transação ao pedido do marketplace
                     $sql_link = "UPDATE marketplace_pedidos SET venda_id = ?, transacao_financeira_id = ? WHERE id = ?";

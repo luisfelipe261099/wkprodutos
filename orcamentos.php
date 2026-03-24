@@ -33,11 +33,15 @@ function registrarHistoricoOrcamento($conn, $orcamento_id, $status_anterior, $st
     if ($status_anterior === $status_novo && empty($observacoes)) return true;
     $usuario_id = $_SESSION['id'] ?? null;
     $status_anterior_db = $status_anterior ?? 'criado';
-    
-    $sql = "INSERT INTO historico_orcamentos (orcamento_id, status_anterior, status_novo, observacoes, data_alteracao, usuario_id)
-            VALUES (?, ?, ?, ?, NOW(), ?)";
+
+    $next_id_row = $conn->query("SELECT IFNULL(MAX(id), 0) + 1 AS next_id FROM historico_orcamentos")->fetch_assoc();
+    $historico_id = (int)$next_id_row['next_id'];
+    $acao = 'alteracao_status';
+
+    $sql = "INSERT INTO historico_orcamentos (id, orcamento_id, acao, status_anterior, status_novo, observacoes, data_alteracao, usuario_id)
+            VALUES (?, ?, ?, ?, ?, ?, NOW(), ?)";
     $stmt = $conn->prepare($sql);
-    $stmt->bind_param("isssi", $orcamento_id, $status_anterior_db, $status_novo, $observacoes, $usuario_id);
+    $stmt->bind_param("iissssi", $historico_id, $orcamento_id, $acao, $status_anterior_db, $status_novo, $observacoes, $usuario_id);
     return $stmt->execute();
 }
 
@@ -295,6 +299,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
         $stmt_venda = $conn->prepare("INSERT INTO vendas (id, cliente_id, data_venda, valor_total, forma_pagamento, status_venda) VALUES (?, ?, NOW(), ?, ?, 'concluida')");
         $stmt_venda->bind_param("iids", $venda_id, $orcamento['cliente_id'], $orcamento['valor_total'], $forma_pagamento);
         $stmt_venda->execute();
+
+        $next_transacao_id_row = $conn->query("SELECT IFNULL(MAX(id), 0) + 1 AS next_id FROM transacoes_financeiras")->fetch_assoc();
+        $transacao_id = (int)$next_transacao_id_row['next_id'];
+
+        $sql_transacao = "INSERT INTO transacoes_financeiras (id, tipo, valor, descricao, categoria, referencia_id, tabela_referencia, data_transacao) VALUES (?, 'entrada', ?, ?, 'Vendas', ?, 'vendas', NOW())";
+        $stmt_transacao = $conn->prepare($sql_transacao);
+        $descricao_transacao = "Receita da Venda #" . $venda_id;
+        $stmt_transacao->bind_param("idsi", $transacao_id, $orcamento['valor_total'], $descricao_transacao, $venda_id);
+        if (!$stmt_transacao->execute()) {
+            throw new Exception("Erro ao registrar transação financeira: " . $stmt_transacao->error);
+        }
+        $stmt_transacao->close();
 
         // 3. Buscar itens do orçamento
         $stmt_itens_orc = $conn->prepare("SELECT * FROM itens_orcamento WHERE orcamento_id = ?");

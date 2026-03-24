@@ -9,6 +9,20 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
 
 require_once 'includes/db_connect.php';
 
+function getNextTableId($conn, $tableName) {
+    if (!preg_match('/^[a-zA-Z0-9_]+$/', $tableName)) {
+        throw new Exception('Nome de tabela invalido para geracao de ID.');
+    }
+
+    $result = $conn->query("SELECT IFNULL(MAX(id), 0) + 1 AS next_id FROM {$tableName}");
+    if (!$result) {
+        throw new Exception("Erro ao buscar proximo ID para {$tableName}: " . $conn->error);
+    }
+
+    $row = $result->fetch_assoc();
+    return (int)$row['next_id'];
+}
+
 $venda_id = $cliente_id = $data_venda = $valor_total = $forma_pagamento = $status_venda = "";
 $from_orcamento_id = '';
 $title = "Registrar Nova Venda";
@@ -45,8 +59,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
             if ($is_new_sale) {
                 // Gerar ID manualmente (compatível com TiDB Cloud sem AUTO_INCREMENT)
-                $next_id_row = $conn->query("SELECT IFNULL(MAX(id), 0) + 1 AS next_id FROM vendas")->fetch_assoc();
-                $current_venda_id = (int)$next_id_row['next_id'];
+                $current_venda_id = getNextTableId($conn, 'vendas');
 
                 $sql = "INSERT INTO vendas (id, cliente_id, valor_total, forma_pagamento, status_venda) VALUES (?, ?, ?, ?, ?)";
                 $stmt = $conn->prepare($sql);
@@ -74,8 +87,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 $stmt->close();
             }
 
-            $next_item_venda_id_row = $conn->query("SELECT IFNULL(MAX(id), 0) + 1 AS next_id FROM itens_venda")->fetch_assoc();
-            $next_item_venda_id = (int)$next_item_venda_id_row['next_id'];
+            $next_item_venda_id = getNextTableId($conn, 'itens_venda');
 
             foreach ($itens_da_venda_post as $item) {
                 $produto_id = $item['id'];
@@ -101,11 +113,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             if ($status_venda == 'concluida') {
                 $check_transacao = $conn->query("SELECT id FROM transacoes_financeiras WHERE referencia_id = {$current_venda_id} AND tabela_referencia = 'vendas'");
                 if ($check_transacao->num_rows == 0) {
-                    $sql_transacao = "INSERT INTO transacoes_financeiras (tipo, valor, descricao, categoria, referencia_id, tabela_referencia, data_transacao) VALUES ('entrada', ?, ?, 'Vendas', ?, 'vendas', NOW())";
+                    $transacao_id = getNextTableId($conn, 'transacoes_financeiras');
+                    $sql_transacao = "INSERT INTO transacoes_financeiras (id, tipo, valor, descricao, categoria, referencia_id, tabela_referencia, data_transacao) VALUES (?, 'entrada', ?, ?, 'Vendas', ?, 'vendas', NOW())";
                     $stmt_transacao = $conn->prepare($sql_transacao);
                     $descricao_transacao = "Receita da Venda #" . $current_venda_id;
-                    $stmt_transacao->bind_param("dsi", $valor_total, $descricao_transacao, $current_venda_id);
+                    $stmt_transacao->bind_param("idsi", $transacao_id, $valor_total, $descricao_transacao, $current_venda_id);
                     if (!$stmt_transacao->execute()) throw new Exception("Erro ao registrar transação: " . $stmt_transacao->error);
+                    $stmt_transacao->close();
                 } else {
                     $conn->query("UPDATE transacoes_financeiras SET valor = {$valor_total}, data_transacao = NOW() WHERE referencia_id = {$current_venda_id} AND tabela_referencia = 'vendas'");
                 }

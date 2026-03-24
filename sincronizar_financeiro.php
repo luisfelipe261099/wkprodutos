@@ -59,10 +59,12 @@ try {
                 // Criar transação financeira
                 $descricao = "Receita da Venda #" . $venda_id . " (Sincronização)";
                 $categoria = "Vendas";
+                $next_transacao_id_row = $conn->query("SELECT IFNULL(MAX(id), 0) + 1 AS next_id FROM transacoes_financeiras")->fetch_assoc();
+                $transacao_id = (int)$next_transacao_id_row['next_id'];
                 
-                $sql_transacao = "INSERT INTO transacoes_financeiras (tipo, valor, descricao, categoria, referencia_id, tabela_referencia, data_transacao) VALUES ('entrada', ?, ?, ?, ?, 'vendas', ?)";
+                $sql_transacao = "INSERT INTO transacoes_financeiras (id, tipo, valor, descricao, categoria, referencia_id, tabela_referencia, data_transacao) VALUES (?, 'entrada', ?, ?, ?, ?, 'vendas', ?)";
                 $stmt_transacao = $conn->prepare($sql_transacao);
-                $stmt_transacao->bind_param("dssis", $valor_total, $descricao, $categoria, $venda_id, $data_venda);
+                $stmt_transacao->bind_param("idssis", $transacao_id, $valor_total, $descricao, $categoria, $venda_id, $data_venda);
                 
                 if ($stmt_transacao->execute()) {
                     echo "<td style='color: blue;'>🔄 Sincronizada agora</td>";

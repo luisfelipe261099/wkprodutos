@@ -38,9 +38,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         }
 
         if (empty($id)) { // Nova Transação
-            $sql = "INSERT INTO transacoes_financeiras (tipo, valor, data_transacao, descricao, categoria, referencia_id, tabela_referencia) VALUES (?, ?, ?, ?, ?, ?, ?)";
+            $next_id_row = $conn->query("SELECT IFNULL(MAX(id), 0) + 1 AS next_id FROM transacoes_financeiras")->fetch_assoc();
+            $new_id = (int)$next_id_row['next_id'];
+
+            $sql = "INSERT INTO transacoes_financeiras (id, tipo, valor, data_transacao, descricao, categoria, referencia_id, tabela_referencia) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
             if ($stmt = $conn->prepare($sql)) {
-                $stmt->bind_param("sdsssis", $tipo, $valor, $data_transacao_str, $descricao, $categoria, $referencia_id, $tabela_referencia);
+                $stmt->bind_param("isdsssis", $new_id, $tipo, $valor, $data_transacao_str, $descricao, $categoria, $referencia_id, $tabela_referencia);
                 if ($stmt->execute()) {
                     $message = "Transação registrada com sucesso!";
                     $message_type = "success";
