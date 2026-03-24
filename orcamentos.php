@@ -838,21 +838,28 @@ if (ob_get_length()) ob_end_flush(); // Libera o buffer de saída
 
 <script src="js/search-utils.js"></script>
 <script>
-document.addEventListener('DOMContentLoaded', function() {
+(function initOrcamentosPage() {
     // Inicializar busca para orçamentos
-    SearchUtils.initializeSearch({
-        inputId: 'searchInput',
-        tableId: 'orcamentosTable',
-        mobileCardsSelector: '.mobile-orcamento-card',
-        searchColumns: [0, 1, 2, 4] // ID, Cliente, Data, Status
-    });
+    if (typeof SearchUtils !== 'undefined') {
+        SearchUtils.initializeSearch({
+            inputId: 'searchInput',
+            tableId: 'orcamentosTable',
+            mobileCardsSelector: '.mobile-orcamento-card',
+            searchColumns: [0, 1, 2, 4] // ID, Cliente, Data, Status
+        });
+    }
 
     const statusModal = document.getElementById('statusModal');
     if (statusModal) {
         statusModal.addEventListener('show.bs.modal', function (event) {
-            const button = event.relatedTarget;
+            const trigger = event.relatedTarget;
+            if (!trigger) return;
+            // Sobe na árvore DOM caso o clique seja num elemento filho (ex: ícone <i>)
+            const button = trigger.closest('[data-id]') || trigger;
             const orcamentoId = button.getAttribute('data-id');
-            const currentStatus = button.getAttribute('data-status'); // Pega o status atual do botão
+            const currentStatus = button.getAttribute('data-status');
+
+            if (!orcamentoId) return;
 
             const modalOrcamentoIdInput = statusModal.querySelector('#modal_orcamento_id');
             const modalOrcamentoIdDisplay = statusModal.querySelector('#modal_orcamento_id_display');
@@ -874,10 +881,14 @@ document.addEventListener('DOMContentLoaded', function() {
     const convertModal = document.getElementById('convertModal');
     if (convertModal) {
         convertModal.addEventListener('show.bs.modal', function (event) {
-            const button = event.relatedTarget;
+            const trigger = event.relatedTarget;
+            if (!trigger) return;
+            const button = trigger.closest('[data-id]') || trigger;
             const orcamentoId = button.getAttribute('data-id');
             const clienteNome = button.getAttribute('data-cliente');
             const valorTotal = button.getAttribute('data-valor');
+
+            if (!orcamentoId) return;
 
             const modalOrcamentoIdInput = convertModal.querySelector('#convert_orcamento_id');
             const modalClienteNome = convertModal.querySelector('#convert_cliente_nome');
@@ -890,5 +901,5 @@ document.addEventListener('DOMContentLoaded', function() {
             modalFormaPagamento.value = ''; // Limpa seleção anterior
         });
     }
-});
+})();
 </script>
