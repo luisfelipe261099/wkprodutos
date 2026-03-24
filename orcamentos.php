@@ -229,10 +229,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
             $itens_orcamento = $stmt_get_itens->get_result();
             $stmt_get_itens->close();
 
-            // Assumindo colunas: venda_id, produto_id, quantidade, preco_unitario
-            $stmt_insert_item_venda = $conn->prepare("INSERT INTO itens_venda (venda_id, produto_id, quantidade, preco_unitario) VALUES (?, ?, ?, ?)");
+            // Gerar IDs manualmente para compatibilidade com bancos sem AUTO_INCREMENT
+            $next_item_venda_id_row = $conn->query("SELECT IFNULL(MAX(id), 0) + 1 AS next_id FROM itens_venda")->fetch_assoc();
+            $next_item_venda_id = (int)$next_item_venda_id_row['next_id'];
+
+            $stmt_insert_item_venda = $conn->prepare("INSERT INTO itens_venda (id, venda_id, produto_id, quantidade, preco_unitario) VALUES (?, ?, ?, ?, ?)");
             while ($item = $itens_orcamento->fetch_assoc()) {
-                $stmt_insert_item_venda->bind_param("iiid", $venda_id, $item['produto_id'], $item['quantidade'], $item['preco_unitario']);
+                $current_item_venda_id = $next_item_venda_id++;
+                $stmt_insert_item_venda->bind_param("iiiid", $current_item_venda_id, $venda_id, $item['produto_id'], $item['quantidade'], $item['preco_unitario']);
                 if (!$stmt_insert_item_venda->execute()) {
                     throw new Exception("Erro ao registrar item da venda: " . $stmt_insert_item_venda->error);
                 }
@@ -298,11 +302,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
         $stmt_itens_orc->execute();
         $itens_orcamento = $stmt_itens_orc->get_result();
 
+        $next_item_venda_id_row = $conn->query("SELECT IFNULL(MAX(id), 0) + 1 AS next_id FROM itens_venda")->fetch_assoc();
+        $next_item_venda_id = (int)$next_item_venda_id_row['next_id'];
+
         // 4. Criar itens da venda e atualizar estoque
         while ($item = $itens_orcamento->fetch_assoc()) {
+            $current_item_venda_id = $next_item_venda_id++;
             // Inserir item na venda
-            $stmt_item_venda = $conn->prepare("INSERT INTO itens_venda (venda_id, produto_id, quantidade, preco_unitario) VALUES (?, ?, ?, ?)");
-            $stmt_item_venda->bind_param("iiid", $venda_id, $item['produto_id'], $item['quantidade'], $item['preco_unitario']);
+            $stmt_item_venda = $conn->prepare("INSERT INTO itens_venda (id, venda_id, produto_id, quantidade, preco_unitario) VALUES (?, ?, ?, ?, ?)");
+            $stmt_item_venda->bind_param("iiiid", $current_item_venda_id, $venda_id, $item['produto_id'], $item['quantidade'], $item['preco_unitario']);
             $stmt_item_venda->execute();
 
             // Atualizar estoque do produto

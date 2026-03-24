@@ -74,10 +74,14 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 $stmt->close();
             }
 
+            $next_item_venda_id_row = $conn->query("SELECT IFNULL(MAX(id), 0) + 1 AS next_id FROM itens_venda")->fetch_assoc();
+            $next_item_venda_id = (int)$next_item_venda_id_row['next_id'];
+
             foreach ($itens_da_venda_post as $item) {
                 $produto_id = $item['id'];
                 $quantidade = $item['quantidade'];
                 $preco_unitario = $item['preco_unitario'];
+                $current_item_venda_id = $next_item_venda_id++;
 
                 // Verifica estoque antes de inserir o item e dar baixa
                 $stock_row = $conn->query("SELECT quantidade_estoque FROM produtos WHERE id = {$produto_id}")->fetch_assoc();
@@ -85,9 +89,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     throw new Exception("Estoque insuficiente para o produto ID {$produto_id}. Disponível: {$stock_row['quantidade_estoque']}");
                 }
 
-                $sql_item = "INSERT INTO itens_venda (venda_id, produto_id, quantidade, preco_unitario) VALUES (?, ?, ?, ?)";
+                $sql_item = "INSERT INTO itens_venda (id, venda_id, produto_id, quantidade, preco_unitario) VALUES (?, ?, ?, ?, ?)";
                 $stmt_item = $conn->prepare($sql_item);
-                $stmt_item->bind_param("iiid", $current_venda_id, $produto_id, $quantidade, $preco_unitario);
+                $stmt_item->bind_param("iiiid", $current_item_venda_id, $current_venda_id, $produto_id, $quantidade, $preco_unitario);
                 if (!$stmt_item->execute()) throw new Exception("Erro ao inserir item da venda: " . $stmt_item->error);
                 $stmt_item->close();
 
