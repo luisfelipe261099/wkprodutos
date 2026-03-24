@@ -50,70 +50,120 @@ if (isset($_GET['success']) && $_GET['success'] === 'orcamento_convertido') {
 if (isset($_POST['action']) && $_POST['action'] == 'change_status') {
     //echo "DEBUG: vendas.php - Entrou em AÇÃO: MUDAR STATUS DA VENDA<br>";
     //flush();
-    $venda_id = intval($_POST['venda_id']);
-    $novo_status = $_POST['novo_status'];
+    $venda_id = isset($_POST['venda_id']) ? intval($_POST['venda_id']) : 0;
+    $novo_status = $_POST['novo_status'] ?? '';
+    $status_validos = ['pendente', 'concluida', 'cancelada'];
 
-    $conn->begin_transaction();
-    try {
-        $sql_venda_atual = "SELECT status_venda FROM vendas WHERE id = ?";
-        $stmt_venda_atual = $conn->prepare($sql_venda_atual);
-        $stmt_venda_atual->bind_param("i", $venda_id);
-        $stmt_venda_atual->execute();
-        $venda_atual = $stmt_venda_atual->get_result()->fetch_assoc();
-        $status_antigo = $venda_atual['status_venda'];
-        $stmt_venda_atual->close();
-
-        if ($status_antigo != $novo_status) {
-            $sql_itens = "SELECT produto_id, quantidade FROM itens_venda WHERE venda_id = ?";
-            $stmt_itens = $conn->prepare($sql_itens);
-            $stmt_itens->bind_param("i", $venda_id);
-            $stmt_itens->execute();
-            $result_itens = $stmt_itens->get_result();
-            $itens_da_venda = $result_itens->fetch_all(MYSQLI_ASSOC);
-            $stmt_itens->close();
-            
-            // Reverte ou debita estoque
-            if ($status_antigo == 'cancelada' && $novo_status != 'cancelada') { // Saindo do status cancelado
-                foreach ($itens_da_venda as $item) {
-                    $conn->query("UPDATE produtos SET quantidade_estoque = quantidade_estoque - {$item['quantidade']} WHERE id = {$item['produto_id']}");
-                }
-            } elseif ($status_antigo != 'cancelada' && $novo_status == 'cancelada') { // Entrando no status cancelado
-                 foreach ($itens_da_venda as $item) {
-                    $conn->query("UPDATE produtos SET quantidade_estoque = quantidade_estoque + {$item['quantidade']} WHERE id = {$item['produto_id']}");
-                }
-            }
-
-            // Atualiza transação financeira
-            if ($novo_status == 'concluida') {
-                $venda_data = $conn->query("SELECT valor_total FROM vendas WHERE id = $venda_id")->fetch_assoc();
-                $check_transacao = $conn->query("SELECT id FROM transacoes_financeiras WHERE referencia_id = $venda_id AND tabela_referencia = 'vendas'");
-                if ($check_transacao->num_rows == 0) {
-                     $next_transacao_id_row = $conn->query("SELECT IFNULL(MAX(id), 0) + 1 AS next_id FROM transacoes_financeiras")->fetch_assoc();
-                     $transacao_id = (int)$next_transacao_id_row['next_id'];
-                     $conn->query("INSERT INTO transacoes_financeiras (id, tipo, valor, descricao, categoria, referencia_id, tabela_referencia, data_transacao) VALUES ({$transacao_id}, 'entrada', {$venda_data['valor_total']}, 'Receita da Venda #{$venda_id}', 'Vendas', {$venda_id}, 'vendas', NOW())");
-                } else {
-                     $conn->query("UPDATE transacoes_financeiras SET valor = {$venda_data['valor_total']} WHERE referencia_id = $venda_id AND tabela_referencia = 'vendas'");
-                }
-            } else {
-                $conn->query("DELETE FROM transacoes_financeiras WHERE referencia_id = $venda_id AND tabela_referencia = 'vendas'");
-            }
-
-            // Atualiza status da venda
-            $sql_update = "UPDATE vendas SET status_venda = ? WHERE id = ?";
-            $stmt_update = $conn->prepare($sql_update);
-            $stmt_update->bind_param("si", $novo_status, $venda_id);
-            $stmt_update->execute();
-            $stmt_update->close();
-        }
-
-        $conn->commit();
-        $message = "Status da venda #{$venda_id} alterado com sucesso!";
-        $message_type = 'success';
-
-    } catch (Exception $e) {
-        $conn->rollback();
-        $message = "Erro ao alterar o status da venda: " . $e->getMessage();
+    if ($venda_id <= 0) {
+        $message = "Erro ao alterar o status da venda: ID da venda inválido.";
         $message_type = 'danger';
+    } elseif (!in_array($novo_status, $status_validos, true)) {
+        $message = "Erro ao alterar o status da venda: status inválido.";
+        $message_type = 'danger';
+    } else {
+
+        $conn->begin_transaction();
+        try {
+            $sql_venda_atual = "SELECT status_venda, valor_total FROM vendas WHERE id = ?";
+            $stmt_venda_atual = $conn->prepare($sql_venda_atual);
+            if (!$stmt_venda_atual) {
+                throw new Exception("Erro ao preparar consulta da venda: " . $conn->error);
+            }
+            $stmt_venda_atual->bind_param("i", $venda_id);
+            $stmt_venda_atual->execute();
+            $venda_atual = $stmt_venda_atual->get_result()->fetch_assoc();
+            $stmt_venda_atual->close();
+
+            if (!$venda_atual) {
+                throw new Exception("Venda não encontrada para o ID informado.");
+            }
+
+            $status_antigo = $venda_atual['status_venda'];
+            $valor_total_venda = (float) $venda_atual['valor_total'];
+
+            if ($status_antigo != $novo_status) {
+                $sql_itens = "SELECT produto_id, quantidade FROM itens_venda WHERE venda_id = ?";
+                $stmt_itens = $conn->prepare($sql_itens);
+                $stmt_itens->bind_param("i", $venda_id);
+                $stmt_itens->execute();
+                $result_itens = $stmt_itens->get_result();
+                $itens_da_venda = $result_itens->fetch_all(MYSQLI_ASSOC);
+                $stmt_itens->close();
+                
+                // Reverte ou debita estoque
+                if ($status_antigo == 'cancelada' && $novo_status != 'cancelada') { // Saindo do status cancelado
+                    foreach ($itens_da_venda as $item) {
+                        $conn->query("UPDATE produtos SET quantidade_estoque = quantidade_estoque - {$item['quantidade']} WHERE id = {$item['produto_id']}");
+                    }
+                } elseif ($status_antigo != 'cancelada' && $novo_status == 'cancelada') { // Entrando no status cancelado
+                     foreach ($itens_da_venda as $item) {
+                        $conn->query("UPDATE produtos SET quantidade_estoque = quantidade_estoque + {$item['quantidade']} WHERE id = {$item['produto_id']}");
+                    }
+                }
+
+                // Atualiza transação financeira
+                if ($novo_status == 'concluida') {
+                    $stmt_check_transacao = $conn->prepare("SELECT id FROM transacoes_financeiras WHERE referencia_id = ? AND tabela_referencia = 'vendas'");
+                    $stmt_check_transacao->bind_param("i", $venda_id);
+                    $stmt_check_transacao->execute();
+                    $check_transacao = $stmt_check_transacao->get_result();
+
+                    if ($check_transacao->num_rows == 0) {
+                        $stmt_check_transacao->close();
+                        $next_transacao_id_row = $conn->query("SELECT IFNULL(MAX(id), 0) + 1 AS next_id FROM transacoes_financeiras")->fetch_assoc();
+                        $transacao_id = (int)$next_transacao_id_row['next_id'];
+                        $descricao_transacao = "Receita da Venda #" . $venda_id;
+
+                        $stmt_insert_transacao = $conn->prepare("INSERT INTO transacoes_financeiras (id, tipo, valor, descricao, categoria, referencia_id, tabela_referencia, data_transacao) VALUES (?, 'entrada', ?, ?, 'Vendas', ?, 'vendas', NOW())");
+                        if (!$stmt_insert_transacao) {
+                            throw new Exception("Erro ao preparar inserção da transação: " . $conn->error);
+                        }
+                        $stmt_insert_transacao->bind_param("idsi", $transacao_id, $valor_total_venda, $descricao_transacao, $venda_id);
+                        if (!$stmt_insert_transacao->execute()) {
+                            throw new Exception("Erro ao registrar transação financeira: " . $stmt_insert_transacao->error);
+                        }
+                        $stmt_insert_transacao->close();
+                    } else {
+                        $stmt_check_transacao->close();
+                        $stmt_update_transacao = $conn->prepare("UPDATE transacoes_financeiras SET valor = ? WHERE referencia_id = ? AND tabela_referencia = 'vendas'");
+                        if (!$stmt_update_transacao) {
+                            throw new Exception("Erro ao preparar atualização da transação: " . $conn->error);
+                        }
+                        $stmt_update_transacao->bind_param("di", $valor_total_venda, $venda_id);
+                        if (!$stmt_update_transacao->execute()) {
+                            throw new Exception("Erro ao atualizar transação financeira: " . $stmt_update_transacao->error);
+                        }
+                        $stmt_update_transacao->close();
+                    }
+                } else {
+                    $stmt_delete_transacao = $conn->prepare("DELETE FROM transacoes_financeiras WHERE referencia_id = ? AND tabela_referencia = 'vendas'");
+                    if (!$stmt_delete_transacao) {
+                        throw new Exception("Erro ao preparar exclusão da transação: " . $conn->error);
+                    }
+                    $stmt_delete_transacao->bind_param("i", $venda_id);
+                    if (!$stmt_delete_transacao->execute()) {
+                        throw new Exception("Erro ao excluir transação financeira: " . $stmt_delete_transacao->error);
+                    }
+                    $stmt_delete_transacao->close();
+                }
+
+                // Atualiza status da venda
+                $sql_update = "UPDATE vendas SET status_venda = ? WHERE id = ?";
+                $stmt_update = $conn->prepare($sql_update);
+                $stmt_update->bind_param("si", $novo_status, $venda_id);
+                $stmt_update->execute();
+                $stmt_update->close();
+            }
+
+            $conn->commit();
+            $message = "Status da venda #{$venda_id} alterado com sucesso!";
+            $message_type = 'success';
+
+        } catch (Exception $e) {
+            $conn->rollback();
+            $message = "Erro ao alterar o status da venda: " . $e->getMessage();
+            $message_type = 'danger';
+        }
     }
     //echo "DEBUG: vendas.php - Saiu de AÇÃO: MUDAR STATUS DA VENDA<br>";
     //flush();
