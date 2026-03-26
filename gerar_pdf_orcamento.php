@@ -211,85 +211,83 @@ function gerarPDFModerno($orcamento, $itens, $empresas_logos = []) {
                 $this->SetDrawColor(0, 0, 0);
             }
             
-            function ModernTable($headers, $data, $widths) {
+            function drawTableHeader($headers, $widths) {
                 $start_x = 15;
-                $available_width = 180; // Largura total disponível
-
                 $this->SetFillColor($this->primaryColor[0], $this->primaryColor[1], $this->primaryColor[2]);
                 $this->SetTextColor(255, 255, 255);
-                $this->SetFont('Arial', 'B', 6); // Reduzido de 7 para 6
+                $this->SetFont('Arial', 'B', 6);
                 $this->SetDrawColor(255, 255, 255);
-
-                // Desenha o cabeçalho da tabela
                 $current_x = $start_x;
                 for ($i = 0; $i < count($headers); $i++) {
                     $this->SetXY($current_x, $this->GetY());
-                    $this->Cell($widths[$i], 5, $this->convertToLatin1($headers[$i]), 1, 0, 'C', true); // Reduzido de 7 para 5
+                    $this->Cell($widths[$i], 5, $this->convertToLatin1($headers[$i]), 1, 0, 'C', true);
                     $current_x += $widths[$i];
                 }
                 $this->Ln();
-
                 $this->SetTextColor(0, 0, 0);
-                $this->SetFont('Arial', '', 6); // Sempre usa fonte 6 para compactar
+                $this->SetFont('Arial', '', 6);
                 $this->SetDrawColor(220, 220, 220);
+            }
+
+            function ModernTable($headers, $data, $widths) {
+                $start_x = 15;
+
+                $this->drawTableHeader($headers, $widths);
+
                 $fill = false;
 
                 foreach ($data as $row) {
-                    // Calcula a altura necessária para a linha (COMPACTO)
-                    $max_cell_height = 4; // Reduzido de 6 para 4
+                    // Calcula a altura necessária para a linha
+                    $max_cell_height = 4;
 
-                    // Verifica se a coluna de produto tem quebras de linha
-                    if (isset($row[1]) && strpos($row[1], "\n") !== false) {
-                        $lines = substr_count($row[1], "\n") + 1;
-                        $max_cell_height = max(4, $lines * 2.5); // Reduzido
-                    }
-
-                    // Verifica se a descrição é muito longa e precisa quebrar
                     if (isset($row[1])) {
+                        $this->SetFont('Arial', '', 6);
                         $text_width = $this->GetStringWidth($this->convertToLatin1($row[1]));
-                        if ($text_width > $widths[1] - 4) {
-                            $estimated_lines = ceil($text_width / ($widths[1] - 4));
-                            $max_cell_height = max($max_cell_height, $estimated_lines * 2.5); // Reduzido
+                        if ($text_width > $widths[1] - 2) {
+                            $estimated_lines = ceil($text_width / ($widths[1] - 2));
+                            $max_cell_height = max($max_cell_height, $estimated_lines * 3);
                         }
                     }
 
-                    // Limita a altura máxima da célula para evitar células muito altas
-                    $max_cell_height = min($max_cell_height, 8); // Reduzido de 12 para 8
+                    $max_cell_height = min($max_cell_height, 12);
 
-                    // NÃO quebra página - força tudo em 1 página
-                    // Removido o AddPage automático
+                    // Verifica se precisa de nova página
+                    if ($this->GetY() + $max_cell_height > $this->GetPageHeight() - 20) {
+                        $this->AddPage();
+                        $this->drawTableHeader($headers, $widths);
+                        $fill = false;
+                    }
 
-                    
-                    // Alterna a cor de fundo das linhas
                     if ($fill) {
                         $this->SetFillColor($this->lightGray[0], $this->lightGray[1], $this->lightGray[2]);
                     } else {
                         $this->SetFillColor(255, 255, 255);
                     }
-                    
+
                     $start_y = $this->GetY();
                     $current_x = $start_x;
-                    
+
                     // Desenha cada célula da linha
                     for ($i = 0; $i < count($row); $i++) {
                         $this->SetXY($current_x, $start_y);
                         $align = ($i == 0 || $i == 3) ? 'C' : (($i >= 4) ? 'R' : 'L');
-                        
+
                         if ($i == 1) {
                             // Coluna de produto - usa MultiCell para quebrar texto longo
-                            $this->MultiCell($widths[$i], 3, $this->convertToLatin1($row[$i]), 1, $align, true); // Reduzido de 4 para 3
+                            $this->MultiCell($widths[$i], 3, $this->convertToLatin1($row[$i]), 1, $align, true);
+                            $after_y = $this->GetY();
+                            $max_cell_height = max($max_cell_height, $after_y - $start_y);
                         } else {
-                            // Outras colunas - usa Cell normal
                             $this->Cell($widths[$i], $max_cell_height, $this->convertToLatin1($row[$i]), 1, 0, $align, true);
                         }
-                        
+
                         $current_x += $widths[$i];
                     }
-                    
+
                     $this->SetY($start_y + $max_cell_height);
                     $fill = !$fill;
                 }
-                
+
                 $this->SetDrawColor(0, 0, 0);
                 $this->SetFillColor(255, 255, 255);
             }
@@ -298,8 +296,8 @@ function gerarPDFModerno($orcamento, $itens, $empresas_logos = []) {
         PDFHelper::startPdfOutput('Proposta_Comercial_' . str_pad($orcamento['id'], 6, '0', STR_PAD_LEFT) . '.pdf');
 
         $pdf = new ModernPDF('P', 'mm', 'A4');
-        $pdf->SetAutoPageBreak(false); // Desabilita quebra automática de página
-        $pdf->AddPage(); // Apenas 1 página
+        $pdf->SetAutoPageBreak(true, 15);
+        $pdf->AddPage();
 
         // Ajusta o tamanho da fonte baseado no número de itens
         $num_itens = count($itens);
@@ -509,8 +507,13 @@ function gerarPDFModerno($orcamento, $itens, $empresas_logos = []) {
         }
         
         // Espaçamento reduzido para o total
-        $pdf->Ln(3); // Reduzido de 10 para 3
-        
+        $pdf->Ln(3);
+
+        // Garante espaço suficiente para a seção de totais/fornecedores/contato
+        if ($pdf->GetY() > $pdf->GetPageHeight() - 80) {
+            $pdf->AddPage();
+        }
+
         // --- SEÇÃO DE FORNECEDORES ---
         // Extrair fornecedores únicos dos itens
         $fornecedores_unicos = [];
@@ -608,9 +611,6 @@ function gerarPDFModerno($orcamento, $itens, $empresas_logos = []) {
         $pdf->SetDrawColor(0, 0, 0);
         $pdf->SetLineWidth(0.2);
         $pdf->SetTextColor(0, 0, 0);
-
-        // Garante que só há 1 página
-        $pdf->SetAutoPageBreak(false);
 
         $filename = 'Proposta_Comercial_' . str_pad($orcamento['id'], 6, '0', STR_PAD_LEFT) . '_' . date('Y-m-d') . '.pdf';
 
