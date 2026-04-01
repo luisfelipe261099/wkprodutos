@@ -165,6 +165,68 @@ function gerarPDFVenda($venda, $itens, $empresas_logos = []) {
                     $this->SetX($x + 2);
                 }
             }
+
+            function checkPageBreak($h) {
+                if ($this->GetY() + $h > $this->PageBreakTrigger) {
+                    $this->AddPage($this->CurOrientation);
+                }
+            }
+
+            function nbLines($w, $txt) {
+                $cw = &$this->CurrentFont['cw'];
+                if ($w == 0) {
+                    $w = $this->w - $this->rMargin - $this->x;
+                }
+
+                $txt = $this->convertToLatin1((string)$txt);
+                $wmax = ($w - 2 * $this->cMargin) * 1000 / $this->FontSize;
+                $s = str_replace("\r", '', $txt);
+                $nb = strlen($s);
+                if ($nb > 0 && $s[$nb - 1] == "\n") {
+                    $nb--;
+                }
+
+                $sep = -1;
+                $i = 0;
+                $j = 0;
+                $l = 0;
+                $nl = 1;
+
+                while ($i < $nb) {
+                    $c = $s[$i];
+                    if ($c == "\n") {
+                        $i++;
+                        $sep = -1;
+                        $j = $i;
+                        $l = 0;
+                        $nl++;
+                        continue;
+                    }
+
+                    if ($c == ' ') {
+                        $sep = $i;
+                    }
+
+                    $l += $cw[$c] ?? 0;
+                    if ($l > $wmax) {
+                        if ($sep == -1) {
+                            if ($i == $j) {
+                                $i++;
+                            }
+                        } else {
+                            $i = $sep + 1;
+                        }
+                        $sep = -1;
+                        $j = $i;
+                        $l = 0;
+                        $nl++;
+                    } else {
+                        $i++;
+                    }
+                }
+
+                return $nl;
+            }
             
             function ModernTable($headers, $data, $widths) {
                 // Cabeçalho da tabela
@@ -185,17 +247,46 @@ function gerarPDFVenda($venda, $itens, $empresas_logos = []) {
                 $this->SetFont('Arial', '', 8);
                 
                 $fill = false;
+                $lineHeight = 4.2;
+                $minRowHeight = 6.2;
                 foreach ($data as $row) {
+                    $maxLines = 1;
+                    for ($i = 0; $i < count($row); $i++) {
+                        $maxLines = max($maxLines, $this->nbLines($widths[$i], $row[$i]));
+                    }
+
+                    $rowHeight = max($minRowHeight, $lineHeight * $maxLines);
+                    $this->checkPageBreak($rowHeight);
+
                     if ($fill) {
                         $this->SetFillColor(248, 249, 250);
                     } else {
                         $this->SetFillColor(255, 255, 255);
                     }
-                    
+
+                    $x = $this->GetX();
+                    $y = $this->GetY();
+
                     for ($i = 0; $i < count($row); $i++) {
-                        $this->Cell($widths[$i], 7, $this->convertToLatin1($row[$i]), 1, 0, 'C', true);
+                        $align = ($i === 1 || $i === 2) ? 'L' : 'C';
+                        $cellLines = $this->nbLines($widths[$i], $row[$i]);
+
+                        // Desenha o fundo/borda da célula inteira da linha
+                        $this->Rect($x, $y, $widths[$i], $rowHeight, 'DF');
+
+                        // Mantem linhas simples compactas e centralizadas; usa quebra apenas quando necessario
+                        $this->SetXY($x, $y);
+                        if ($cellLines === 1) {
+                            $this->Cell($widths[$i], $rowHeight, $this->convertToLatin1((string)$row[$i]), 0, 0, $align, false);
+                        } else {
+                            $this->MultiCell($widths[$i], $lineHeight, $this->convertToLatin1((string)$row[$i]), 0, $align, false);
+                        }
+
+                        $x += $widths[$i];
+                        $this->SetXY($x, $y);
                     }
-                    $this->Ln();
+
+                    $this->SetY($y + $rowHeight);
                     $fill = !$fill;
                 }
             }
@@ -299,7 +390,7 @@ function gerarPDFVenda($venda, $itens, $empresas_logos = []) {
         $pdf->Ln(5);
         
         $headers = ['Item', 'Produto', 'Empresa', 'Qtd', 'Valor Unit.', 'Subtotal'];
-        $widths = [15, 60, 40, 20, 25, 25];
+        $widths = [12, 70, 48, 15, 22, 23];
         
         $table_data = [];
         $total = 0;
