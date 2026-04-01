@@ -103,6 +103,9 @@ $conn->close();
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Karla Wollinger - Login</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
     <?php
     $inline_login_style = __DIR__ . '/css/style.css';
     if (file_exists($inline_login_style)) {
@@ -112,9 +115,9 @@ $conn->close();
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
 
 </head>
-<body>
-    <div class="container">
-        <div class="row justify-content-center g-4">
+<body class="login-page">
+    <div class="login-shell container">
+        <div class="row justify-content-center align-items-center g-4 g-xl-5">
             <div class="col-lg-6 d-none d-lg-block">
                 <div class="login-aside">
                     <div class="login-kicker">Painel comercial</div>
@@ -136,15 +139,17 @@ $conn->close();
                     </div>
                 </div>
             </div>
-            <div class="col-md-7 col-lg-5 col-xl-4">
+            <div class="col-md-8 col-lg-5 col-xl-4">
                 <div class="login-card">
                     <div class="card-body">
-                        <div class="text-center mb-4">
-                            <i class="fas fa-cubes fa-3x text-primary mb-3"></i>
+                        <div class="text-center mb-4 login-branding">
+                            <div class="logo-badge" aria-hidden="true">
+                                <i class="fas fa-cubes"></i>
+                            </div>
                             <h3 class="fw-bold text-primary">Karla Wollinger</h3>
                             <p class="text-muted">Sistema de Gestão Comercial</p>
                         </div>
-                        <h4 class="text-center mb-4">Acesse sua conta</h4>
+                        <h4 class="text-center mb-4 login-title">Acesse sua conta</h4>
 
                         <?php
                         // Exibe a mensagem de erro de login, se houver.
@@ -156,24 +161,25 @@ $conn->close();
                         }
                         ?>
 
-                        <form action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]); ?>" method="post">
+                        <form action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]); ?>" method="post" novalidate>
                             <div class="mb-3">
                                 <label for="email" class="form-label">Email:</label>
                                 <div class="input-group">
                                     <span class="input-group-text"><i class="fas fa-envelope"></i></span>
-                                    <input type="email" name="email" id="email" class="form-control" placeholder="seuemail@exemplo.com" required>
+                                    <input type="email" name="email" id="email" class="form-control" placeholder="seuemail@exemplo.com" value="<?php echo htmlspecialchars($email ?? ''); ?>" autocomplete="email" required>
                                 </div>
                             </div>
                             <div class="mb-3">
                                 <label for="senha" class="form-label">Senha:</label>
                                 <div class="input-group">
                                     <span class="input-group-text"><i class="fas fa-lock"></i></span>
-                                    <input type="password" name="senha" id="senha" class="form-control" placeholder="********" required>
+                                    <input type="password" name="senha" id="senha" class="form-control" placeholder="********" autocomplete="current-password" required>
                                 </div>
                             </div>
                             <div class="d-grid mt-4">
                                 <button type="submit" class="btn btn-primary btn-lg"><i class="fas fa-sign-in-alt me-2"></i> Entrar</button>
                             </div>
+                            <p class="login-support">Acesso restrito para usuarios autorizados.</p>
                         </form>
                     </div>
                 </div>
