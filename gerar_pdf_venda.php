@@ -376,12 +376,17 @@ function gerarPDFVenda($venda, $itens, $empresas_logos = []) {
         $sale_details .= "Status: " . $status . "\n";
         $sale_details .= "Forma de Pagamento: " . ucfirst($venda['forma_pagamento'] ?? 'Não informado') . "\n";
         $sale_details .= "Responsavel: Equipe de Vendas";
+
+        $client_lines = max(1, count(explode("\n", $client_details)));
+        $sale_lines = max(1, count(explode("\n", $sale_details)));
+        $max_lines = max($client_lines, $sale_lines);
+        $box_height = max(45, 12 + ($max_lines * 5) + 3);
         
         // Criar caixas de informação
-        $pdf->ShadowBox(15, $currentY, 85, 45, 'DADOS DO CLIENTE', $client_details);
-        $pdf->ShadowBox(110, $currentY, 85, 45, 'DADOS DA VENDA', $sale_details);
+        $pdf->ShadowBox(15, $currentY, 85, $box_height, 'DADOS DO CLIENTE', $client_details);
+        $pdf->ShadowBox(110, $currentY, 85, $box_height, 'DADOS DA VENDA', $sale_details);
         
-        $pdf->SetY($currentY + 55);
+        $pdf->SetY($currentY + $box_height + 10);
         
         // Tabela de itens
         $pdf->SetFont('Arial', 'B', 14);
