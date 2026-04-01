@@ -116,7 +116,7 @@ $conn->close();
 
 </head>
 <body class="login-page">
-    <div class="login-shell container">
+    <div class="login-shell container-fluid">
         <div class="row justify-content-center align-items-center g-4 g-xl-5">
             <div class="col-lg-6 d-none d-lg-block">
                 <div class="login-aside">
@@ -139,7 +139,7 @@ $conn->close();
                     </div>
                 </div>
             </div>
-            <div class="col-md-8 col-lg-5 col-xl-4">
+            <div class="col-12 col-sm-10 col-md-8 col-lg-5 col-xl-4">
                 <div class="login-card">
                     <div class="card-body">
                         <div class="text-center mb-4 login-branding">

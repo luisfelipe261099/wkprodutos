@@ -39,6 +39,10 @@ body.login-page {
     align-items: center;
     padding-top: 2rem;
     padding-bottom: 2rem;
+    padding-left: 1rem;
+    padding-right: 1rem;
+    max-width: 1280px;
+    margin: 0 auto;
 }
 
 .login-shell::before,
@@ -70,6 +74,8 @@ body.login-page {
 .login-shell .row {
     position: relative;
     z-index: 1;
+    width: 100%;
+    margin: 0 auto;
 }
 
 .login-aside {
@@ -286,18 +292,35 @@ body.login-page {
 }
 
 @media (max-width: 575.98px) {
+    .login-shell::before,
+    .login-shell::after {
+        display: none;
+    }
+
     .login-shell {
-        padding: 0.7rem 0.45rem 0.9rem;
+        padding: 0.9rem 0.75rem 1rem;
         min-height: 100dvh;
+        align-items: flex-start;
+    }
+
+    .login-shell .row {
+        width: 100%;
+    }
+
+    .login-card {
+        width: 100%;
+        max-width: 360px;
+        margin: 0 auto;
+        border-radius: 18px;
     }
 
     .login-card .card-body {
-        padding: 0.95rem;
+        padding: 1.15rem 1rem 1rem;
     }
 
     .login-title {
-        font-size: 1.7rem;
-        margin-bottom: 0.9rem !important;
+        font-size: 2rem;
+        margin-bottom: 1rem !important;
     }
 
     .logo-badge {
@@ -309,13 +332,13 @@ body.login-page {
     }
 
     .login-branding h3 {
-        font-size: 1.9rem;
+        font-size: 1.85rem;
     }
 
     .btn.btn-primary,
     .input-group-text,
     .form-control {
-        min-height: 46px;
+        min-height: 48px;
     }
 
     .form-control {
