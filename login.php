@@ -179,7 +179,7 @@ $conn->close();
                             <div class="d-grid mt-4">
                                 <button type="submit" class="btn btn-primary btn-lg"><i class="fas fa-sign-in-alt me-2"></i> Entrar</button>
                             </div>
-                            <p class="login-support">Acesso restrito para usuarios autorizados.</p>
+                            <p class="login-support">Acesso restrito para usuários autorizados.</p>
                         </form>
                     </div>
                 </div>
