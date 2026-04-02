@@ -27,7 +27,7 @@ function kw_render_head(string $metaTitle, string $metaDescription, string $acti
     $canonical = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off' ? 'https://' : 'http://')
         . ($_SERVER['HTTP_HOST'] ?? 'localhost')
         . ($_SERVER['REQUEST_URI'] ?? '/');
-    $logoPath = kw_site_url('logo.png');
+    $logoPath = kw_site_url('logo.svg');
     ?>
 <!DOCTYPE html>
 <html lang="pt-BR">
@@ -88,7 +88,7 @@ function kw_render_header(string $active): void
 <header class="site-header" id="topo">
     <div class="container nav-shell">
         <a class="brand" href="<?php echo kw_esc(kw_site_url('index.php')); ?>" aria-label="Karla Wollinger Representacoes">
-            <img src="<?php echo kw_esc(kw_site_url('logo.png')); ?>" alt="Logo Karla Wollinger Representacoes" loading="eager">
+            <img src="<?php echo kw_esc(kw_site_url('logo.svg')); ?>" alt="Logo Karla Wollinger Representacoes" loading="eager" width="280" height="75">
         </a>
         <button class="menu-toggle" id="menuToggle" aria-label="Abrir menu" aria-expanded="false">
             <i class="fa-solid fa-bars"></i>
@@ -113,7 +113,7 @@ function kw_render_footer(): void
 <footer class="site-footer">
     <div class="container footer-grid">
         <div>
-            <img class="footer-logo" src="<?php echo kw_esc(kw_site_url('logo.png')); ?>" alt="Karla Wollinger Representacoes">
+            <img class="footer-logo" src="<?php echo kw_esc(kw_site_url('logo.svg')); ?>" alt="Karla Wollinger Representacoes" width="240" height="64">
             <p>Representacao comercial de produtos de limpeza, higiene, papeis, embalagens e descartaveis para empresas em Curitiba e regiao.</p>
             <p class="footer-cnpj">CNPJ: 30.459.625/0001-85</p>
         </div>

@@ -64,8 +64,9 @@ a {
 }
 
 .brand img {
-    width: 235px;
+    width: 280px;
     max-width: 100%;
+    height: auto;
     display: block;
 }
 
