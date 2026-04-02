@@ -9,6 +9,61 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
 
 require_once 'includes/db_connect.php';
 
+function getIntegerColumnLimits(mysqli $conn, string $table, string $column): array {
+    $sql = "SELECT DATA_TYPE, COLUMN_TYPE FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = ? AND COLUMN_NAME = ? LIMIT 1";
+    $stmt = $conn->prepare($sql);
+    if (!$stmt) {
+        return ['min' => 0, 'max' => 2147483647];
+    }
+
+    $stmt->bind_param('ss', $table, $column);
+    if (!$stmt->execute()) {
+        $stmt->close();
+        return ['min' => 0, 'max' => 2147483647];
+    }
+
+    $result = $stmt->get_result();
+    $row = $result ? $result->fetch_assoc() : null;
+    $stmt->close();
+
+    if (!$row) {
+        return ['min' => 0, 'max' => 2147483647];
+    }
+
+    $dataType = strtolower((string)$row['DATA_TYPE']);
+    $columnType = strtolower((string)$row['COLUMN_TYPE']);
+    $isUnsigned = strpos($columnType, 'unsigned') !== false;
+
+    $ranges = [
+        'tinyint' => ['signed' => [-128, 127], 'unsigned' => [0, 255]],
+        'smallint' => ['signed' => [-32768, 32767], 'unsigned' => [0, 65535]],
+        'mediumint' => ['signed' => [-8388608, 8388607], 'unsigned' => [0, 16777215]],
+        'int' => ['signed' => [-2147483648, 2147483647], 'unsigned' => [0, 4294967295]],
+        'integer' => ['signed' => [-2147483648, 2147483647], 'unsigned' => [0, 4294967295]],
+        'bigint' => ['signed' => [PHP_INT_MIN, PHP_INT_MAX], 'unsigned' => [0, PHP_INT_MAX]],
+    ];
+
+    if (!isset($ranges[$dataType])) {
+        return ['min' => 0, 'max' => 2147483647];
+    }
+
+    $range = $isUnsigned ? $ranges[$dataType]['unsigned'] : $ranges[$dataType]['signed'];
+    return ['min' => $range[0], 'max' => $range[1]];
+}
+
+function parseIntegerStrict(string $value): ?int {
+    $clean = trim($value);
+    if ($clean === '' || !preg_match('/^-?\d+$/', $clean)) {
+        return null;
+    }
+
+    if (!is_numeric($clean)) {
+        return null;
+    }
+
+    return (int)$clean;
+}
+
 // Função auxiliar para gerar o próximo ID de produto (compatível com TiDB)
 function getProximoProdutoId($conexao) {
     $result = $conexao->query("SELECT MAX(id) as max_id FROM produtos");
@@ -45,10 +100,30 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $empresa_id = trim($_POST["empresa_id"]);
 
     // Validação dos campos
-    if (empty($nome) || empty($empresa_id) || !is_numeric($preco_venda) || !is_numeric($percentual_lucro) || !is_numeric($quantidade_estoque) || !is_numeric($estoque_minimo)) {
+    $quantidade_int = parseIntegerStrict($quantidade_estoque);
+    $estoque_minimo_int = parseIntegerStrict($estoque_minimo);
+
+    $limitesEstoque = getIntegerColumnLimits($conn, 'produtos', 'quantidade_estoque');
+    $limitesEstoqueMinimo = getIntegerColumnLimits($conn, 'produtos', 'estoque_minimo');
+
+    $estoqueForaDoLimite = (
+        $quantidade_int === null
+        || $quantidade_int < $limitesEstoque['min']
+        || $quantidade_int > $limitesEstoque['max']
+        || $estoque_minimo_int === null
+        || $estoque_minimo_int < $limitesEstoqueMinimo['min']
+        || $estoque_minimo_int > $limitesEstoqueMinimo['max']
+    );
+
+    if (empty($nome) || empty($empresa_id) || !is_numeric($preco_venda) || !is_numeric($percentual_lucro) || $estoqueForaDoLimite) {
         $message = "Por favor, preencha todos os campos obrigatórios (*) e garanta que os valores numéricos estejam corretos.";
+        if ($estoqueForaDoLimite) {
+            $message .= " Quantidade em estoque deve estar entre {$limitesEstoque['min']} e {$limitesEstoque['max']}.";
+        }
         $message_type = "danger";
     } else {
+        $quantidade_estoque = $quantidade_int;
+        $estoque_minimo = $estoque_minimo_int;
         if (empty($id)) { // Inserir Novo Produto
             // Gerar ID manualmente (compatível com TiDB Cloud)
             $novo_id = getProximoProdutoId($conn);
@@ -56,12 +131,17 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $sql = "INSERT INTO produtos (id, nome, descricao, sku, preco_venda, percentual_lucro, quantidade_estoque, estoque_minimo, fornecedor, empresa_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
             if ($stmt = $conn->prepare($sql)) {
                 $stmt->bind_param("isssddiisi", $novo_id, $nome, $descricao, $sku, $preco_venda, $percentual_lucro, $quantidade_estoque, $estoque_minimo, $fornecedor, $empresa_id);
-                if ($stmt->execute()) {
-                    $message = "Produto cadastrado com sucesso!";
-                    $message_type = "success";
-                    $id = $nome = $descricao = $sku = $preco_venda = $percentual_lucro = $quantidade_estoque = $estoque_minimo = $fornecedor = $empresa_id = "";
-                } else {
-                    $message = "Erro ao cadastrar produto: " . $stmt->error;
+                try {
+                    if ($stmt->execute()) {
+                        $message = "Produto cadastrado com sucesso!";
+                        $message_type = "success";
+                        $id = $nome = $descricao = $sku = $preco_venda = $percentual_lucro = $quantidade_estoque = $estoque_minimo = $fornecedor = $empresa_id = "";
+                    } else {
+                        $message = "Erro ao cadastrar produto: " . $stmt->error;
+                        $message_type = "danger";
+                    }
+                } catch (Throwable $e) {
+                    $message = "Erro ao cadastrar produto. Verifique os limites de estoque e tente novamente.";
                     $message_type = "danger";
                 }
                 $stmt->close();
@@ -71,11 +151,16 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             if ($stmt = $conn->prepare($sql)) {
                 // CORREÇÃO APLICADA: Os tipos também foram ajustados para 'd' (decimal) na atualização.
                 $stmt->bind_param("sssddiisii", $nome, $descricao, $sku, $preco_venda, $percentual_lucro, $quantidade_estoque, $estoque_minimo, $fornecedor, $empresa_id, $id);
-                if ($stmt->execute()) {
-                    $message = "Produto atualizado com sucesso!";
-                    $message_type = "success";
-                } else {
-                    $message = "Erro ao atualizar produto: " . $stmt->error;
+                try {
+                    if ($stmt->execute()) {
+                        $message = "Produto atualizado com sucesso!";
+                        $message_type = "success";
+                    } else {
+                        $message = "Erro ao atualizar produto: " . $stmt->error;
+                        $message_type = "danger";
+                    }
+                } catch (Throwable $e) {
+                    $message = "Erro ao atualizar produto. Verifique os limites de estoque e tente novamente.";
                     $message_type = "danger";
                 }
                 $stmt->close();
