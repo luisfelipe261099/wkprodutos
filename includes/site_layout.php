@@ -40,11 +40,12 @@ function kw_render_head(string $metaTitle, string $metaDescription, string $acti
     <meta property="og:image" content="logo.png">
     <meta property="og:locale" content="pt_BR">
     <meta name="theme-color" content="#0c2f58">
+    <base href="/">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer">
-    <link rel="stylesheet" href="css/institucional.css">
+    <link rel="stylesheet" href="/css/institucional.css">
     <script type="application/ld+json">
     {
       "@context": "https://schema.org",
@@ -84,7 +85,7 @@ function kw_render_header(string $active): void
 <header class="site-header" id="topo">
     <div class="container nav-shell">
         <a class="brand" href="<?php echo kw_esc(kw_site_url('index.php')); ?>" aria-label="Karla Wollinger Representacoes">
-            <img src="logo.png" alt="Logo Karla Wollinger Representacoes" loading="eager">
+            <img src="/logo.png" alt="Logo Karla Wollinger Representacoes" loading="eager">
         </a>
         <button class="menu-toggle" id="menuToggle" aria-label="Abrir menu" aria-expanded="false">
             <i class="fa-solid fa-bars"></i>
@@ -109,17 +110,17 @@ function kw_render_footer(): void
 <footer class="site-footer">
     <div class="container footer-grid">
         <div>
-            <img class="footer-logo" src="logo.png" alt="Karla Wollinger Representacoes">
+            <img class="footer-logo" src="/logo.png" alt="Karla Wollinger Representacoes">
             <p>Representacao comercial de produtos de limpeza, higiene, papeis, embalagens e descartaveis para empresas em Curitiba e regiao.</p>
             <p class="footer-cnpj">CNPJ: 30.459.625/0001-85</p>
         </div>
         <div>
             <h3>Menu rapido</h3>
-            <a href="index.php">Inicio</a>
-            <a href="catalogo.php">Produtos</a>
-            <a href="marcas.php">Marcas</a>
-            <a href="sobre.php">Sobre</a>
-            <a href="contato.php">Contato</a>
+            <a href="/index.php">Inicio</a>
+            <a href="/catalogo.php">Produtos</a>
+            <a href="/marcas.php">Marcas</a>
+            <a href="/sobre.php">Sobre</a>
+            <a href="/contato.php">Contato</a>
         </div>
         <div>
             <h3>Marcas</h3>
@@ -141,7 +142,7 @@ function kw_render_footer(): void
     </div>
     <div class="footer-bottom">&copy; <?php echo date('Y'); ?> Karla Wollinger Representacoes. Todos os direitos reservados.</div>
 </footer>
-<script src="js/institucional.js"></script>
+<script src="/js/institucional.js"></script>
 </body>
 </html>
     <?php
