@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url><loc>/</loc><changefreq>weekly</changefreq><priority>1.0</priority></url>
+  <url><loc>/catalogo</loc><changefreq>weekly</changefreq><priority>0.9</priority></url>
+  <url><loc>/marcas</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>/sobre</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>/contato</loc><changefreq>weekly</changefreq><priority>0.9</priority></url>
+  <url><loc>/blog</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>/papeis</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>/higiene</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>/sacos-de-lixo</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>/aerossol</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>/limpeza-profissional</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>/equipamentos</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>/lavanderia</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>/descartaveis</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>/embalagens</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>
+</urlset>

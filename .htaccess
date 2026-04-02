@@ -10,10 +10,36 @@ RewriteEngine On
 # REDIRECIONAMENTOS E URLs AMIGÁVEIS
 # =====================================================
 
-# Redirecionar requisições para a raiz para index.php (que fará a verificação de autenticação)
+# URLs institucionais
+RewriteRule ^$ index.php [L]
+RewriteRule ^inicio/?$ index.php [L]
+RewriteRule ^catalogo/?$ catalogo.php [L]
+RewriteRule ^marcas/?$ marcas.php [L]
+RewriteRule ^sobre/?$ sobre.php [L]
+RewriteRule ^contato/?$ contato.php [L]
+RewriteRule ^blog/?$ blog.php [L]
+
+# URLs de categorias para SEO local
+RewriteRule ^papeis/?$ categoria.php?cat=papeis [L,QSA]
+RewriteRule ^higiene/?$ categoria.php?cat=equipamentos [L,QSA]
+RewriteRule ^sacos-de-lixo/?$ categoria.php?cat=sacos-de-lixo [L,QSA]
+RewriteRule ^aerossol/?$ categoria.php?cat=aerossol [L,QSA]
+RewriteRule ^limpeza-profissional/?$ categoria.php?cat=limpeza-profissional [L,QSA]
+RewriteRule ^embalagens/?$ categoria.php?cat=sacos-de-lixo [L,QSA]
+RewriteRule ^equipamentos/?$ categoria.php?cat=equipamentos [L,QSA]
+RewriteRule ^descartaveis/?$ categoria.php?cat=descartaveis [L,QSA]
+RewriteRule ^lavanderia/?$ categoria.php?cat=lavanderia [L,QSA]
+
+# URLs do sistema interno
+RewriteRule ^dashboard/?$ dashboard.php [L]
+RewriteRule ^produtos/?$ produtos.php [L]
+RewriteRule ^clientes/?$ clientes.php [L]
+RewriteRule ^vendas/?$ vendas.php [L]
+RewriteRule ^empresas/?$ empresas_representadas.php [L]
+
+# Fallback: tudo que nao for arquivo/diretorio fisico vai para a home institucional
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
-RewriteCond %{REQUEST_URI} !^/login\.php$
 RewriteCond %{REQUEST_URI} !^/css/
 RewriteCond %{REQUEST_URI} !^/js/
 RewriteCond %{REQUEST_URI} !^/images/
@@ -21,13 +47,6 @@ RewriteCond %{REQUEST_URI} !^/includes/
 RewriteCond %{REQUEST_URI} !^/uploads/
 RewriteCond %{REQUEST_URI} !^/vendor/
 RewriteRule ^(.*)$ index.php [L]
-
-# URLs amigáveis (opcional)
-RewriteRule ^dashboard/?$ dashboard.php [L]
-RewriteRule ^produtos/?$ produtos.php [L]
-RewriteRule ^clientes/?$ clientes.php [L]
-RewriteRule ^vendas/?$ vendas.php [L]
-RewriteRule ^empresas/?$ empresas_representadas.php [L]
 
 # =====================================================
 # SEGURANÇA - PROTEÇÃO DE ARQUIVOS
@@ -78,7 +97,7 @@ Header always set X-XSS-Protection "1; mode=block"
 Header always set Referrer-Policy "strict-origin-when-cross-origin"
 
 # Content Security Policy básica
-Header always set Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; font-src 'self' https://cdnjs.cloudflare.com; img-src 'self' data:;"
+Header always set Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://fonts.googleapis.com; font-src 'self' https://cdnjs.cloudflare.com https://fonts.gstatic.com data:; img-src 'self' data:;"
 
 # =====================================================
 # PERFORMANCE - COMPRESSÃO E CACHE
