@@ -31,7 +31,7 @@ $brands = kw_site_brands();
                 </div>
                 <div class="cta-actions">
                     <a class="btn btn-primary" href="<?php echo kw_esc(kw_whatsapp_link('Oi! Quero ajuda para escolher marcas e categorias.')); ?>" target="_blank" rel="noopener">Falar no WhatsApp</a>
-                    <a class="btn btn-secondary" href="/wkprodutos/contato.php">Enviar formulario</a>
+                    <a class="btn btn-secondary" href="<?php echo kw_esc(kw_site_url('contato.php')); ?>">Enviar formulario</a>
                 </div>
             </div>
         </section>

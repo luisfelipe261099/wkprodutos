@@ -53,7 +53,7 @@ kw_render_head($metaTitle, $metaDescription, 'sobre');
                 </div>
                 <div class="cta-actions">
                     <a class="btn btn-primary" href="<?php echo kw_esc(kw_whatsapp_link('Oi Karla! Quero atendimento para minha empresa.')); ?>" target="_blank" rel="noopener">Falar no WhatsApp</a>
-                    <a class="btn btn-secondary" href="/wkprodutos/contato.php">Ir para contato</a>
+                    <a class="btn btn-secondary" href="<?php echo kw_esc(kw_site_url('contato.php')); ?>">Ir para contato</a>
                 </div>
             </div>
         </section>

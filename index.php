@@ -23,7 +23,7 @@ $products = array_slice(kw_site_products(), 0, 8);
                 <p>Representacao comercial de marcas reconhecidas, com atendimento agil, mix inteligente e suporte para empresas em Curitiba e regiao metropolitana.</p>
                 <div class="hero-actions">
                     <a class="btn btn-primary" href="<?php echo kw_esc(kw_whatsapp_link('Quero solicitar um orcamento para minha empresa.')); ?>" target="_blank" rel="noopener">Solicitar orcamento</a>
-                    <a class="btn btn-secondary" href="/wkprodutos/contato.php">Falar com uma especialista</a>
+                    <a class="btn btn-secondary" href="<?php echo kw_esc(kw_site_url('contato.php')); ?>">Falar com uma especialista</a>
                 </div>
                 <div class="hero-badges">
                     <span>Atendimento regional</span>
@@ -58,7 +58,7 @@ $products = array_slice(kw_site_products(), 0, 8);
                         <div class="card-icon"><i class="fa-solid <?php echo kw_esc($category['icone']); ?>"></i></div>
                         <h3><?php echo kw_esc($category['nome']); ?></h3>
                         <p><?php echo kw_esc($category['descricao']); ?></p>
-                        <a class="btn btn-secondary" href="/wkprodutos/<?php echo kw_esc($category['slug']); ?>">Quero orcamento</a>
+                        <a class="btn btn-secondary" href="<?php echo kw_esc(kw_site_url($category['slug'])); ?>">Quero orcamento</a>
                     </article>
                 <?php endforeach; ?>
             </div>
@@ -105,7 +105,7 @@ $products = array_slice(kw_site_products(), 0, 8);
             </div>
             <div class="cta-actions">
                 <a class="btn btn-primary" href="<?php echo kw_esc(kw_whatsapp_link('Oi! Preciso de cotacao para limpeza, higiene e embalagens.')); ?>" target="_blank" rel="noopener">WhatsApp</a>
-                <a class="btn btn-secondary" href="/wkprodutos/contato.php">Formulario</a>
+                <a class="btn btn-secondary" href="<?php echo kw_esc(kw_site_url('contato.php')); ?>">Formulario</a>
             </div>
         </div>
     </section>
