@@ -11,17 +11,8 @@ function kw_esc(string $value): string
 
 function kw_site_url(string $path = ''): string
 {
-    $basePath = rtrim(str_replace('\\', '/', dirname($_SERVER['SCRIPT_NAME'] ?? '/')), '/');
-    if ($basePath === '' || $basePath === '.') {
-        $basePath = '';
-    }
-
     $normalizedPath = ltrim($path, '/');
-    if ($normalizedPath === '') {
-        return $basePath === '' ? '/' : $basePath . '/';
-    }
-
-    return ($basePath === '' ? '' : $basePath) . '/' . $normalizedPath;
+    return '/' . $normalizedPath;
 }
 
 function kw_whatsapp_link(string $message): string

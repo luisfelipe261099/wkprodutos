@@ -1,22 +1,38 @@
 {
   "version": 2,
   "builds": [
-    {
-      "src": "*.php",
-      "use": "vercel-php@0.9.0"
-    }
+    { "src": "*.php", "use": "vercel-php@0.9.0" },
+    { "src": "css/**", "use": "@vercel/static" },
+    { "src": "js/**", "use": "@vercel/static" },
+    { "src": "*.png", "use": "@vercel/static" },
+    { "src": "*.jpg", "use": "@vercel/static" },
+    { "src": "*.ico", "use": "@vercel/static" },
+    { "src": "*.svg", "use": "@vercel/static" },
+    { "src": "*.webp", "use": "@vercel/static" }
   ],
   "routes": [
-    {
-      "handle": "filesystem"
-    },
-    {
-      "src": "/",
-      "dest": "/index.php"
-    },
-    {
-      "src": "/(.*)",
-      "dest": "/$1"
-    }
+    { "src": "/css/(.*)", "dest": "/css/$1" },
+    { "src": "/js/(.*)",  "dest": "/js/$1"  },
+    { "src": "/uploads/(.*)", "dest": "/uploads/$1" },
+    { "src": "/logo\\.png", "dest": "/logo.png" },
+    { "src": "^/$", "dest": "/index.php" },
+    { "src": "^/inicio/?$", "dest": "/index.php" },
+    { "src": "^/catalogo/?$", "dest": "/catalogo.php" },
+    { "src": "^/marcas/?$", "dest": "/marcas.php" },
+    { "src": "^/sobre/?$", "dest": "/sobre.php" },
+    { "src": "^/contato/?$", "dest": "/contato.php" },
+    { "src": "^/blog/?$", "dest": "/blog.php" },
+    { "src": "^/papeis/?$", "dest": "/categoria.php?cat=papeis" },
+    { "src": "^/higiene/?$", "dest": "/categoria.php?cat=higiene" },
+    { "src": "^/sacos-de-lixo/?$", "dest": "/categoria.php?cat=sacos-de-lixo" },
+    { "src": "^/aerossol/?$", "dest": "/categoria.php?cat=aerossol" },
+    { "src": "^/limpeza-profissional/?$", "dest": "/categoria.php?cat=limpeza-profissional" },
+    { "src": "^/embalagens/?$", "dest": "/categoria.php?cat=embalagens" },
+    { "src": "^/equipamentos/?$", "dest": "/categoria.php?cat=equipamentos" },
+    { "src": "^/descartaveis/?$", "dest": "/categoria.php?cat=descartaveis" },
+    { "src": "^/lavanderia/?$", "dest": "/categoria.php?cat=lavanderia" },
+    { "src": "^/(.+\\.php)$", "dest": "/$1" },
+    { "handle": "filesystem" },
+    { "src": "/(.*)", "dest": "/index.php" }
   ]
 }
