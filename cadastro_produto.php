@@ -94,26 +94,38 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     // Usar str_replace para converter vírgulas em pontos para valores decimais
     $preco_venda = str_replace(',', '.', trim($_POST["preco_venda"]));
     $percentual_lucro = str_replace(',', '.', trim($_POST["percentual_lucro"]));
-    $quantidade_estoque = trim($_POST["quantidade_estoque"]);
-    $estoque_minimo = trim($_POST["estoque_minimo"]);
+    
+    // Verificar se estoque é ilimitado
+    $estoque_ilimitado = isset($_POST["estoque_ilimitado"]) && $_POST["estoque_ilimitado"] === 'on';
+    $quantidade_estoque = $estoque_ilimitado ? -1 : trim($_POST["quantidade_estoque"]);
+    $estoque_minimo = $estoque_ilimitado ? -1 : trim($_POST["estoque_minimo"]);
+    
     $fornecedor = trim($_POST["fornecedor"]);
     $empresa_id = trim($_POST["empresa_id"]);
 
     // Validação dos campos
-    $quantidade_int = parseIntegerStrict($quantidade_estoque);
-    $estoque_minimo_int = parseIntegerStrict($estoque_minimo);
+    if ($estoque_ilimitado) {
+        // Se estoque ilimitado, usar -1 como sentinel value
+        $quantidade_int = -1;
+        $estoque_minimo_int = -1;
+        $estoqueForaDoLimite = false;
+    } else {
+        // Validação normal para estoque limitado
+        $quantidade_int = parseIntegerStrict($quantidade_estoque);
+        $estoque_minimo_int = parseIntegerStrict($estoque_minimo);
 
-    $limitesEstoque = getIntegerColumnLimits($conn, 'produtos', 'quantidade_estoque');
-    $limitesEstoqueMinimo = getIntegerColumnLimits($conn, 'produtos', 'estoque_minimo');
+        $limitesEstoque = getIntegerColumnLimits($conn, 'produtos', 'quantidade_estoque');
+        $limitesEstoqueMinimo = getIntegerColumnLimits($conn, 'produtos', 'estoque_minimo');
 
-    $estoqueForaDoLimite = (
-        $quantidade_int === null
-        || $quantidade_int < $limitesEstoque['min']
-        || $quantidade_int > $limitesEstoque['max']
-        || $estoque_minimo_int === null
-        || $estoque_minimo_int < $limitesEstoqueMinimo['min']
-        || $estoque_minimo_int > $limitesEstoqueMinimo['max']
-    );
+        $estoqueForaDoLimite = (
+            $quantidade_int === null
+            || $quantidade_int < $limitesEstoque['min']
+            || $quantidade_int > $limitesEstoque['max']
+            || $estoque_minimo_int === null
+            || $estoque_minimo_int < $limitesEstoqueMinimo['min']
+            || $estoque_minimo_int > $limitesEstoqueMinimo['max']
+        );
+    }
 
     if (empty($nome) || empty($empresa_id) || !is_numeric($preco_venda) || !is_numeric($percentual_lucro) || $estoqueForaDoLimite) {
         $message = "Por favor, preencha todos os campos obrigatórios (*) e garanta que os valores numéricos estejam corretos.";
@@ -205,6 +217,31 @@ $conn->close();
 
 include_once 'includes/header.php';
 ?>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const checkboxIlimitado = document.getElementById('estoque_ilimitado');
+    const inputQuantidade = document.getElementById('quantidade_estoque');
+    const inputEstoqueMinimo = document.getElementById('estoque_minimo');
+
+    function atualizarCamposEstoque() {
+        const ilimitado = checkboxIlimitado.checked;
+        inputQuantidade.disabled = ilimitado;
+        inputEstoqueMinimo.disabled = ilimitado;
+        inputQuantidade.required = !ilimitado;
+        inputEstoqueMinimo.required = !ilimitado;
+
+        if (ilimitado) {
+            inputQuantidade.value = '';
+            inputEstoqueMinimo.value = '';
+        }
+    }
+
+    checkboxIlimitado.addEventListener('change', atualizarCamposEstoque);
+    // Executar na carga para aplicar estado inicial
+    atualizarCamposEstoque();
+});
+</script>
 
 <!-- Select2 CSS -->
 <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
@@ -337,11 +374,23 @@ include_once 'includes/header.php';
                 </div>
                 <div class="col-lg-3 col-6 mb-3">
                     <label for="quantidade_estoque" class="form-label">Estoque Atual <span class="text-danger">*</span></label>
-                    <input type="number" class="form-control" id="quantidade_estoque" name="quantidade_estoque" value="<?php echo htmlspecialchars($quantidade_estoque); ?>" required min="0">
+                    <input type="number" class="form-control" id="quantidade_estoque" name="quantidade_estoque" value="<?php echo htmlspecialchars($quantidade_estoque !== -1 ? $quantidade_estoque : ''); ?>" required min="0">
                 </div>
                 <div class="col-lg-3 col-6 mb-3">
                     <label for="estoque_minimo" class="form-label">Estoque Mínimo <span class="text-danger">*</span></label>
-                    <input type="number" class="form-control" id="estoque_minimo" name="estoque_minimo" value="<?php echo htmlspecialchars($estoque_minimo); ?>" required min="0">
+                    <input type="number" class="form-control" id="estoque_minimo" name="estoque_minimo" value="<?php echo htmlspecialchars($estoque_minimo !== -1 ? $estoque_minimo : ''); ?>" required min="0">
+                </div>
+            </div>
+
+            <div class="row mb-3">
+                <div class="col-12">
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="estoque_ilimitado" name="estoque_ilimitado" <?php echo ($quantidade_estoque === -1 ? 'checked' : ''); ?>>
+                        <label class="form-check-label" for="estoque_ilimitado">
+                            <i class="fas fa-infinity me-2"></i><strong>Estoque Ilimitado</strong> (Fábrica/Fornecedor com quantidade indefinida)
+                        </label>
+                        <small class="d-block text-muted mt-1">Marque esta opção quando puder obter quantidades ilimitadas do produto sem necessidade de rastreamento de estoque.</small>
+                    </div>
                 </div>
             </div>
 
