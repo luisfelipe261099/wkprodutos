@@ -173,12 +173,11 @@ $filtro_data_fim = $_GET['data_fim'] ?? '';
 
 // Buscar pedidos
 $sql_pedidos = "SELECT mp.*, c.nome as cliente_nome, c.email as cliente_email,
-                       COUNT(mip.id) as total_itens,
+                       (SELECT COUNT(*) FROM marketplace_itens_pedido mip WHERE mip.pedido_id = mp.id) as total_itens,
                        v.id as venda_integrada,
                        tf.id as transacao_integrada
                 FROM marketplace_pedidos mp
                 LEFT JOIN clientes c ON mp.cliente_id = c.id
-                LEFT JOIN marketplace_itens_pedido mip ON mp.id = mip.pedido_id
                 LEFT JOIN vendas v ON mp.venda_id = v.id
                 LEFT JOIN transacoes_financeiras tf ON mp.transacao_financeira_id = tf.id
                 WHERE 1=1";
@@ -204,7 +203,7 @@ if (!empty($filtro_data_fim)) {
     $types .= "s";
 }
 
-$sql_pedidos .= " GROUP BY mp.id ORDER BY mp.data_pedido DESC";
+$sql_pedidos .= " ORDER BY mp.data_pedido DESC";
 
 $stmt_pedidos = $conn->prepare($sql_pedidos);
 if (!empty($params)) {
