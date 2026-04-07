@@ -40,9 +40,15 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 $novo_link_id = (int)$result_max->fetch_assoc()['next_id'];
                 
                 // Inserir novo link
-                $sql_insert = "INSERT INTO marketplace_links (id, cliente_id, token_acesso, data_expiracao) VALUES (?, ?, ?, ?)";
-                $stmt_insert = $conn->prepare($sql_insert);
-                $stmt_insert->bind_param("iiss", $novo_link_id, $cliente_id, $token, $data_expiracao);
+                if ($data_expiracao !== null) {
+                    $sql_insert = "INSERT INTO marketplace_links (id, cliente_id, token_acesso, data_expiracao) VALUES (?, ?, ?, ?)";
+                    $stmt_insert = $conn->prepare($sql_insert);
+                    $stmt_insert->bind_param("iiss", $novo_link_id, $cliente_id, $token, $data_expiracao);
+                } else {
+                    $sql_insert = "INSERT INTO marketplace_links (id, cliente_id, token_acesso) VALUES (?, ?, ?)";
+                    $stmt_insert = $conn->prepare($sql_insert);
+                    $stmt_insert->bind_param("iis", $novo_link_id, $cliente_id, $token);
+                }
                 
                 if ($stmt_insert->execute()) {
                     $message = "Link gerado com sucesso!";
