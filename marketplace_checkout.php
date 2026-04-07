@@ -62,11 +62,17 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $next_pedido_id_row = $conn->query("SELECT IFNULL(MAX(id), 0) + 1 AS next_id FROM marketplace_pedidos")->fetch_assoc();
         $pedido_id = (int)$next_pedido_id_row['next_id'];
         
+        // Gerar numero_pedido no formato YYMM0001
+        $prefixo = date('ym');
+        $result_num = $conn->query("SELECT COALESCE(MAX(CAST(SUBSTRING(numero_pedido, 5) AS UNSIGNED)), 0) + 1 AS seq FROM marketplace_pedidos WHERE numero_pedido LIKE '{$prefixo}%'");
+        $seq = (int)$result_num->fetch_assoc()['seq'];
+        $numero_pedido = $prefixo . str_pad($seq, 4, '0', STR_PAD_LEFT);
+        
         // Inserir pedido
-        $sql_pedido = "INSERT INTO marketplace_pedidos (id, cliente_id, token_acesso, valor_total, tipo_faturamento, data_entrega_agendada, endereco_entrega, observacoes) 
-                       VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+        $sql_pedido = "INSERT INTO marketplace_pedidos (id, cliente_id, token_acesso, numero_pedido, valor_total, tipo_faturamento, data_entrega_agendada, endereco_entrega, observacoes) 
+                       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
         $stmt_pedido = $conn->prepare($sql_pedido);
-        $stmt_pedido->bind_param("iisdssss", $pedido_id, $link_data['cliente_id'], $token, $total_carrinho, $tipo_faturamento, $data_entrega, $endereco_entrega, $observacoes);
+        $stmt_pedido->bind_param("iissdssss", $pedido_id, $link_data['cliente_id'], $token, $numero_pedido, $total_carrinho, $tipo_faturamento, $data_entrega, $endereco_entrega, $observacoes);
         
         if (!$stmt_pedido->execute()) {
             throw new Exception("Erro ao criar pedido: " . $stmt_pedido->error);
