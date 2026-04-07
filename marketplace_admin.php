@@ -212,7 +212,8 @@ include_once 'includes/header.php';
                 <thead>
                     <tr>
                         <th>Cliente</th>
-                        <th>Link</th>
+                        <th>Link Marketplace</th>
+                        <th>Link Orçamento</th>
                         <th>Status</th>
                         <th>Acessos</th>
                         <th>Criado em</th>
@@ -226,6 +227,7 @@ include_once 'includes/header.php';
                     if ($result_links && $result_links->num_rows > 0) {
                         while($link = $result_links->fetch_assoc()) {
                             $url_marketplace = "http://" . $_SERVER['HTTP_HOST'] . dirname($_SERVER['PHP_SELF']) . "/marketplace.php?token=" . $link['token_acesso'];
+                            $url_orcamento = "http://" . $_SERVER['HTTP_HOST'] . dirname($_SERVER['PHP_SELF']) . "/orcamento_cliente.php?token=" . $link['token_acesso'];
                             $status_class = $link['ativo'] ? 'success' : 'danger';
                             $status_text = $link['ativo'] ? 'Ativo' : 'Inativo';
                             
@@ -245,7 +247,15 @@ include_once 'includes/header.php';
                                 <td>
                                     <div class="input-group">
                                         <input type="text" class="form-control form-control-sm" value="<?php echo $url_marketplace; ?>" readonly id="link_<?php echo $link['id']; ?>">
-                                        <button class="btn btn-outline-primary btn-sm" type="button" onclick="copiarLink('link_<?php echo $link['id']; ?>')">
+                                        <button class="btn btn-outline-primary btn-sm" type="button" onclick="copiarLink('link_<?php echo $link['id']; ?>')" title="Copiar link marketplace">
+                                            <i class="fas fa-copy"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="input-group">
+                                        <input type="text" class="form-control form-control-sm" value="<?php echo $url_orcamento; ?>" readonly id="link_orc_<?php echo $link['id']; ?>">
+                                        <button class="btn btn-outline-success btn-sm" type="button" onclick="copiarLink('link_orc_<?php echo $link['id']; ?>')" title="Copiar link orçamento">
                                             <i class="fas fa-copy"></i>
                                         </button>
                                     </div>
@@ -300,7 +310,7 @@ include_once 'includes/header.php';
                             <?php
                         }
                     } else {
-                        echo '<tr><td colspan="8" class="text-center">Nenhum link gerado ainda.</td></tr>';
+                        echo '<tr><td colspan="9" class="text-center">Nenhum link gerado ainda.</td></tr>';
                     }
                     ?>
                 </tbody>
