@@ -59,6 +59,51 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 }
             }
             break;
+        
+        case 'gerar_link_avulso':
+            $data_expiracao = !empty($_POST['data_expiracao']) ? $_POST['data_expiracao'] : null;
+            
+            // Gerar token único
+            $token = bin2hex(random_bytes(32));
+            
+            // Criar cliente avulso temporário
+            $result_max_cli = $conn->query("SELECT IFNULL(MAX(id), 0) + 1 AS next_id FROM clientes");
+            $novo_cliente_id = (int)$result_max_cli->fetch_assoc()['next_id'];
+            
+            $nome_avulso = '[Avulso] Link Genérico #' . date('d/m/Y H:i');
+            $sql_cli = "INSERT INTO clientes (id, nome, tipo_pessoa) VALUES (?, ?, 'fisica')";
+            $stmt_cli = $conn->prepare($sql_cli);
+            $stmt_cli->bind_param("is", $novo_cliente_id, $nome_avulso);
+            
+            if (!$stmt_cli->execute()) {
+                $message = "Erro ao criar cliente avulso: " . $conn->error;
+                $message_type = "danger";
+                break;
+            }
+            
+            // Gerar ID do link
+            $result_max = $conn->query("SELECT IFNULL(MAX(id), 0) + 1 AS next_id FROM marketplace_links");
+            $novo_link_id = (int)$result_max->fetch_assoc()['next_id'];
+            
+            // Inserir link
+            if ($data_expiracao !== null) {
+                $sql_insert = "INSERT INTO marketplace_links (id, cliente_id, token_acesso, data_expiracao) VALUES (?, ?, ?, ?)";
+                $stmt_insert = $conn->prepare($sql_insert);
+                $stmt_insert->bind_param("iiss", $novo_link_id, $novo_cliente_id, $token, $data_expiracao);
+            } else {
+                $sql_insert = "INSERT INTO marketplace_links (id, cliente_id, token_acesso) VALUES (?, ?, ?)";
+                $stmt_insert = $conn->prepare($sql_insert);
+                $stmt_insert->bind_param("iis", $novo_link_id, $novo_cliente_id, $token);
+            }
+            
+            if ($stmt_insert->execute()) {
+                $message = "Link avulso gerado com sucesso! Compartilhe com qualquer pessoa — os dados serão coletados no checkout.";
+                $message_type = "success";
+            } else {
+                $message = "Erro ao gerar link avulso: " . $conn->error;
+                $message_type = "danger";
+            }
+            break;
             
         case 'desativar_link':
             $link_id = (int)$_POST['link_id'];
@@ -204,6 +249,34 @@ include_once 'includes/header.php';
                 </div>
             </div>
         </form>
+        
+        <hr class="my-3">
+        
+        <form method="POST" action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]); ?>">
+            <input type="hidden" name="acao" value="gerar_link_avulso">
+            <div class="row g-3 align-items-end">
+                <div class="col-md-6">
+                    <div class="d-flex align-items-center">
+                        <i class="fas fa-user-plus text-warning me-3 fa-2x"></i>
+                        <div>
+                            <strong>Link Avulso (Genérico)</strong><br>
+                            <small class="text-muted">Gera um link sem cliente específico. Os dados serão coletados no checkout.</small>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-4">
+                    <label for="data_expiracao_avulso" class="form-label">Data de Expiração (Opcional)</label>
+                    <input type="date" class="form-control" id="data_expiracao_avulso" name="data_expiracao" min="<?php echo date('Y-m-d'); ?>">
+                </div>
+                
+                <div class="col-md-2 d-flex align-items-end">
+                    <button type="submit" class="btn btn-warning w-100">
+                        <i class="fas fa-user-plus me-2"></i>Link Avulso
+                    </button>
+                </div>
+            </div>
+        </form>
     </div>
 </div>
 
@@ -251,8 +324,13 @@ include_once 'includes/header.php';
                             ?>
                             <tr>
                                 <td>
-                                    <strong><?php echo htmlspecialchars($link['cliente_nome']); ?></strong><br>
-                                    <small class="text-muted"><?php echo htmlspecialchars($link['cliente_email']); ?></small>
+                                    <?php if (strpos($link['cliente_nome'] ?? '', '[Avulso]') === 0): ?>
+                                        <span class="badge bg-warning text-dark mb-1">Avulso</span><br>
+                                        <small class="text-muted">Link genérico</small>
+                                    <?php else: ?>
+                                        <strong><?php echo htmlspecialchars($link['cliente_nome']); ?></strong><br>
+                                        <small class="text-muted"><?php echo htmlspecialchars($link['cliente_email']); ?></small>
+                                    <?php endif; ?>
                                 </td>
                                 <td>
                                     <div class="input-group">

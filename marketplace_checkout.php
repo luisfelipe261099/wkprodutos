@@ -24,7 +24,9 @@ if ($result_token->num_rows === 0) {
 
 $link_data = $result_token->fetch_assoc();
 
-// Buscar itens do carrinho
+// Verificar se é link avulso
+$is_avulso = (strpos($link_data['cliente_nome'] ?? '', '[Avulso]') === 0);
+
 $sql_carrinho = "SELECT mc.*, p.nome as produto_nome, p.preco_venda, p.quantidade_estoque
                  FROM marketplace_carrinho mc
                  LEFT JOIN produtos p ON mc.produto_id = p.id
@@ -65,6 +67,36 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $endereco_entrega = !empty($endereco_entrega) ? $endereco_entrega : null;
     $observacoes = trim($_POST['observacoes'] ?? '');
     $observacoes = !empty($observacoes) ? $observacoes : null;
+    
+    // Se avulso, atualizar dados do cliente com as informações fornecidas
+    if ($is_avulso) {
+        $avulso_nome = trim($_POST['avulso_nome'] ?? '');
+        $avulso_email = trim($_POST['avulso_email'] ?? '');
+        $avulso_telefone = trim($_POST['avulso_telefone'] ?? '');
+        $avulso_cpf_cnpj = trim($_POST['avulso_cpf_cnpj'] ?? '');
+        $avulso_tipo_pessoa = ($_POST['avulso_tipo_pessoa'] ?? 'fisica') === 'juridica' ? 'juridica' : 'fisica';
+        
+        if (empty($avulso_nome)) {
+            $message = "Por favor, informe seu nome para continuar.";
+            $message_type = "danger";
+        } else {
+            // Atualizar o cliente avulso com dados reais
+            $sql_update_cli = "UPDATE clientes SET nome = ?, email = ?, telefone = ?, cpf_cnpj = ?, tipo_pessoa = ? WHERE id = ?";
+            $stmt_update_cli = $conn->prepare($sql_update_cli);
+            $avulso_email_val = !empty($avulso_email) ? $avulso_email : null;
+            $avulso_telefone_val = !empty($avulso_telefone) ? $avulso_telefone : null;
+            $avulso_cpf_cnpj_val = !empty($avulso_cpf_cnpj) ? $avulso_cpf_cnpj : null;
+            $stmt_update_cli->bind_param("sssssi", $avulso_nome, $avulso_email_val, $avulso_telefone_val, $avulso_cpf_cnpj_val, $avulso_tipo_pessoa, $link_data['cliente_id']);
+            $stmt_update_cli->execute();
+            
+            // Atualizar link_data com novos dados
+            $link_data['cliente_nome'] = $avulso_nome;
+            $link_data['cliente_email'] = $avulso_email_val;
+            $link_data['telefone'] = $avulso_telefone_val;
+        }
+    }
+    
+    if (empty($message)) {
     
     // Calcular data_vencimento com base no tipo de faturamento
     $data_vencimento = null;
@@ -159,6 +191,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $message = "Erro ao processar pedido: " . $e->getMessage();
         $message_type = "danger";
     }
+    } // fim if (empty($message))
 }
 ?>
 <!DOCTYPE html>
@@ -227,8 +260,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 </div>
                 <div class="col-md-4 text-md-end">
                     <div class="bg-white bg-opacity-10 rounded p-3">
-                        <h6 class="mb-1">Cliente:</h6>
-                        <strong><?php echo htmlspecialchars($link_data['cliente_nome']); ?></strong>
+                        <?php if ($is_avulso): ?>
+                            <h6 class="mb-1"><i class="fas fa-user-plus me-1"></i> Link Avulso</h6>
+                            <small>Preencha seus dados no checkout</small>
+                        <?php else: ?>
+                            <h6 class="mb-1">Cliente:</h6>
+                            <strong><?php echo htmlspecialchars($link_data['cliente_nome']); ?></strong>
+                        <?php endif; ?>
                     </div>
                 </div>
             </div>
@@ -286,8 +324,71 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                         </h5>
                     </div>
                     <div class="card-body">
-                        <form method="POST" action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]) . "?token=" . $token; ?>">
+                        <form method="POST" action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]) . "?token=" . htmlspecialchars($token); ?>">
                             <div class="row g-4">
+                                <?php if ($is_avulso): ?>
+                                <!-- Dados do Cliente (Link Avulso) -->
+                                <div class="col-12">
+                                    <div class="alert alert-warning mb-0">
+                                        <i class="fas fa-user-plus me-2"></i>
+                                        <strong>Identificação obrigatória</strong> — Preencha seus dados para finalizar o pedido.
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-6">
+                                    <label for="avulso_nome" class="form-label">
+                                        <i class="fas fa-user me-2"></i>
+                                        Nome / Razão Social *
+                                    </label>
+                                    <input type="text" class="form-control" id="avulso_nome" name="avulso_nome" required
+                                           placeholder="Seu nome completo ou razão social"
+                                           value="<?php echo htmlspecialchars($_POST['avulso_nome'] ?? ''); ?>">
+                                </div>
+                                
+                                <div class="col-md-6">
+                                    <label for="avulso_email" class="form-label">
+                                        <i class="fas fa-envelope me-2"></i>
+                                        E-mail
+                                    </label>
+                                    <input type="email" class="form-control" id="avulso_email" name="avulso_email"
+                                           placeholder="seu@email.com"
+                                           value="<?php echo htmlspecialchars($_POST['avulso_email'] ?? ''); ?>">
+                                </div>
+                                
+                                <div class="col-md-4">
+                                    <label for="avulso_telefone" class="form-label">
+                                        <i class="fas fa-phone me-2"></i>
+                                        Telefone
+                                    </label>
+                                    <input type="text" class="form-control" id="avulso_telefone" name="avulso_telefone"
+                                           placeholder="(00) 00000-0000"
+                                           value="<?php echo htmlspecialchars($_POST['avulso_telefone'] ?? ''); ?>">
+                                </div>
+                                
+                                <div class="col-md-4">
+                                    <label for="avulso_tipo_pessoa" class="form-label">
+                                        <i class="fas fa-id-card me-2"></i>
+                                        Tipo
+                                    </label>
+                                    <select class="form-select" id="avulso_tipo_pessoa" name="avulso_tipo_pessoa">
+                                        <option value="fisica" <?php echo (($_POST['avulso_tipo_pessoa'] ?? '') === 'fisica') ? 'selected' : ''; ?>>Pessoa Física</option>
+                                        <option value="juridica" <?php echo (($_POST['avulso_tipo_pessoa'] ?? '') === 'juridica') ? 'selected' : ''; ?>>Pessoa Jurídica</option>
+                                    </select>
+                                </div>
+                                
+                                <div class="col-md-4">
+                                    <label for="avulso_cpf_cnpj" class="form-label">
+                                        <i class="fas fa-file-alt me-2"></i>
+                                        CPF / CNPJ
+                                    </label>
+                                    <input type="text" class="form-control" id="avulso_cpf_cnpj" name="avulso_cpf_cnpj"
+                                           placeholder="000.000.000-00"
+                                           value="<?php echo htmlspecialchars($_POST['avulso_cpf_cnpj'] ?? ''); ?>">
+                                </div>
+                                
+                                <div class="col-12"><hr class="my-0"></div>
+                                <?php endif; ?>
+                                
                                 <!-- Tipo de Faturamento -->
                                 <div class="col-md-6">
                                     <label for="tipo_faturamento" class="form-label">
@@ -319,7 +420,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                                         Endereço de Entrega
                                     </label>
                                     <textarea class="form-control" id="endereco_entrega" name="endereco_entrega" rows="3" 
-                                              placeholder="Digite o endereço completo para entrega..."><?php echo htmlspecialchars($link_data['endereco'] . ', ' . $link_data['cidade'] . ' - ' . $link_data['estado']); ?></textarea>
+                                              placeholder="Digite o endereço completo para entrega..."><?php 
+                                              if (!$is_avulso && !empty($link_data['endereco'])) {
+                                                  echo htmlspecialchars($link_data['endereco'] . ', ' . $link_data['cidade'] . ' - ' . $link_data['estado']);
+                                              }
+                                              ?></textarea>
                                 </div>
 
                                 <!-- Observações -->
