@@ -25,6 +25,8 @@ $page_titles = [
     'usuarios.php' => 'Usuários',
     'empresas_representadas.php' => 'Empresas',
     'marketplace.php' => 'Marketplace',
+    'marketplace_admin.php' => 'Marketplace - Links',
+    'marketplace_cliente_empresas.php' => 'Marketplace - Empresas',
     'acompanhamento_clientes.php' => 'Acompanhamento'
 ];
 $current_page_title = $page_titles[$current_page] ?? 'Sistema';
@@ -121,6 +123,12 @@ $user_role_label = (isset($_SESSION['nivel_acesso']) && $_SESSION['nivel_acesso'
                 <a href="agendamentos.php" class="nav-link <?php echo ($current_page === 'agendamentos.php') ? 'active' : ''; ?>">
                     <i class="fas fa-calendar-alt"></i>
                     <span>Agendamentos</span>
+                </a>
+            </div>
+            <div class="nav-item">
+                <a href="marketplace_admin.php" class="nav-link <?php echo in_array($current_page, ['marketplace_admin.php', 'marketplace_cliente_empresas.php']) ? 'active' : ''; ?>">
+                    <i class="fas fa-store"></i>
+                    <span>Marketplace</span>
                 </a>
             </div>
             <div class="nav-item">
