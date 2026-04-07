@@ -75,10 +75,15 @@ switch ($action) {
             $stmt_update->bind_param("idsi", $nova_quantidade, $produto['preco_venda'], $token, $produto_id);
             $success = $stmt_update->execute();
         } else {
+            // Gerar próximo ID manualmente (tabela sem AUTO_INCREMENT)
+            $sql_next_id = "SELECT IFNULL(MAX(id), 0) + 1 AS next_id FROM marketplace_carrinho";
+            $result_next_id = $conn->query($sql_next_id);
+            $next_id = $result_next_id->fetch_assoc()['next_id'];
+            
             // Inserir novo item
-            $sql_insert = "INSERT INTO marketplace_carrinho (token_acesso, produto_id, quantidade, preco_unitario) VALUES (?, ?, ?, ?)";
+            $sql_insert = "INSERT INTO marketplace_carrinho (id, token_acesso, produto_id, quantidade, preco_unitario) VALUES (?, ?, ?, ?, ?)";
             $stmt_insert = $conn->prepare($sql_insert);
-            $stmt_insert->bind_param("siid", $token, $produto_id, $quantidade, $produto['preco_venda']);
+            $stmt_insert->bind_param("isiid", $next_id, $token, $produto_id, $quantidade, $produto['preco_venda']);
             $success = $stmt_insert->execute();
         }
         

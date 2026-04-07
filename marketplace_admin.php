@@ -35,10 +35,14 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 $message = "Cliente já possui um link ativo. Desative o link atual antes de gerar um novo.";
                 $message_type = "warning";
             } else {
+                // Gerar ID manualmente (tabela sem AUTO_INCREMENT)
+                $result_max = $conn->query("SELECT IFNULL(MAX(id), 0) + 1 AS next_id FROM marketplace_links");
+                $novo_link_id = (int)$result_max->fetch_assoc()['next_id'];
+                
                 // Inserir novo link
-                $sql_insert = "INSERT INTO marketplace_links (cliente_id, token_acesso, data_expiracao) VALUES (?, ?, ?)";
+                $sql_insert = "INSERT INTO marketplace_links (id, cliente_id, token_acesso, data_expiracao) VALUES (?, ?, ?, ?)";
                 $stmt_insert = $conn->prepare($sql_insert);
-                $stmt_insert->bind_param("iss", $cliente_id, $token, $data_expiracao);
+                $stmt_insert->bind_param("iiss", $novo_link_id, $cliente_id, $token, $data_expiracao);
                 
                 if ($stmt_insert->execute()) {
                     $message = "Link gerado com sucesso!";
