@@ -25,6 +25,8 @@ $page_titles = [
     'usuarios.php' => 'Usuários',
     'empresas_representadas.php' => 'Empresas',
     'marketplace.php' => 'Marketplace',
+    'marketplace_pedidos.php' => 'Marketplace - Pedidos',
+    'marketplace_detalhes_pedido.php' => 'Marketplace - Detalhes Pedido',
     'marketplace_admin.php' => 'Marketplace - Links',
     'marketplace_cliente_empresas.php' => 'Marketplace - Empresas',
     'acompanhamento_clientes.php' => 'Acompanhamento'
@@ -126,10 +128,25 @@ $user_role_label = (isset($_SESSION['nivel_acesso']) && $_SESSION['nivel_acesso'
                 </a>
             </div>
             <div class="nav-item">
-                <a href="marketplace_admin.php" class="nav-link <?php echo in_array($current_page, ['marketplace_admin.php', 'marketplace_cliente_empresas.php']) ? 'active' : ''; ?>">
+                <a href="#marketplaceSubmenu" class="nav-link <?php echo in_array($current_page, ['marketplace_admin.php', 'marketplace_cliente_empresas.php', 'marketplace_pedidos.php', 'marketplace_detalhes_pedido.php']) ? 'active' : ''; ?>" data-bs-toggle="collapse" aria-expanded="<?php echo in_array($current_page, ['marketplace_admin.php', 'marketplace_cliente_empresas.php', 'marketplace_pedidos.php', 'marketplace_detalhes_pedido.php']) ? 'true' : 'false'; ?>">
                     <i class="fas fa-store"></i>
                     <span>Marketplace</span>
+                    <i class="fas fa-chevron-down ms-auto" style="font-size: 0.7rem;"></i>
                 </a>
+                <div class="collapse <?php echo in_array($current_page, ['marketplace_admin.php', 'marketplace_cliente_empresas.php', 'marketplace_pedidos.php', 'marketplace_detalhes_pedido.php']) ? 'show' : ''; ?>" id="marketplaceSubmenu">
+                    <a href="marketplace_pedidos.php" class="nav-link ps-4 <?php echo in_array($current_page, ['marketplace_pedidos.php', 'marketplace_detalhes_pedido.php']) ? 'active' : ''; ?>" style="font-size: 0.85rem;">
+                        <i class="fas fa-shopping-bag"></i>
+                        <span>Pedidos</span>
+                    </a>
+                    <a href="marketplace_admin.php" class="nav-link ps-4 <?php echo ($current_page === 'marketplace_admin.php') ? 'active' : ''; ?>" style="font-size: 0.85rem;">
+                        <i class="fas fa-link"></i>
+                        <span>Links de Acesso</span>
+                    </a>
+                    <a href="marketplace_cliente_empresas.php" class="nav-link ps-4 <?php echo ($current_page === 'marketplace_cliente_empresas.php') ? 'active' : ''; ?>" style="font-size: 0.85rem;">
+                        <i class="fas fa-building"></i>
+                        <span>Empresas por Cliente</span>
+                    </a>
+                </div>
             </div>
             <div class="nav-item">
                 <a href="logout.php" class="nav-link">
