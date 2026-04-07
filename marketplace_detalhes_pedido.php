@@ -38,7 +38,7 @@ if ($result_pedido->num_rows === 0) {
 $pedido = $result_pedido->fetch_assoc();
 
 // Buscar itens do pedido
-$sql_itens = "SELECT mip.*, p.nome as produto_nome, p.codigo, e.nome_empresa
+$sql_itens = "SELECT mip.*, p.nome as produto_nome, p.sku, e.nome_empresa
               FROM marketplace_itens_pedido mip
               LEFT JOIN produtos p ON mip.produto_id = p.id
               LEFT JOIN empresas_representadas e ON p.empresa_id = e.id

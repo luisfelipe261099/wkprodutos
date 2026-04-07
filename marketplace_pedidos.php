@@ -151,7 +151,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 $conn->commit();
 
                 if ($novo_status == 'confirmado' && $pedido['status_pedido'] != 'confirmado') {
-                    $message = "Pedido confirmado! Venda e transação financeira criadas automaticamente.";
+                    // Redirecionar para a venda criada
+                    header("Location: detalhes_venda.php?id=" . $venda_id);
+                    exit;
                 } else {
                     $message = "Status do pedido atualizado com sucesso!";
                 }
