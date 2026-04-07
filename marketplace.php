@@ -51,7 +51,15 @@ $result_config = $conn->query($sql_config);
 $config_marketplace = [];
 if ($result_config) {
     while ($row_config = $result_config->fetch_assoc()) {
-        $config_marketplace[$row_config['chave']] = $row_config['valor'];
+        $valor = $row_config['valor'];
+        // Corrigir encoding duplo (UTF-8 gravado como Latin-1) se detectado
+        if (is_string($valor)) {
+            $tentativa = @iconv('UTF-8', 'ISO-8859-1//IGNORE', $valor);
+            if ($tentativa !== false && $tentativa !== $valor && mb_check_encoding($tentativa, 'UTF-8')) {
+                $valor = $tentativa;
+            }
+        }
+        $config_marketplace[$row_config['chave']] = $valor;
     }
 }
 
@@ -627,7 +635,7 @@ $stmt_pedidos_hist->close();
                                                     <p class="text-price mb-0">
                                                         R$ <?php echo number_format($produto['preco_venda'], 2, ',', '.'); ?>
                                                     </p>
-                                                    <button class="btn btn-add-cart" onclick="adicionarAoCarrinho(<?php echo $produto['id']; ?>, '<?php echo htmlspecialchars(addslashes($produto['nome'])); ?>', <?php echo $produto['preco_venda']; ?>, <?php echo $produto['quantidade_estoque']; ?>, '<?php echo htmlspecialchars($produto['imagem_url'] ?? ''); ?>')" <?php echo ($produto['quantidade_estoque'] <= 0 ? 'disabled' : '');?>>
+                                                    <button class="btn btn-add-cart" onclick="adicionarAoCarrinho(<?php echo $produto['id']; ?>, '<?php echo htmlspecialchars($produto['nome'], ENT_QUOTES, 'UTF-8'); ?>', <?php echo $produto['preco_venda']; ?>, <?php echo $produto['quantidade_estoque']; ?>, '<?php echo htmlspecialchars($produto['imagem_url'] ?? '', ENT_QUOTES, 'UTF-8'); ?>')" <?php echo ($produto['quantidade_estoque'] <= 0 ? 'disabled' : '');?>>
                                                         <i class="fas fa-cart-plus me-1"></i> Add
                                                     </button>
                                                 </div>

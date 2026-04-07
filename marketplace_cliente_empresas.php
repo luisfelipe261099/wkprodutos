@@ -30,9 +30,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             
             // Inserir novas associações
             if (!empty($empresas_selecionadas)) {
-                $stmt_insert = $conn->prepare("INSERT INTO marketplace_cliente_empresas (cliente_id, empresa_id) VALUES (?, ?)");
+                // Gerar próximo ID manualmente (tabela sem AUTO_INCREMENT confiável)
+                $result_max = $conn->query("SELECT IFNULL(MAX(id), 0) AS max_id FROM marketplace_cliente_empresas");
+                $next_id = (int)$result_max->fetch_assoc()['max_id'];
+                
+                $stmt_insert = $conn->prepare("INSERT INTO marketplace_cliente_empresas (id, cliente_id, empresa_id) VALUES (?, ?, ?)");
                 foreach ($empresas_selecionadas as $empresa_id) {
-                    $stmt_insert->bind_param("ii", $cliente_id, $empresa_id);
+                    $next_id++;
+                    $empresa_id_int = (int)$empresa_id;
+                    $stmt_insert->bind_param("iii", $next_id, $cliente_id, $empresa_id_int);
                     $stmt_insert->execute();
                 }
             }

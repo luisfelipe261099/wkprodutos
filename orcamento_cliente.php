@@ -661,7 +661,7 @@ $conn->close();
                                                     R$ <?php echo number_format($produto['preco_venda'], 2, ',', '.'); ?>
                                                 </span>
                                                 <button class="btn btn-add-cart"
-                                                    onclick="adicionarAoCarrinho(<?php echo $produto['id']; ?>, '<?php echo htmlspecialchars(addslashes($produto['nome'])); ?>', <?php echo $produto['preco_venda']; ?>, <?php echo $produto['quantidade_estoque']; ?>)">
+                                                    onclick="adicionarAoCarrinho(<?php echo $produto['id']; ?>, '<?php echo htmlspecialchars($produto['nome'], ENT_QUOTES, 'UTF-8'); ?>', <?php echo $produto['preco_venda']; ?>, <?php echo $produto['quantidade_estoque']; ?>)">
                                                     <i class="fas fa-plus me-1"></i> Add
                                                 </button>
                                             </div>
