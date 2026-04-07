@@ -261,10 +261,14 @@ while ($item = $result_itens->fetch_assoc()) {
                 </div>
 
                 <!-- Ações -->
-                <div class="d-flex gap-3 justify-content-center">
-                    <a href="marketplace.php?token=<?php echo $token; ?>" class="btn btn-outline-primary">
+                <div class="d-flex gap-3 justify-content-center flex-wrap">
+                    <a href="marketplace.php?token=<?php echo htmlspecialchars($token); ?>" class="btn btn-outline-primary">
                         <i class="fas fa-store me-2"></i>
                         Continuar Comprando
+                    </a>
+                    <a href="gerar_pdf_pedido.php?id=<?php echo (int)$pedido_id; ?>&token=<?php echo htmlspecialchars($token); ?>" target="_blank" class="btn btn-success">
+                        <i class="fas fa-file-pdf me-2"></i>
+                        Baixar PDF
                     </a>
                     <button onclick="window.print()" class="btn btn-primary">
                         <i class="fas fa-print me-2"></i>
