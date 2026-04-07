@@ -20,6 +20,14 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         case 'atualizar_status':
             $pedido_id = (int)$_POST['pedido_id'];
             $novo_status = $_POST['novo_status'];
+            
+            // Validar status contra valores do ENUM
+            $status_validos = ['pendente', 'confirmado', 'preparando', 'entregue', 'cancelado'];
+            if (!in_array($novo_status, $status_validos)) {
+                $message = 'Status inválido.';
+                $message_type = 'danger';
+                break;
+            }
 
             try {
                 $conn->begin_transaction();
@@ -105,7 +113,18 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     // Criar transação financeira
                     $descricao = "Venda Marketplace #" . $pedido['numero_pedido'] . " - " . $pedido['cliente_nome'];
                     $categoria = "Vendas Marketplace";
-                    $data_transacao = ($pedido['tipo_faturamento'] == 'avista') ? date('Y-m-d H:i:s') : $pedido['data_vencimento'] . ' 00:00:00';
+                    
+                    // Calcular data_transacao com segurança (data_vencimento pode ser NULL)
+                    if ($pedido['tipo_faturamento'] == 'avista') {
+                        $data_transacao = date('Y-m-d H:i:s');
+                    } elseif (!empty($pedido['data_vencimento'])) {
+                        $data_transacao = $pedido['data_vencimento'] . ' 00:00:00';
+                    } else {
+                        // Fallback: calcular vencimento baseado no tipo de faturamento
+                        $dias_map = ['15_dias' => 15, '20_dias' => 20, '30_dias' => 30];
+                        $dias = $dias_map[$pedido['tipo_faturamento']] ?? 30;
+                        $data_transacao = date('Y-m-d H:i:s', strtotime('+' . $dias . ' days'));
+                    }
 
                     $next_transacao_id_row = $conn->query("SELECT IFNULL(MAX(id), 0) + 1 AS next_id FROM transacoes_financeiras")->fetch_assoc();
                     $transacao_id = (int)$next_transacao_id_row['next_id'];

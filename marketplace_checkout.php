@@ -52,9 +52,26 @@ $message_type = '';
 // Processar pedido
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $tipo_faturamento = $_POST['tipo_faturamento'] ?? 'avista';
-    $data_entrega = $_POST['data_entrega'] ?? '';
+    
+    // Validar tipo_faturamento contra valores válidos do ENUM
+    $tipos_faturamento_validos = ['avista', '15_dias', '20_dias', '30_dias'];
+    if (!in_array($tipo_faturamento, $tipos_faturamento_validos)) {
+        $tipo_faturamento = 'avista';
+    }
+    
+    $data_entrega = trim($_POST['data_entrega'] ?? '');
+    $data_entrega = !empty($data_entrega) ? $data_entrega : null;
     $endereco_entrega = trim($_POST['endereco_entrega'] ?? '');
+    $endereco_entrega = !empty($endereco_entrega) ? $endereco_entrega : null;
     $observacoes = trim($_POST['observacoes'] ?? '');
+    $observacoes = !empty($observacoes) ? $observacoes : null;
+    
+    // Calcular data_vencimento com base no tipo de faturamento
+    $data_vencimento = null;
+    $dias_faturamento = ['15_dias' => 15, '20_dias' => 20, '30_dias' => 30];
+    if (isset($dias_faturamento[$tipo_faturamento])) {
+        $data_vencimento = date('Y-m-d', strtotime('+' . $dias_faturamento[$tipo_faturamento] . ' days'));
+    }
     
     try {
         $conn->begin_transaction();
@@ -69,10 +86,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $numero_pedido = $prefixo . str_pad($seq, 4, '0', STR_PAD_LEFT);
         
         // Inserir pedido
-        $sql_pedido = "INSERT INTO marketplace_pedidos (id, cliente_id, token_acesso, numero_pedido, valor_total, tipo_faturamento, data_entrega_agendada, endereco_entrega, observacoes) 
-                       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        $sql_pedido = "INSERT INTO marketplace_pedidos (id, cliente_id, token_acesso, numero_pedido, valor_total, tipo_faturamento, data_vencimento, data_entrega_agendada, endereco_entrega, observacoes) 
+                       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
         $stmt_pedido = $conn->prepare($sql_pedido);
-        $stmt_pedido->bind_param("iissdssss", $pedido_id, $link_data['cliente_id'], $token, $numero_pedido, $total_carrinho, $tipo_faturamento, $data_entrega, $endereco_entrega, $observacoes);
+        $stmt_pedido->bind_param("iissdsssss", $pedido_id, $link_data['cliente_id'], $token, $numero_pedido, $total_carrinho, $tipo_faturamento, $data_vencimento, $data_entrega, $endereco_entrega, $observacoes);
         
         if (!$stmt_pedido->execute()) {
             throw new Exception("Erro ao criar pedido: " . $stmt_pedido->error);
