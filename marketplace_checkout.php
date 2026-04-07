@@ -85,11 +85,40 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $seq = (int)$result_num->fetch_assoc()['seq'];
         $numero_pedido = $prefixo . str_pad($seq, 4, '0', STR_PAD_LEFT);
         
-        // Inserir pedido
-        $sql_pedido = "INSERT INTO marketplace_pedidos (id, cliente_id, token_acesso, numero_pedido, valor_total, tipo_faturamento, data_vencimento, data_entrega_agendada, endereco_entrega, observacoes) 
-                       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        // Inserir pedido - montar query dinamicamente para campos nullable
+        $campos = ['id', 'cliente_id', 'token_acesso', 'numero_pedido', 'valor_total', 'tipo_faturamento'];
+        $placeholders = ['?', '?', '?', '?', '?', '?'];
+        $tipos = 'iissds';
+        $valores = [$pedido_id, $link_data['cliente_id'], $token, $numero_pedido, $total_carrinho, $tipo_faturamento];
+        
+        if ($data_vencimento !== null) {
+            $campos[] = 'data_vencimento';
+            $placeholders[] = '?';
+            $tipos .= 's';
+            $valores[] = $data_vencimento;
+        }
+        if ($data_entrega !== null) {
+            $campos[] = 'data_entrega_agendada';
+            $placeholders[] = '?';
+            $tipos .= 's';
+            $valores[] = $data_entrega;
+        }
+        if ($endereco_entrega !== null) {
+            $campos[] = 'endereco_entrega';
+            $placeholders[] = '?';
+            $tipos .= 's';
+            $valores[] = $endereco_entrega;
+        }
+        if ($observacoes !== null) {
+            $campos[] = 'observacoes';
+            $placeholders[] = '?';
+            $tipos .= 's';
+            $valores[] = $observacoes;
+        }
+        
+        $sql_pedido = "INSERT INTO marketplace_pedidos (" . implode(', ', $campos) . ") VALUES (" . implode(', ', $placeholders) . ")";
         $stmt_pedido = $conn->prepare($sql_pedido);
-        $stmt_pedido->bind_param("iissdsssss", $pedido_id, $link_data['cliente_id'], $token, $numero_pedido, $total_carrinho, $tipo_faturamento, $data_vencimento, $data_entrega, $endereco_entrega, $observacoes);
+        $stmt_pedido->bind_param($tipos, ...$valores);
         
         if (!$stmt_pedido->execute()) {
             throw new Exception("Erro ao criar pedido: " . $stmt_pedido->error);
