@@ -271,6 +271,7 @@ include_once 'includes/header.php';
                 <table class="table table-hover mb-0" id="clientesTable">
                     <thead>
                         <tr>
+                            <th>Código</th>
                             <th>Cliente</th>
                             <th>Tipo</th>
                             <th>Documento</th>
@@ -282,6 +283,7 @@ include_once 'includes/header.php';
                     <tbody>
                         <?php foreach ($clientes_data as $row) { ?>
                             <tr>
+                                <td><span class="badge bg-primary bg-opacity-10 text-primary fw-bold"><?php echo codigo_cliente((int)$row['id']); ?></span></td>
                                 <td>
                                     <div class="d-flex align-items-center">
                                         <div class="client-avatar me-3"><?php echo strtoupper(substr($row['nome'], 0, 1)); ?></div>
@@ -325,7 +327,7 @@ include_once 'includes/header.php';
                                 <div class="client-avatar me-3"><?php echo strtoupper(substr($row['nome'], 0, 1)); ?></div>
                                 <div class="flex-grow-1">
                                     <h6 class="mb-0 fw-bold"><?php echo htmlspecialchars($row['nome']); ?></h6>
-                                    <small class="text-muted">#<?php echo $row['id']; ?></small>
+                                    <small class="text-muted"><?php echo codigo_cliente((int)$row['id']); ?></small>
                                 </div>
                             </div>
                             <span class="status-badge <?php echo $row['tipo_pessoa'] == 'fisica' ? 'status-success' : 'status-info'; ?>">
@@ -427,20 +429,21 @@ function searchClients() {
 function exportClients() {
     const table = document.getElementById('clientesTable');
     if (!table) return;
-    let csv = 'ID,Nome,Tipo,Documento,Email,Telefone,Cidade,Estado\n';
+    let csv = 'Codigo,ID,Nome,Tipo,Documento,Email,Telefone,Cidade,Estado\n';
     const rows = table.querySelectorAll('tbody tr');
     rows.forEach(row => {
         if (row.style.display !== 'none') {
             const cells = row.querySelectorAll('td');
             const data = [
-                cells[0].querySelector('small').textContent.replace('#', ''),
-                cells[0].querySelector('.fw-semibold').textContent.trim(),
-                cells[1].textContent.trim(),
+                cells[0].textContent.trim(),
+                cells[1].querySelector('small').textContent.replace('#', ''),
+                cells[1].querySelector('.fw-semibold').textContent.trim(),
                 cells[2].textContent.trim(),
-                cells[3].querySelector('.fw-semibold') ? cells[3].querySelector('.fw-semibold').textContent.trim() : '',
-                cells[3].querySelector('small') ? cells[3].querySelector('small').textContent.trim() : '',
+                cells[3].textContent.trim(),
                 cells[4].querySelector('.fw-semibold') ? cells[4].querySelector('.fw-semibold').textContent.trim() : '',
-                cells[4].querySelector('small') ? cells[4].querySelector('small').textContent.trim() : ''
+                cells[4].querySelector('small') ? cells[4].querySelector('small').textContent.trim() : '',
+                cells[5].querySelector('.fw-semibold') ? cells[5].querySelector('.fw-semibold').textContent.trim() : '',
+                cells[5].querySelector('small') ? cells[5].querySelector('small').textContent.trim() : ''
             ];
             csv += data.map(field => `"${field.replace(/"/g, '""')}"`).join(',') + '\n';
         }

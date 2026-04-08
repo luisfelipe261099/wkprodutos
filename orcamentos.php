@@ -508,7 +508,7 @@ $total_paginas_orc = ceil($total_orcamentos_para_exibir_db / $itens_por_pagina_o
 
 
 // Busca os orçamentos para a página atual (excluindo 'convertido_venda')
-$sql_select_orcamentos = "SELECT o.id, c.nome AS nome_cliente, o.data_orcamento, o.valor_total, o.status_orcamento
+$sql_select_orcamentos = "SELECT o.id, o.cliente_id, c.nome AS nome_cliente, o.data_orcamento, o.valor_total, o.status_orcamento
                           FROM orcamentos o LEFT JOIN clientes c ON o.cliente_id = c.id
                           WHERE o.status_orcamento != 'convertido_venda'
                           ORDER BY o.id DESC
@@ -599,7 +599,7 @@ if (isset($erro_conversao)) {
                 <table class="table table-hover table-striped" id="orcamentosTable">
                     <thead>
                         <tr>
-                            <th>ID</th><th>Cliente</th><th>Data</th><th>Valor</th><th>Status</th><th class="text-center">Ações</th>
+                            <th>ID</th><th>Cód. Cliente</th><th>Cliente</th><th>Data</th><th>Valor</th><th>Status</th><th class="text-center">Ações</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -616,6 +616,7 @@ if (isset($erro_conversao)) {
                                 ?>
                                 <tr>
                                     <td><?php echo htmlspecialchars($row['id']); ?></td>
+                                    <td><span class="badge bg-primary bg-opacity-10 text-primary fw-bold"><?php echo $row['cliente_id'] ? codigo_cliente((int)$row['cliente_id']) : '-'; ?></span></td>
                                     <td><?php echo htmlspecialchars($row['nome_cliente']); ?></td>
                                     <td><?php echo date('d/m/Y', strtotime($row['data_orcamento'])); ?></td>
                                     <td>R$ <?php echo number_format($row['valor_total'], 2, ',', '.'); ?></td>
@@ -689,6 +690,10 @@ if (isset($erro_conversao)) {
                         </div>
 
                         <div class="mobile-orcamento-info">
+                            <div class="mobile-orcamento-info-item">
+                                <span class="mobile-orcamento-info-label">Cód. Cliente:</span>
+                                <span class="mobile-orcamento-info-value"><span class="badge bg-primary bg-opacity-10 text-primary fw-bold"><?php echo $row['cliente_id'] ? codigo_cliente((int)$row['cliente_id']) : '-'; ?></span></span>
+                            </div>
                             <div class="mobile-orcamento-info-item">
                                 <span class="mobile-orcamento-info-label">Cliente:</span>
                                 <span class="mobile-orcamento-info-value"><?php echo htmlspecialchars($row['nome_cliente']); ?></span>

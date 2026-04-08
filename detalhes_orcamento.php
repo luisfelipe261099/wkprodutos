@@ -17,7 +17,7 @@ $message_type = '';
 
 if ($orcamento_id) {
     // Busca os dados do orçamento principal
-    $sql_orcamento = "SELECT o.id, c.nome AS nome_cliente, c.cpf_cnpj, c.telefone, c.email,
+    $sql_orcamento = "SELECT o.id, o.cliente_id, c.nome AS nome_cliente, c.cpf_cnpj, c.telefone, c.email,
                              o.data_orcamento, o.valor_total, o.status_orcamento, o.observacoes
                       FROM orcamentos o
                       JOIN clientes c ON o.cliente_id = c.id
@@ -119,6 +119,7 @@ include_once 'includes/header.php';
         <div class="card-body">
             <div class="row mb-3">
                 <div class="col-md-6">
+                    <strong>Código:</strong> <span class="badge bg-primary bg-opacity-10 text-primary fw-bold"><?php echo codigo_cliente((int)$orcamento['cliente_id']); ?></span><br>
                     <strong>Cliente:</strong> <?php echo htmlspecialchars($orcamento['nome_cliente']); ?> (<?php echo htmlspecialchars($orcamento['cpf_cnpj']); ?>)<br>
                     <strong>Contato:</strong> <?php echo htmlspecialchars($orcamento['telefone']); ?> | <?php echo htmlspecialchars($orcamento['email']); ?>
                 </div>

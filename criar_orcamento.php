@@ -153,13 +153,15 @@ $message_type = '';
 $itens_do_orcamento = [];
 
 // Buscar todos os clientes
-$clientes_result = $conn->query("SELECT id, nome FROM clientes ORDER BY nome ASC");
+$clientes_result = $conn->query("SELECT id, nome, cpf_cnpj FROM clientes ORDER BY nome ASC");
 $clientes_json = [];
 if ($clientes_result && $clientes_result->num_rows > 0) {
     while($cliente = $clientes_result->fetch_assoc()) {
         $clientes_json[] = [
             'id' => $cliente['id'],
-            'nome' => $cliente['nome']
+            'nome' => $cliente['nome'],
+            'cpf_cnpj' => $cliente['cpf_cnpj'] ?? '',
+            'codigo' => 'CLI-' . str_pad($cliente['id'], 3, '0', STR_PAD_LEFT)
         ];
     }
 }
@@ -604,7 +606,7 @@ include_once 'includes/header.php';
                 <div class="col-md-6">
                     <label class="form-label">Cliente *</label>
                     <div class="search-dropdown-wrapper">
-                        <input type="text" class="form-control" id="cliente_search" placeholder="Buscar cliente..." autocomplete="off" value="<?php echo htmlspecialchars($cliente_nome_display); ?>">
+                        <input type="text" class="form-control" id="cliente_search" placeholder="Buscar por nome, código (CLI-001) ou CPF/CNPJ..." autocomplete="off" value="<?php echo htmlspecialchars($cliente_nome_display); ?>">
                         <input type="hidden" id="cliente_id" name="cliente_id" value="<?php echo htmlspecialchars($cliente_id); ?>">
                         <div id="cliente_dropdown" class="dropdown-menu w-100" style="display: none;"></div>
                     </div>
@@ -1216,9 +1218,9 @@ formOrcamento.addEventListener('submit', function(e) {
     formOrcamento.submit();
 });
 
-// Buscar clientes
+// Buscar clientes (por nome, código CLI-XXX ou CPF/CNPJ)
 clienteSearch.addEventListener('input', function() {
-    const termo = this.value.toLowerCase();
+    const termo = this.value.toLowerCase().trim();
     clienteDropdown.innerHTML = '';
 
     if (termo.length === 0) {
@@ -1226,12 +1228,22 @@ clienteSearch.addEventListener('input', function() {
         return;
     }
 
-    console.log('🔍 Buscando por:', termo);
-    console.log('📊 Total de clientes disponíveis:', clientesData.length);
-    console.log('📋 Clientes:', clientesData);
+    // Limpar pontuação do termo para comparar CPF/CNPJ (ex: 123.456.789-00 -> 12345678900)
+    const termoLimpo = termo.replace(/[.\-\/]/g, '');
 
-    const resultados = clientesData.filter(c => c.nome.toLowerCase().includes(termo)).slice(0, 10);
-    console.log('✅ Resultados encontrados:', resultados.length);
+    const resultados = clientesData.filter(c => {
+        // Busca por nome
+        if (c.nome.toLowerCase().includes(termo)) return true;
+        // Busca por código (CLI-001)
+        if (c.codigo && c.codigo.toLowerCase().includes(termo)) return true;
+        // Busca por CPF/CNPJ (com ou sem pontuação)
+        if (c.cpf_cnpj) {
+            const cpfCnpjLimpo = c.cpf_cnpj.replace(/[.\-\/]/g, '').toLowerCase();
+            if (c.cpf_cnpj.toLowerCase().includes(termo)) return true;
+            if (cpfCnpjLimpo.includes(termoLimpo)) return true;
+        }
+        return false;
+    }).slice(0, 10);
 
     if (resultados.length === 0) {
         clienteDropdown.innerHTML = '<div class="dropdown-item text-muted">Nenhum cliente encontrado</div>';
@@ -1240,8 +1252,10 @@ clienteSearch.addEventListener('input', function() {
     }
 
     resultados.forEach(cliente => {
-        const div = criarDropdownItem(cliente.nome, () => {
-            clienteSearch.value = cliente.nome;
+        const cpfInfo = cliente.cpf_cnpj ? ' <small class="text-muted">| ' + cliente.cpf_cnpj + '</small>' : '';
+        const html = '<span class="badge bg-primary bg-opacity-10 text-primary me-2" style="font-size:0.75em">' + cliente.codigo + '</span>' + cliente.nome + cpfInfo;
+        const div = criarDropdownItem(html, () => {
+            clienteSearch.value = cliente.codigo + ' - ' + cliente.nome;
             clienteIdInput.value = cliente.id;
             clienteDropdown.style.display = 'none';
         });

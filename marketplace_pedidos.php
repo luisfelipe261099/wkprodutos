@@ -174,7 +174,7 @@ $filtro_data_inicio = $_GET['data_inicio'] ?? '';
 $filtro_data_fim = $_GET['data_fim'] ?? '';
 
 // Buscar pedidos
-$sql_pedidos = "SELECT mp.*, c.nome as cliente_nome, c.email as cliente_email,
+$sql_pedidos = "SELECT mp.*, c.nome as cliente_nome, c.email as cliente_email, mp.cliente_id,
                        (SELECT COUNT(*) FROM marketplace_itens_pedido mip WHERE mip.pedido_id = mp.id) as total_itens,
                        v.id as venda_integrada,
                        tf.id as transacao_integrada
@@ -400,6 +400,7 @@ include_once 'includes/header.php';
                                     <small class="text-muted"><?php echo date('d/m/Y H:i', strtotime($pedido['data_pedido'])); ?></small>
                                 </td>
                                 <td>
+                                    <span class="badge bg-primary bg-opacity-10 text-primary fw-bold mb-1"><?php echo $pedido['cliente_id'] ? codigo_cliente((int)$pedido['cliente_id']) : '-'; ?></span><br>
                                     <strong><?php echo htmlspecialchars($pedido['cliente_nome']); ?></strong><br>
                                     <small class="text-muted"><?php echo htmlspecialchars($pedido['cliente_email']); ?></small>
                                 </td>

@@ -1,5 +1,15 @@
 <?php
 
+if (!function_exists('codigo_cliente')) {
+    /**
+     * Gera o código do cliente a partir do ID.
+     * Ex: 1 → CLI-001, 42 → CLI-042, 1500 → CLI-1500
+     */
+    function codigo_cliente(int $id): string {
+        return 'CLI-' . str_pad($id, 3, '0', STR_PAD_LEFT);
+    }
+}
+
 if (!function_exists('fmt_brl')) {
     /**
      * Abbreviates large BRL currency values for stats cards.
