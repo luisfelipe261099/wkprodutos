@@ -700,6 +700,7 @@ $conn->close();
                                             <th class="text-center">Itens</th>
                                             <th class="text-end">Valor Total</th>
                                             <th class="text-center">Status</th>
+                                            <th class="text-center">PDF</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -722,6 +723,11 @@ $conn->close();
                                                     echo $status_labels[$orc['status_orcamento']] ?? ucfirst($orc['status_orcamento']);
                                                     ?>
                                                 </span>
+                                            </td>
+                                            <td class="text-center">
+                                                <a href="gerar_pdf_orcamento_cliente.php?token=<?php echo htmlspecialchars($token); ?>&id=<?php echo $orc['id']; ?>" target="_blank" class="btn btn-sm btn-outline-danger" title="Baixar PDF">
+                                                    <i class="fas fa-file-pdf"></i>
+                                                </a>
                                             </td>
                                         </tr>
                                         <?php endforeach; ?>
@@ -780,6 +786,20 @@ $conn->close();
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
+                    <div class="mb-3 p-2 rounded" style="background: #f0f4ff; border: 1px solid #c7d2fe;">
+                        <div class="d-flex align-items-center mb-1">
+                            <span class="badge bg-primary me-2" style="font-size:0.8em">CLI-<?php echo str_pad($cliente_id, 3, '0', STR_PAD_LEFT); ?></span>
+                            <strong><?php echo htmlspecialchars($link_data['cliente_nome'] ?? ''); ?></strong>
+                        </div>
+                        <?php if (!empty($link_data['cpf_cnpj'])): ?>
+                            <small class="text-muted"><i class="fas fa-id-card me-1"></i><?php echo ($link_data['tipo_pessoa'] === 'juridica' ? 'CNPJ' : 'CPF'); ?>: <?php echo htmlspecialchars($link_data['cpf_cnpj']); ?></small>
+                        <?php endif; ?>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Seu Código ou CPF/CNPJ <small class="text-muted fw-normal">(opcional, para identificação)</small></label>
+                        <input type="text" class="form-control" id="codigoIdentificacao" placeholder="Ex: CLI-001 ou 12.345.678/0001-00" value="">
+                        <div class="form-text">Se souber seu código de cliente ou CPF/CNPJ, informe aqui.</div>
+                    </div>
                     <div class="mb-3">
                         <label class="form-label fw-bold">Forma de Pagamento Preferida</label>
                         <select class="form-select" id="formaPagamento">
@@ -1016,6 +1036,13 @@ $conn->close();
             const formaPagamento = document.getElementById('formaPagamento').value || 'faturamento';
             const tipoFaturamento = document.getElementById('tipoFaturamento').value || 'avista';
             const observacoes = document.getElementById('observacoes').value.trim();
+            const codigoIdentificacao = document.getElementById('codigoIdentificacao').value.trim();
+
+            // Montar observações com código de identificação
+            let obsCompleta = observacoes;
+            if (codigoIdentificacao) {
+                obsCompleta = '[Identificação: ' + codigoIdentificacao + ']\n' + obsCompleta;
+            }
 
             const itens = cart.map(i => ({
                 produto_id: i.id,
@@ -1036,7 +1063,7 @@ $conn->close();
                     empresa_id: empresaSelecionada,
                     forma_pagamento: formaPagamento,
                     tipo_faturamento: tipoFaturamento,
-                    observacoes: observacoes,
+                    observacoes: obsCompleta,
                     itens: itens
                 })
             })

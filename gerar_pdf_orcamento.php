@@ -2,6 +2,11 @@
 // Inicia o output buffering para evitar problemas de "headers already sent"
 ob_start();
 require_once 'includes/session_bootstrap.php';
+require_once 'includes/db_connect.php';
+require_once 'includes/PDFHelper.php';
+
+// Se chamado como include para carregar apenas a função, pula a lógica principal
+if (!defined('PDF_FUNCTION_ONLY')) {
 
 // Verifica se o usuário está logado
 if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
@@ -9,9 +14,6 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
     header("location: index.php");
     exit;
 }
-
-require_once 'includes/db_connect.php';
-require_once 'includes/PDFHelper.php';
 
 // Verificar se foi passado o ID do orçamento
 $orcamento_id = $_GET['id'] ?? 0;
@@ -109,6 +111,8 @@ try {
     echo '</div>';
     exit;
 }
+
+} // fim do if (!defined('PDF_FUNCTION_ONLY'))
 
 function gerarPDFModerno($orcamento, $itens, $empresas_logos = []) {
     try {

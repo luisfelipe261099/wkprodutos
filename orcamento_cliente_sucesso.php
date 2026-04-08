@@ -230,6 +230,9 @@ $conn->close();
                     <a href="orcamento_cliente.php?token=<?php echo htmlspecialchars($token); ?>" class="btn btn-primary-custom">
                         <i class="fas fa-plus me-1"></i> Novo Orçamento
                     </a>
+                    <a href="gerar_pdf_orcamento_cliente.php?token=<?php echo htmlspecialchars($token); ?>&id=<?php echo $orcamento_id; ?>" class="btn btn-primary-custom" style="background: #dc2626;" target="_blank">
+                        <i class="fas fa-file-pdf me-1"></i> Baixar PDF
+                    </a>
                     <button class="btn btn-outline-secondary" onclick="window.print()">
                         <i class="fas fa-print me-1"></i> Imprimir
                     </button>
