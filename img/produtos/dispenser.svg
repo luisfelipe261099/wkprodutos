@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#e8f4ff"/><stop offset="100%" stop-color="#d5f0ed"/></linearGradient>
+  </defs>
+  <rect width="400" height="300" rx="16" fill="url(#bg)"/>
+  <!-- Dispenser body -->
+  <rect x="140" y="55" width="120" height="170" rx="12" fill="#fff" stroke="#b8d4ea" stroke-width="2"/>
+  <!-- Top section -->
+  <rect x="145" y="60" width="110" height="40" rx="8" fill="#1e5ea3"/>
+  <text x="200" y="85" text-anchor="middle" fill="#fff" font-family="Arial" font-weight="bold" font-size="11">PAPEL TOALHA</text>
+  <!-- Window -->
+  <rect x="160" y="110" width="80" height="50" rx="6" fill="#e8f1fa" stroke="#c5d8eb" stroke-width="1"/>
+  <!-- Paper coming out -->
+  <rect x="170" y="155" width="60" height="3" rx="1" fill="#f0e6d8"/>
+  <rect x="175" y="160" width="50" height="3" rx="1" fill="#f0e6d8"/>
+  <rect x="172" y="165" width="56" height="3" rx="1" fill="#f0e6d8"/>
+  <!-- Button -->
+  <rect x="180" y="190" width="40" height="20" rx="6" fill="#e8f1fa" stroke="#c5d8eb" stroke-width="1"/>
+  <!-- Wall mount -->
+  <rect x="155" y="45" width="10" height="15" rx="2" fill="#ccc"/>
+  <rect x="235" y="45" width="10" height="15" rx="2" fill="#ccc"/>
+  <!-- Discount badge -->
+  <circle cx="310" cy="90" r="32" fill="#e74c3c"/>
+  <text x="310" y="86" text-anchor="middle" fill="#fff" font-family="Arial" font-weight="bold" font-size="11">ATÉ</text>
+  <text x="310" y="102" text-anchor="middle" fill="#fff" font-family="Arial" font-weight="bold" font-size="16">20%</text>
+  <text x="200" y="260" text-anchor="middle" fill="#1e5ea3" font-family="Arial" font-weight="bold" font-size="13">DISPENSER</text>
+</svg>

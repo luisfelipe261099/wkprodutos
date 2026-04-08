@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#e8f4ff"/><stop offset="100%" stop-color="#d5f0ed"/></linearGradient>
+    <linearGradient id="bottle" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#1fa6a1"/><stop offset="100%" stop-color="#157a77"/></linearGradient>
+  </defs>
+  <rect width="400" height="300" rx="16" fill="url(#bg)"/>
+  <!-- Bottle -->
+  <rect x="162" y="40" width="36" height="25" rx="4" fill="#ddd"/>
+  <rect x="170" y="30" width="20" height="15" rx="3" fill="#bbb"/>
+  <path d="M155,65 L160,65 L162,50 L198,50 L200,65 L245,65 L250,240 L110,240 L115,65 Z" fill="url(#bottle)"/>
+  <path d="M155,65 L160,65 L162,50 L198,50 L200,65 L245,65 L250,240 L110,240 L115,65 Z" fill="none" stroke="#127572" stroke-width="2"/>
+  <!-- Label -->
+  <rect x="125" y="110" width="110" height="80" rx="6" fill="#fff" opacity="0.95"/>
+  <text x="180" y="135" text-anchor="middle" fill="#1e5ea3" font-family="Arial" font-weight="bold" font-size="13">DETERGENTE</text>
+  <text x="180" y="155" text-anchor="middle" fill="#1e5ea3" font-family="Arial" font-weight="bold" font-size="10">PROFISSIONAL</text>
+  <line x1="145" y1="165" x2="215" y2="165" stroke="#1fa6a1" stroke-width="2"/>
+  <text x="180" y="182" text-anchor="middle" fill="#5d7086" font-family="Arial" font-size="9">5 LITROS</text>
+  <!-- Shine -->
+  <path d="M140,80 L138,170" stroke="rgba(255,255,255,0.25)" stroke-width="6" stroke-linecap="round"/>
+  <!-- Discount badge -->
+  <circle cx="310" cy="85" r="32" fill="#e74c3c"/>
+  <text x="310" y="81" text-anchor="middle" fill="#fff" font-family="Arial" font-weight="bold" font-size="11">ATÉ</text>
+  <text x="310" y="97" text-anchor="middle" fill="#fff" font-family="Arial" font-weight="bold" font-size="16">40%</text>
+</svg>

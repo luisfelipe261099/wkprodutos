@@ -37,7 +37,7 @@ function kw_render_head(string $metaTitle, string $metaDescription, string $acti
     <title><?php echo kw_esc($metaTitle); ?></title>
     <meta name="description" content="<?php echo kw_esc($metaDescription); ?>">
     <meta name="robots" content="index,follow,max-image-preview:large">
-    <meta name="keywords" content="produtos de limpeza direto da fabrica, produtos de limpeza curitiba, higiene empresarial, papel toalha atacado, sacos de lixo fabrica, embalagens curitiba, descartaveis para empresa, limpeza profissional parana, representante comercial limpeza, menor preco produtos de limpeza">
+    <meta name="keywords" content="produtos de limpeza direto da industria, representacao comercial limpeza curitiba, produtos de limpeza com desconto, higiene empresarial, papel toalha atacado, desconto produtos de limpeza, embalagens curitiba, descartaveis para empresa, limpeza profissional parana, representante comercial industria, menor preco produtos de limpeza, ate 40 desconto limpeza">
     <link rel="canonical" href="<?php echo kw_esc($canonical); ?>">
     <meta property="og:type" content="website">
     <meta property="og:title" content="<?php echo kw_esc($metaTitle); ?>">
@@ -62,7 +62,7 @@ function kw_render_head(string $metaTitle, string $metaDescription, string $acti
       "@context": "https://schema.org",
       "@type": "LocalBusiness",
       "name": "Karla Wollinger Representacoes",
-      "description": "Representacao comercial de produtos de limpeza, higiene, papeis, embalagens e descartaveis direto da fabrica para empresas em Curitiba e regiao.",
+      "description": "Representacao comercial direto da industria. Produtos de limpeza, higiene, papeis, embalagens e descartaveis com ate 40% de desconto para empresas em Curitiba e regiao.",
       "url": "<?php echo kw_esc($origin); ?>",
       "logo": "<?php echo kw_esc($origin . $logoPath); ?>",
       "image": "<?php echo kw_esc($origin . $logoPath); ?>",
@@ -149,7 +149,7 @@ function kw_render_footer(): void
     <div class="container footer-grid">
         <div>
             <img class="footer-logo" src="<?php echo kw_esc(kw_site_url('logo.svg')); ?>" alt="Karla Wollinger Representacoes" width="240" height="64">
-            <p>Representacao comercial de produtos de limpeza, higiene, papeis, embalagens e descartaveis <strong>direto da fabrica</strong> para empresas em Curitiba, regiao metropolitana e todo o Parana. Menor preco, sem intermediarios.</p>
+            <p>Representacao comercial <strong>direto da industria</strong>. Produtos de limpeza, higiene, papeis, embalagens e descartaveis com <strong>ate 40% de desconto</strong> para empresas em Curitiba, regiao metropolitana e todo o Parana. Sem distribuidores, sem intermediarios.</p>
             <p class="footer-cnpj">CNPJ: 30.459.625/0001-85</p>
         </div>
         <div>

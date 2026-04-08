@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#e8f4ff"/><stop offset="100%" stop-color="#d5f0ed"/></linearGradient>
+  </defs>
+  <rect width="400" height="300" rx="16" fill="url(#bg)"/>
+  <!-- Cup stack -->
+  <path d="M190,230 L175,90 L225,90 L210,230 Z" fill="#f8f8f8" stroke="#d0d8e2" stroke-width="1.5"/>
+  <ellipse cx="200" cy="90" rx="25" ry="8" fill="#fff" stroke="#d0d8e2" stroke-width="1.5"/>
+  <!-- Cup 2 (offset) -->
+  <path d="M220,225 L205,100 L255,100 L240,225 Z" fill="#f5f5f5" stroke="#d0d8e2" stroke-width="1.5"/>
+  <ellipse cx="230" cy="100" rx="25" ry="8" fill="#fff" stroke="#d0d8e2" stroke-width="1.5"/>
+  <!-- Cup 3 -->
+  <path d="M160,228 L145,95 L195,95 L180,228 Z" fill="#fafafa" stroke="#d0d8e2" stroke-width="1.5"/>
+  <ellipse cx="170" cy="95" rx="25" ry="8" fill="#fff" stroke="#d0d8e2" stroke-width="1.5"/>
+  <!-- Label -->
+  <text x="200" y="262" text-anchor="middle" fill="#1e5ea3" font-family="Arial" font-weight="bold" font-size="13">COPOS DESCARTÁVEIS</text>
+  <text x="200" y="278" text-anchor="middle" fill="#5d7086" font-family="Arial" font-size="10">200ml - Pacote 100un</text>
+  <!-- Discount badge -->
+  <circle cx="320" cy="90" r="32" fill="#e74c3c"/>
+  <text x="320" y="86" text-anchor="middle" fill="#fff" font-family="Arial" font-weight="bold" font-size="11">ATÉ</text>
+  <text x="320" y="102" text-anchor="middle" fill="#fff" font-family="Arial" font-weight="bold" font-size="16">20%</text>
+</svg>

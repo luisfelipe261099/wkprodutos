@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/includes/site_layout.php';
 
-$metaTitle = 'Produtos de Limpeza Direto da Fabrica | Menor Preco em Curitiba - Karla Wollinger';
-$metaDescription = 'Produtos de limpeza, higiene, papeis, embalagens e descartaveis direto da fabrica com menor preco para empresas em Curitiba e regiao. Sem intermediarios. Solicite orcamento gratis.';
+$metaTitle = 'Karla Wollinger Representacoes | Produtos de Limpeza Direto da Industria com ate 40% de Desconto';
+$metaDescription = 'Representacao comercial direto da industria. Produtos de limpeza, higiene, papeis, embalagens e descartaveis com ate 40% de desconto para empresas em Curitiba. Sem intermediarios.';
 
 kw_render_head($metaTitle, $metaDescription, 'inicio');
 
@@ -19,28 +19,36 @@ $products = array_slice(kw_site_products(), 0, 8);
     <section class="hero">
         <div class="container hero-panel reveal">
             <div>
-                <h1>Produtos de limpeza, higiene e embalagens direto da fabrica com o menor preco para sua empresa</h1>
-                <p>Representacao comercial de fabricas reconhecidas — <strong>sem intermediarios</strong>, com atendimento agil, mix completo e precos competitivos para empresas em Curitiba e regiao metropolitana.</p>
+                <h1>Produtos de limpeza e higiene direto da industria com ate 40% de desconto</h1>
+                <p>A <strong>Karla Wollinger Representacoes</strong> trabalha direto com as industrias — <strong>sem intermediarios, sem distribuidores</strong>. Voce paga preco de industria e economiza ate 40% em limpeza, higiene, papeis, embalagens e descartaveis para sua empresa.</p>
                 <div class="hero-actions">
                     <a class="btn btn-primary" href="<?php echo kw_esc(kw_whatsapp_link('Quero solicitar um orcamento para minha empresa.')); ?>" target="_blank" rel="noopener">Solicitar orcamento gratis</a>
                     <a class="btn btn-secondary" href="<?php echo kw_esc(kw_site_url('contato.php')); ?>">Falar com uma especialista</a>
                 </div>
                 <div class="hero-badges">
-                    <span><i class="fa-solid fa-industry"></i> Direto da fabrica</span>
-                    <span><i class="fa-solid fa-tag"></i> Menor preco garantido</span>
+                    <span><i class="fa-solid fa-industry"></i> Direto da industria</span>
+                    <span><i class="fa-solid fa-percent"></i> Ate 40% de desconto</span>
                     <span><i class="fa-solid fa-bolt"></i> Resposta em ate 2h</span>
+                    <span><i class="fa-solid fa-shield-halved"></i> 7 industrias representadas</span>
                 </div>
             </div>
             <div class="hero-visual">
                 <div>
                     <h3>Karla Wollinger Representacoes</h3>
-                    <p>Parceira comercial das principais fabricas — qualidade, variedade e preco justo sem intermediarios.</p>
+                    <p>Representacao comercial <strong>direto da industria</strong>. Sem distribuidores, sem markup — desconto real de ate 40% para sua empresa.</p>
+                </div>
+                <div class="hero-savings">
+                    <div class="savings-badge">
+                        <span class="savings-number">40%</span>
+                        <span class="savings-label">de economia</span>
+                    </div>
+                    <p>Comprando direto pela representacao voce elimina intermediarios e paga preco de industria.</p>
                 </div>
                 <div class="hero-grid">
-                    <div>Papeis institucionais</div>
-                    <div>Limpeza profissional</div>
-                    <div>Descartaveis</div>
-                    <div>Embalagens</div>
+                    <div><i class="fa-solid fa-scroll"></i> Papeis</div>
+                    <div><i class="fa-solid fa-shield-virus"></i> Limpeza profissional</div>
+                    <div><i class="fa-solid fa-utensils"></i> Descartaveis</div>
+                    <div><i class="fa-solid fa-bag-shopping"></i> Embalagens</div>
                 </div>
             </div>
         </div>
@@ -68,8 +76,8 @@ $products = array_slice(kw_site_products(), 0, 8);
     <section class="section" id="marcas">
         <div class="container">
             <div class="section-head reveal">
-                <h2>Fabricas e marcas que representamos</h2>
-                <p>Trabalhamos diretamente com fabricas, garantindo <strong>preco de fabrica</strong>, qualidade certificada e sem intermediarios.</p>
+                <h2>Industrias e marcas que representamos</h2>
+                <p>Trabalhamos diretamente com as <strong>industrias</strong>, garantindo desconto real de ate 40%, qualidade certificada e <strong>zero intermediarios</strong>.</p>
             </div>
             <div class="brand-grid">
                 <?php foreach ($brands as $brand): ?>
@@ -82,8 +90,8 @@ $products = array_slice(kw_site_products(), 0, 8);
     <section class="section alt" id="diferenciais">
         <div class="container">
             <div class="section-head reveal">
-                <h2>Por que comprar direto com a fabrica pela Karla</h2>
-                <p>Mais economia, velocidade comercial e menos atrito no abastecimento da sua empresa.</p>
+                <h2>Por que comprar direto da industria com a Karla</h2>
+                <p>Representacao comercial = sem distribuidores e atacadistas. Mais economia, mais agilidade, mais variedade.</p>
             </div>
             <div class="cards-grid">
                 <?php foreach ($benefits as $benefit): ?>
@@ -100,8 +108,8 @@ $products = array_slice(kw_site_products(), 0, 8);
     <section class="section">
         <div class="container cta-band reveal">
             <div>
-                <h3>Compre direto da fabrica — produtos de limpeza e higiene com o menor preco</h3>
-                <p>Sem intermediarios, sem markup de distribuidor. Fale agora e receba cotacao com preco de fabrica, linha recomendada e prazo comercial.</p>
+                <h3>Economize ate 40% comprando direto da industria</h3>
+                <p>Sem distribuidores, sem atacadistas, sem markup. A Karla Wollinger Representacoes conecta sua empresa direto com a industria — fale agora e descubra quanto voce economiza.</p>
             </div>
             <div class="cta-actions">
                 <a class="btn btn-primary" href="<?php echo kw_esc(kw_whatsapp_link('Oi! Quero cotacao direto de fabrica para limpeza, higiene e embalagens.')); ?>" target="_blank" rel="noopener">WhatsApp</a>
@@ -113,13 +121,22 @@ $products = array_slice(kw_site_products(), 0, 8);
     <section class="section alt">
         <div class="container">
             <div class="section-head reveal">
-                <h2>Produtos em destaque</h2>
-                <p>Catalogo comercial para consulta rapida e solicitacao de orcamento.</p>
+                <h2>Produtos em destaque — preco de industria</h2>
+                <p>Veja alguns dos nossos produtos com desconto direto da industria. Solicite orcamento e compare.</p>
             </div>
             <div class="product-grid">
                 <?php foreach ($products as $product): ?>
                     <article class="product-card reveal">
-                        <div class="product-thumb"><i class="fa-solid fa-box"></i></div>
+                        <div class="product-thumb">
+                            <?php if (!empty($product['imagem'])): ?>
+                                <img src="<?php echo kw_esc($product['imagem']); ?>" alt="<?php echo kw_esc($product['nome']); ?>" loading="lazy" width="400" height="300">
+                            <?php else: ?>
+                                <i class="fa-solid fa-box"></i>
+                            <?php endif; ?>
+                            <?php if (!empty($product['desconto'])): ?>
+                                <span class="discount-badge">-<?php echo kw_esc($product['desconto']); ?>%</span>
+                            <?php endif; ?>
+                        </div>
                         <div class="product-top">
                             <span class="pill"><?php echo kw_esc(kw_category_name($product['categoria'])); ?></span>
                             <span class="pill"><?php echo kw_esc($product['marca']); ?></span>
@@ -150,6 +167,53 @@ $products = array_slice(kw_site_products(), 0, 8);
         </div>
     </section>
 
+    <section class="section savings-section">
+        <div class="container">
+            <div class="savings-strip reveal">
+                <div class="savings-strip-item">
+                    <i class="fa-solid fa-industry"></i>
+                    <div><strong>Direto da industria</strong><span>Sem distribuidores</span></div>
+                </div>
+                <div class="savings-strip-arrow"><i class="fa-solid fa-arrow-right"></i></div>
+                <div class="savings-strip-item">
+                    <i class="fa-solid fa-ban"></i>
+                    <div><strong>Sem intermediarios</strong><span>Zero markup</span></div>
+                </div>
+                <div class="savings-strip-arrow"><i class="fa-solid fa-arrow-right"></i></div>
+                <div class="savings-strip-item highlight">
+                    <i class="fa-solid fa-piggy-bank"></i>
+                    <div><strong>Ate 40% de desconto</strong><span>Economia real para sua empresa</span></div>
+                </div>
+            </div>
+            <div class="savings-comparison reveal">
+                <h2>Compare e economize</h2>
+                <p>Veja a diferenca entre comprar de distribuidores e comprar <strong>direto da industria</strong> com a Karla Wollinger Representacoes:</p>
+                <div class="comparison-grid">
+                    <div class="comparison-card old">
+                        <h4><i class="fa-solid fa-store"></i> Distribuidores</h4>
+                        <ul>
+                            <li><i class="fa-solid fa-xmark"></i> Markup de 20-40%</li>
+                            <li><i class="fa-solid fa-xmark"></i> Pedido minimo alto</li>
+                            <li><i class="fa-solid fa-xmark"></i> Atendimento generico</li>
+                            <li><i class="fa-solid fa-xmark"></i> Prazo longo de resposta</li>
+                        </ul>
+                    </div>
+                    <div class="comparison-vs"><span>VS</span></div>
+                    <div class="comparison-card new">
+                        <h4><i class="fa-solid fa-industry"></i> Karla Wollinger Representacoes</h4>
+                        <ul>
+                            <li><i class="fa-solid fa-check"></i> Preco de industria direto</li>
+                            <li><i class="fa-solid fa-check"></i> Pedido minimo acessivel</li>
+                            <li><i class="fa-solid fa-check"></i> Atendimento personalizado</li>
+                            <li><i class="fa-solid fa-check"></i> Resposta em ate 2h</li>
+                        </ul>
+                        <a class="btn btn-primary" href="<?php echo kw_esc(kw_whatsapp_link('Quero saber quanto economizo comprando direto da industria!')); ?>" target="_blank" rel="noopener">Descubra seu desconto</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
     <section class="section alt" id="faq" itemscope itemtype="https://schema.org/FAQPage">
         <div class="container">
             <div class="section-head reveal">
@@ -158,12 +222,12 @@ $products = array_slice(kw_site_products(), 0, 8);
             </div>
             <div class="faq-grid">
                 <article class="faq-item reveal" itemscope itemprop="mainEntity" itemtype="https://schema.org/Question">
-                    <h3 itemprop="name">Os produtos sao direto da fabrica?</h3>
-                    <div itemprop="acceptedAnswer" itemscope itemtype="https://schema.org/Answer"><p itemprop="text">Sim. Somos representantes comerciais das fabricas, o que significa que voce compra direto da origem, sem intermediarios e com o melhor preco do mercado.</p></div>
+                    <h3 itemprop="name">Os produtos sao direto da industria?</h3>
+                    <div itemprop="acceptedAnswer" itemscope itemtype="https://schema.org/Answer"><p itemprop="text">Sim. A Karla Wollinger e representante comercial das industrias, o que significa que voce compra direto da origem, sem distribuidores e com ate 40% de desconto em relacao ao mercado.</p></div>
                 </article>
                 <article class="faq-item reveal" itemscope itemprop="mainEntity" itemtype="https://schema.org/Question">
-                    <h3 itemprop="name">O preco e realmente menor que de distribuidores?</h3>
-                    <div itemprop="acceptedAnswer" itemscope itemtype="https://schema.org/Answer"><p itemprop="text">Sim. Como representamos as fabricas diretamente, eliminamos as margens de distribuidores e atacadistas, repassando economia real para sua empresa.</p></div>
+                    <h3 itemprop="name">Quanto de desconto eu consigo comprando pela representacao?</h3>
+                    <div itemprop="acceptedAnswer" itemscope itemtype="https://schema.org/Answer"><p itemprop="text">Dependendo do produto e volume, voce pode economizar de 20% a 40% comprando direto da industria pela Karla Wollinger. Sem o markup de distribuidores e atacadistas, a economia e real e significativa.</p></div>
                 </article>
                 <article class="faq-item reveal" itemscope itemprop="mainEntity" itemtype="https://schema.org/Question">
                     <h3 itemprop="name">Voces atendem Curitiba e regiao?</h3>
@@ -174,8 +238,8 @@ $products = array_slice(kw_site_products(), 0, 8);
                     <div itemprop="acceptedAnswer" itemscope itemtype="https://schema.org/Answer"><p itemprop="text">Sim. Montamos cotacao personalizada conforme volume, categoria e tipo de operacao. O orcamento e gratis e sem compromisso.</p></div>
                 </article>
                 <article class="faq-item reveal" itemscope itemprop="mainEntity" itemtype="https://schema.org/Question">
-                    <h3 itemprop="name">Quais marcas voces representam?</h3>
-                    <div itemprop="acceptedAnswer" itemscope itemtype="https://schema.org/Answer"><p itemprop="text">Representamos BellPlus, Suave Lar, Troppel, Estilo, AFP, Baston e Ecopel — fabricas reconhecidas em produtos de higiene, limpeza e descartaveis.</p></div>
+                    <h3 itemprop="name">Quais industrias voces representam?</h3>
+                    <div itemprop="acceptedAnswer" itemscope itemtype="https://schema.org/Answer"><p itemprop="text">Representamos BellPlus, Suave Lar, Troppel, Estilo, AFP, Baston e Ecopel — industrias reconhecidas em produtos de higiene, limpeza e descartaveis, com certificacao e registro ANVISA.</p></div>
                 </article>
                 <article class="faq-item reveal" itemscope itemprop="mainEntity" itemtype="https://schema.org/Question">
                     <h3 itemprop="name">Qual o pedido minimo?</h3>

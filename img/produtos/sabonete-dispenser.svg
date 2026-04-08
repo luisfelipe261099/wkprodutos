@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#e8f4ff"/><stop offset="100%" stop-color="#d5f0ed"/></linearGradient>
+    <linearGradient id="disp" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#1fa6a1"/><stop offset="100%" stop-color="#157870"/></linearGradient>
+  </defs>
+  <rect width="400" height="300" rx="16" fill="url(#bg)"/>
+  <!-- Soap dispenser body -->
+  <rect x="155" y="75" width="90" height="150" rx="12" fill="url(#disp)" stroke="#12706c" stroke-width="2"/>
+  <!-- Pump -->
+  <rect x="182" y="50" width="36" height="30" rx="4" fill="#ddd"/>
+  <rect x="192" y="38" width="16" height="18" rx="3" fill="#bbb"/>
+  <path d="M175,55 L182,55" stroke="#ccc" stroke-width="3" stroke-linecap="round"/>
+  <!-- Nozzle -->
+  <rect x="160" y="50" width="20" height="8" rx="3" fill="#aaa"/>
+  <!-- Window -->
+  <rect x="168" y="110" width="64" height="55" rx="6" fill="rgba(255,255,255,0.85)"/>
+  <text x="200" y="132" text-anchor="middle" fill="#1fa6a1" font-family="Arial" font-weight="bold" font-size="10">SABONETE</text>
+  <text x="200" y="147" text-anchor="middle" fill="#5d7086" font-family="Arial" font-size="9">LÍQUIDO</text>
+  <text x="200" y="160" text-anchor="middle" fill="#5d7086" font-family="Arial" font-size="8">800ml</text>
+  <!-- Shine -->
+  <path d="M165,85 L163,190" stroke="rgba(255,255,255,0.2)" stroke-width="5" stroke-linecap="round"/>
+  <!-- Discount badge -->
+  <circle cx="310" cy="90" r="32" fill="#e74c3c"/>
+  <text x="310" y="86" text-anchor="middle" fill="#fff" font-family="Arial" font-weight="bold" font-size="11">ATÉ</text>
+  <text x="310" y="102" text-anchor="middle" fill="#fff" font-family="Arial" font-weight="bold" font-size="16">25%</text>
+  <text x="200" y="260" text-anchor="middle" fill="#1e5ea3" font-family="Arial" font-weight="bold" font-size="13">DISPENSER SABONETE</text>
+</svg>
