@@ -1,4 +1,14 @@
 User-agent: *
 Allow: /
+Disallow: /login.php
+Disallow: /dashboard.php
+Disallow: /cadastro_*
+Disallow: /registrar_*
+Disallow: /criar_admin.php
+Disallow: /atualizar_*
+Disallow: /sincronizar_*
+Disallow: /api_*
+Disallow: /includes/
+Disallow: /vendor/
 
-Sitemap: /sitemap.xml
+Sitemap: https://karlawollinger.com/sitemap.xml

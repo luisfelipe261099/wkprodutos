@@ -37,12 +37,20 @@ function kw_render_head(string $metaTitle, string $metaDescription, string $acti
     <title><?php echo kw_esc($metaTitle); ?></title>
     <meta name="description" content="<?php echo kw_esc($metaDescription); ?>">
     <meta name="robots" content="index,follow,max-image-preview:large">
+    <meta name="keywords" content="produtos de limpeza direto da fabrica, produtos de limpeza curitiba, higiene empresarial, papel toalha atacado, sacos de lixo fabrica, embalagens curitiba, descartaveis para empresa, limpeza profissional parana, representante comercial limpeza, menor preco produtos de limpeza">
     <link rel="canonical" href="<?php echo kw_esc($canonical); ?>">
     <meta property="og:type" content="website">
     <meta property="og:title" content="<?php echo kw_esc($metaTitle); ?>">
     <meta property="og:description" content="<?php echo kw_esc($metaDescription); ?>">
     <meta property="og:image" content="<?php echo kw_esc($origin . $logoPath); ?>">
+    <meta property="og:url" content="<?php echo kw_esc($canonical); ?>">
+    <meta property="og:site_name" content="Karla Wollinger Representacoes">
     <meta property="og:locale" content="pt_BR">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="<?php echo kw_esc($metaTitle); ?>">
+    <meta name="twitter:description" content="<?php echo kw_esc($metaDescription); ?>">
+    <meta name="geo.region" content="BR-PR">
+    <meta name="geo.placename" content="Curitiba">
     <meta name="theme-color" content="#0c2f58">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -52,17 +60,44 @@ function kw_render_head(string $metaTitle, string $metaDescription, string $acti
     <script type="application/ld+json">
     {
       "@context": "https://schema.org",
-      "@type": "Organization",
+      "@type": "LocalBusiness",
       "name": "Karla Wollinger Representacoes",
-      "url": "<?php echo kw_esc((isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off' ? 'https://' : 'http://') . ($_SERVER['HTTP_HOST'] ?? 'localhost')); ?>",
-            "logo": "<?php echo kw_esc($origin . $logoPath); ?>",
+      "description": "Representacao comercial de produtos de limpeza, higiene, papeis, embalagens e descartaveis direto da fabrica para empresas em Curitiba e regiao.",
+      "url": "<?php echo kw_esc($origin); ?>",
+      "logo": "<?php echo kw_esc($origin . $logoPath); ?>",
+      "image": "<?php echo kw_esc($origin . $logoPath); ?>",
       "email": "<?php echo kw_esc(KW_CONTACT_EMAIL); ?>",
+      "telephone": "+<?php echo kw_esc(KW_WHATSAPP_NUMBER); ?>",
+      "priceRange": "$$",
+      "address": {
+        "@type": "PostalAddress",
+        "addressLocality": "Curitiba",
+        "addressRegion": "PR",
+        "addressCountry": "BR"
+      },
+      "geo": {
+        "@type": "GeoCoordinates",
+        "latitude": "-25.4284",
+        "longitude": "-49.2733"
+      },
+      "areaServed": [
+        {"@type": "City", "name": "Curitiba"},
+        {"@type": "State", "name": "Parana"}
+      ],
+      "openingHoursSpecification": {
+        "@type": "OpeningHoursSpecification",
+        "dayOfWeek": ["Monday","Tuesday","Wednesday","Thursday","Friday"],
+        "opens": "08:00",
+        "closes": "18:00"
+      },
       "contactPoint": {
         "@type": "ContactPoint",
         "telephone": "+<?php echo kw_esc(KW_WHATSAPP_NUMBER); ?>",
         "contactType": "sales",
-        "areaServed": "Curitiba"
-      }
+        "areaServed": "BR",
+        "availableLanguage": "Portuguese"
+      },
+      "sameAs": []
     }
     </script>
 </head>
@@ -114,7 +149,7 @@ function kw_render_footer(): void
     <div class="container footer-grid">
         <div>
             <img class="footer-logo" src="<?php echo kw_esc(kw_site_url('logo.svg')); ?>" alt="Karla Wollinger Representacoes" width="240" height="64">
-            <p>Representacao comercial de produtos de limpeza, higiene, papeis, embalagens e descartaveis para empresas em Curitiba e regiao.</p>
+            <p>Representacao comercial de produtos de limpeza, higiene, papeis, embalagens e descartaveis <strong>direto da fabrica</strong> para empresas em Curitiba, regiao metropolitana e todo o Parana. Menor preco, sem intermediarios.</p>
             <p class="footer-cnpj">CNPJ: 30.459.625/0001-85</p>
         </div>
         <div>

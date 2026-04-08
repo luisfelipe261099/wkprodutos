@@ -62,12 +62,14 @@ function kw_site_brands(): array
 function kw_site_benefits(): array
 {
     return [
-        ['titulo' => 'Atendimento rapido', 'icone' => 'fa-bolt', 'texto' => 'Resposta agil para operacoes que nao podem parar.'],
-        ['titulo' => 'Variedade de produtos', 'icone' => 'fa-boxes-stacked', 'texto' => 'Linhas completas para higiene, limpeza, embalagens e descartaveis.'],
-        ['titulo' => 'Solucoes para empresas', 'icone' => 'fa-building', 'texto' => 'Atendimento consultivo para cada tipo de negocio.'],
-        ['titulo' => 'Marcas confiaveis', 'icone' => 'fa-award', 'texto' => 'Representacao de marcas reconhecidas pelo mercado.'],
-        ['titulo' => 'Orcamento facilitado', 'icone' => 'fa-file-signature', 'texto' => 'Cotacao simples por WhatsApp, formulario ou contato direto.'],
-        ['titulo' => 'Curitiba e regiao', 'icone' => 'fa-map-location-dot', 'texto' => 'Atendimento regional com acompanhamento de ponta a ponta.']
+        ['titulo' => 'Direto da fabrica', 'icone' => 'fa-industry', 'texto' => 'Produtos direto do fabricante, sem intermediarios. Voce paga menos e recebe com qualidade garantida.'],
+        ['titulo' => 'Menor preco do mercado', 'icone' => 'fa-tag', 'texto' => 'Sem markup de distribuidores. Preco de fabrica repassado direto para sua empresa.'],
+        ['titulo' => 'Atendimento rapido', 'icone' => 'fa-bolt', 'texto' => 'Resposta agil em ate 2 horas para operacoes que nao podem parar.'],
+        ['titulo' => 'Variedade de produtos', 'icone' => 'fa-boxes-stacked', 'texto' => 'Mais de 200 itens em higiene, limpeza, embalagens e descartaveis.'],
+        ['titulo' => 'Sem pedido minimo alto', 'icone' => 'fa-hand-holding-dollar', 'texto' => 'Condicoes acessiveis para pequenas e medias empresas comprarem direto de fabrica.'],
+        ['titulo' => 'Marcas de fabrica', 'icone' => 'fa-award', 'texto' => '7 fabricas representadas com certificacoes de qualidade e registro ANVISA.'],
+        ['titulo' => 'Orcamento gratis', 'icone' => 'fa-file-signature', 'texto' => 'Cotacao gratuita e personalizada por WhatsApp, formulario ou contato direto.'],
+        ['titulo' => 'Entrega em Curitiba e regiao', 'icone' => 'fa-truck-fast', 'texto' => 'Logistica direta das fabricas para Curitiba, regiao metropolitana e todo o Parana.']
     ];
 }
 
