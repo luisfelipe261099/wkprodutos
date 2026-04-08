@@ -1031,51 +1031,61 @@ $conn->close();
             container.style.display = this.value === 'faturamento' ? 'block' : 'none';
         });
 
-        // Validação em tempo real do campo de código/CPF/CNPJ
+        // Validação em tempo real do campo de código/CPF/CNPJ — busca no banco
+        let buscaTimeout = null;
         document.getElementById('codigoIdentificacao').addEventListener('input', function() {
             const valor = this.value.trim();
             const feedback = document.getElementById('feedbackIdentificacao');
+            const input = this;
             
             if (!valor) {
                 feedback.style.display = 'none';
-                this.classList.remove('is-valid', 'is-invalid');
+                input.classList.remove('is-valid', 'is-invalid');
                 return;
             }
 
-            const valorLimpo = valor.replace(/[.\-\/\s]/g, '').toLowerCase();
-            const cpfCnpjLimpo = clienteCpfCnpj.replace(/[.\-\/\s]/g, '').toLowerCase();
-            const codigoLimpo = clienteCodigo.toLowerCase();
-
-            let match = false;
-
-            // Verificar por código (CLI-XXX)
-            if (codigoLimpo.includes(valorLimpo) || valorLimpo.includes(codigoLimpo)) {
-                match = true;
-            }
-            // Verificar por CPF/CNPJ
-            if (cpfCnpjLimpo && (cpfCnpjLimpo.includes(valorLimpo) || valorLimpo.includes(cpfCnpjLimpo))) {
-                match = true;
-            }
-            // Verificar também se digitou o CPF/CNPJ com pontuação
-            if (clienteCpfCnpj && clienteCpfCnpj.toLowerCase().includes(valor.toLowerCase())) {
-                match = true;
-            }
-
+            // Debounce: esperar 400ms após parar de digitar
+            clearTimeout(buscaTimeout);
             feedback.style.display = 'block';
-            if (match) {
-                this.classList.add('is-valid');
-                this.classList.remove('is-invalid');
-                feedback.innerHTML = '<div class="d-flex align-items-center p-2 rounded" style="background:#d1fae5; border:1px solid #6ee7b7;">' +
-                    '<i class="fas fa-check-circle text-success me-2"></i>' +
-                    '<div><strong class="text-success">Identificado!</strong><br>' +
-                    '<span class="text-dark">' + clienteCodigo + ' — ' + escapeHtml(clienteNome) + '</span></div></div>';
-            } else {
-                this.classList.add('is-invalid');
-                this.classList.remove('is-valid');
-                feedback.innerHTML = '<div class="d-flex align-items-center p-2 rounded" style="background:#fee2e2; border:1px solid #fca5a5;">' +
-                    '<i class="fas fa-exclamation-triangle text-danger me-2"></i>' +
-                    '<span class="text-danger">Código ou documento não corresponde ao cadastro.</span></div>';
-            }
+            feedback.innerHTML = '<div class="d-flex align-items-center p-2 rounded" style="background:#f0f4ff; border:1px solid #c7d2fe;">' +
+                '<i class="fas fa-spinner fa-spin text-primary me-2"></i><span class="text-muted">Buscando...</span></div>';
+            input.classList.remove('is-valid', 'is-invalid');
+
+            buscaTimeout = setTimeout(() => {
+                fetch('orcamento_cliente_api.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        action: 'buscar_cliente',
+                        token: token,
+                        termo: valor
+                    })
+                })
+                .then(r => r.json())
+                .then(data => {
+                    feedback.style.display = 'block';
+                    if (data.success && data.cliente) {
+                        const c = data.cliente;
+                        const docInfo = c.cpf_cnpj ? '<br><small class="text-muted">' + (c.tipo_pessoa === 'juridica' ? 'CNPJ' : 'CPF') + ': ' + escapeHtml(c.cpf_cnpj) + '</small>' : '';
+                        input.classList.add('is-valid');
+                        input.classList.remove('is-invalid');
+                        feedback.innerHTML = '<div class="d-flex align-items-center p-2 rounded" style="background:#d1fae5; border:1px solid #6ee7b7;">' +
+                            '<i class="fas fa-check-circle text-success me-2 fs-5"></i>' +
+                            '<div><strong class="text-success">Cliente identificado!</strong><br>' +
+                            '<span class="text-dark fw-bold">' + escapeHtml(c.codigo) + ' — ' + escapeHtml(c.nome) + '</span>' + docInfo + '</div></div>';
+                    } else {
+                        input.classList.add('is-invalid');
+                        input.classList.remove('is-valid');
+                        feedback.innerHTML = '<div class="d-flex align-items-center p-2 rounded" style="background:#fee2e2; border:1px solid #fca5a5;">' +
+                            '<i class="fas fa-exclamation-triangle text-danger me-2"></i>' +
+                            '<span class="text-danger">Nenhum cliente encontrado com este código ou documento.</span></div>';
+                    }
+                })
+                .catch(() => {
+                    feedback.style.display = 'none';
+                    input.classList.remove('is-valid', 'is-invalid');
+                });
+            }, 400);
         });
 
         // Enviar Orçamento

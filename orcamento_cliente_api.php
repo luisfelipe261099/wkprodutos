@@ -202,6 +202,58 @@ switch ($action) {
         }
         break;
 
+    case 'buscar_cliente':
+        // Busca cliente por código (CLI-XXX) ou CPF/CNPJ
+        $termo = trim($input['termo'] ?? '');
+        if (empty($termo)) {
+            echo json_encode(['success' => false, 'message' => 'Informe um código ou CPF/CNPJ']);
+            break;
+        }
+
+        // Limpar pontuação para comparar CPF/CNPJ
+        $termoLimpo = preg_replace('/[.\-\/\s]/', '', $termo);
+
+        // Verificar se é código CLI-XXX
+        $clienteEncontrado = null;
+        if (preg_match('/^CLI-?(\d+)$/i', $termo, $matches)) {
+            $idBusca = (int)$matches[1];
+            $stmt_busca = $conn->prepare("SELECT id, nome, cpf_cnpj, tipo_pessoa FROM clientes WHERE id = ?");
+            $stmt_busca->bind_param("i", $idBusca);
+            $stmt_busca->execute();
+            $result_busca = $stmt_busca->get_result();
+            if ($result_busca->num_rows > 0) {
+                $clienteEncontrado = $result_busca->fetch_assoc();
+            }
+            $stmt_busca->close();
+        }
+
+        // Se não encontrou por código, buscar por CPF/CNPJ
+        if (!$clienteEncontrado && strlen($termoLimpo) >= 5) {
+            $stmt_busca = $conn->prepare("SELECT id, nome, cpf_cnpj, tipo_pessoa FROM clientes WHERE REPLACE(REPLACE(REPLACE(REPLACE(cpf_cnpj, '.', ''), '-', ''), '/', ''), ' ', '') = ?");
+            $stmt_busca->bind_param("s", $termoLimpo);
+            $stmt_busca->execute();
+            $result_busca = $stmt_busca->get_result();
+            if ($result_busca->num_rows > 0) {
+                $clienteEncontrado = $result_busca->fetch_assoc();
+            }
+            $stmt_busca->close();
+        }
+
+        if ($clienteEncontrado) {
+            echo json_encode([
+                'success' => true,
+                'cliente' => [
+                    'codigo' => 'CLI-' . str_pad($clienteEncontrado['id'], 3, '0', STR_PAD_LEFT),
+                    'nome' => $clienteEncontrado['nome'],
+                    'cpf_cnpj' => $clienteEncontrado['cpf_cnpj'] ?? '',
+                    'tipo_pessoa' => $clienteEncontrado['tipo_pessoa'] ?? ''
+                ]
+            ]);
+        } else {
+            echo json_encode(['success' => false, 'message' => 'Nenhum cliente encontrado com este código ou documento']);
+        }
+        break;
+
     default:
         echo json_encode(['success' => false, 'message' => 'Ação inválida']);
         break;
