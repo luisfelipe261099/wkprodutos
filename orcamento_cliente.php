@@ -798,7 +798,7 @@ $conn->close();
                     <div class="mb-3">
                         <label class="form-label fw-bold">Seu Código ou CPF/CNPJ <small class="text-muted fw-normal">(opcional, para identificação)</small></label>
                         <input type="text" class="form-control" id="codigoIdentificacao" placeholder="Ex: CLI-001 ou 12.345.678/0001-00" value="">
-                        <div class="form-text">Se souber seu código de cliente ou CPF/CNPJ, informe aqui.</div>
+                        <div id="feedbackIdentificacao" class="mt-2" style="display:none;"></div>
                     </div>
                     <div class="mb-3">
                         <label class="form-label fw-bold">Forma de Pagamento Preferida</label>
@@ -858,6 +858,9 @@ $conn->close();
         const token = '<?php echo htmlspecialchars($token, ENT_QUOTES, 'UTF-8'); ?>';
         const empresaSelecionada = <?php echo $empresa_selecionada; ?>;
         const clienteId = <?php echo $cliente_id; ?>;
+        const clienteCodigo = 'CLI-<?php echo str_pad($cliente_id, 3, '0', STR_PAD_LEFT); ?>';
+        const clienteNome = <?php echo json_encode($link_data['cliente_nome'] ?? ''); ?>;
+        const clienteCpfCnpj = <?php echo json_encode($link_data['cpf_cnpj'] ?? ''); ?>;
 
         // Carrinho em localStorage (separado por empresa)
         const CART_KEY = 'orcamento_cart_' + empresaSelecionada;
@@ -1026,6 +1029,53 @@ $conn->close();
         document.getElementById('formaPagamento').addEventListener('change', function() {
             const container = document.getElementById('faturamentoTipoContainer');
             container.style.display = this.value === 'faturamento' ? 'block' : 'none';
+        });
+
+        // Validação em tempo real do campo de código/CPF/CNPJ
+        document.getElementById('codigoIdentificacao').addEventListener('input', function() {
+            const valor = this.value.trim();
+            const feedback = document.getElementById('feedbackIdentificacao');
+            
+            if (!valor) {
+                feedback.style.display = 'none';
+                this.classList.remove('is-valid', 'is-invalid');
+                return;
+            }
+
+            const valorLimpo = valor.replace(/[.\-\/\s]/g, '').toLowerCase();
+            const cpfCnpjLimpo = clienteCpfCnpj.replace(/[.\-\/\s]/g, '').toLowerCase();
+            const codigoLimpo = clienteCodigo.toLowerCase();
+
+            let match = false;
+
+            // Verificar por código (CLI-XXX)
+            if (codigoLimpo.includes(valorLimpo) || valorLimpo.includes(codigoLimpo)) {
+                match = true;
+            }
+            // Verificar por CPF/CNPJ
+            if (cpfCnpjLimpo && (cpfCnpjLimpo.includes(valorLimpo) || valorLimpo.includes(cpfCnpjLimpo))) {
+                match = true;
+            }
+            // Verificar também se digitou o CPF/CNPJ com pontuação
+            if (clienteCpfCnpj && clienteCpfCnpj.toLowerCase().includes(valor.toLowerCase())) {
+                match = true;
+            }
+
+            feedback.style.display = 'block';
+            if (match) {
+                this.classList.add('is-valid');
+                this.classList.remove('is-invalid');
+                feedback.innerHTML = '<div class="d-flex align-items-center p-2 rounded" style="background:#d1fae5; border:1px solid #6ee7b7;">' +
+                    '<i class="fas fa-check-circle text-success me-2"></i>' +
+                    '<div><strong class="text-success">Identificado!</strong><br>' +
+                    '<span class="text-dark">' + clienteCodigo + ' — ' + escapeHtml(clienteNome) + '</span></div></div>';
+            } else {
+                this.classList.add('is-invalid');
+                this.classList.remove('is-valid');
+                feedback.innerHTML = '<div class="d-flex align-items-center p-2 rounded" style="background:#fee2e2; border:1px solid #fca5a5;">' +
+                    '<i class="fas fa-exclamation-triangle text-danger me-2"></i>' +
+                    '<span class="text-danger">Código ou documento não corresponde ao cadastro.</span></div>';
+            }
         });
 
         // Enviar Orçamento
