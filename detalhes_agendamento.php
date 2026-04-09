@@ -1,5 +1,5 @@
 <?php
-require_once 'includes/session_bootstrap.php';
+require_once __DIR__ . '/includes/session_bootstrap.php';
 
 // Verifica se o usuário está logado
 if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
@@ -7,7 +7,7 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
     exit;
 }
 
-require_once 'includes/db_connect.php';
+require_once __DIR__ . '/includes/db_connect.php';
 
 $agendamento_id = $_GET['id'] ?? null;
 $agendamento = null;
@@ -43,7 +43,7 @@ if ($agendamento_id) {
 
 $conn->close();
 
-include_once 'includes/header.php';
+include_once __DIR__ . '/includes/header.php';
 ?>
 
 <h2 class="mb-4"><i class="fas fa-calendar-check me-2"></i> Detalhes do Agendamento #<?php echo htmlspecialchars($agendamento_id); ?></h2>
@@ -125,4 +125,4 @@ include_once 'includes/header.php';
 
 <?php endif; ?>
 
-<?php include_once 'includes/footer.php'; ?>
+<?php include_once __DIR__ . '/includes/footer.php'; ?>

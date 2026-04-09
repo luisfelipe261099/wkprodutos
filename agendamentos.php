@@ -1,5 +1,5 @@
 <?php
-require_once 'includes/session_bootstrap.php';
+require_once __DIR__ . '/includes/session_bootstrap.php';
 
 // Verifica se o usuário está logado
 if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
@@ -7,7 +7,7 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
     exit;
 }
 
-require_once 'includes/db_connect.php';
+require_once __DIR__ . '/includes/db_connect.php';
 // --- Lógica para Alterar Status do Agendamento via Modal ---
 if (isset($_POST['alterar_status'])) {
     $agendamento_id_update = trim($_POST['agendamento_id_status']);
@@ -65,7 +65,7 @@ $stmt_ag->close();
 
 $conn->close();
 
-include_once 'includes/header.php';
+include_once __DIR__ . '/includes/header.php';
 ?>
 
 <div class="page-header d-flex justify-content-between align-items-center">
@@ -237,7 +237,7 @@ include_once 'includes/header.php';
     </div>
 </div>
 
-<?php include_once 'includes/footer.php'; ?>
+<?php include_once __DIR__ . '/includes/footer.php'; ?>
 
 <script>
     // Script para preencher o modal com os dados do agendamento

@@ -1,6 +1,6 @@
 <?php
-require_once 'includes/session_bootstrap.php';
-require_once 'includes/db_connect.php';
+require_once __DIR__ . '/includes/session_bootstrap.php';
+require_once __DIR__ . '/includes/db_connect.php';
 
 $token = $_GET['token'] ?? '';
 $orcamento_id = isset($_GET['orcamento']) ? (int)$_GET['orcamento'] : 0;

@@ -1,6 +1,6 @@
 <?php
-require_once 'includes/session_bootstrap.php';
-require_once 'includes/db_connect.php';
+require_once __DIR__ . '/includes/session_bootstrap.php';
+require_once __DIR__ . '/includes/db_connect.php';
 
 // Verifica se o usuário está logado
 if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
@@ -97,7 +97,7 @@ $result_lembretes = $stmt_lembretes->get_result();
 $lembretes = $result_lembretes->fetch_all(MYSQLI_ASSOC);
 $stmt_lembretes->close();
 
-include_once 'includes/header.php';
+include_once __DIR__ . '/includes/header.php';
 ?>
 
 <div class="page-header fade-in-up">
@@ -228,5 +228,5 @@ include_once 'includes/header.php';
 
 <?php
 $conn->close();
-include_once 'includes/footer.php';
+include_once __DIR__ . '/includes/footer.php';
 ?>

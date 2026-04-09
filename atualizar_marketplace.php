@@ -1,6 +1,6 @@
 <?php
 // Script para atualizar marketplace com integração
-require_once 'includes/db_connect.php';
+require_once __DIR__ . '/includes/db_connect.php';
 
 echo "<h2>🔄 Atualização do Marketplace para Integração Completa</h2>";
 echo "<p>Este script irá adicionar os campos de integração ao marketplace existente.</p>";

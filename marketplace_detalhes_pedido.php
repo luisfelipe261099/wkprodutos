@@ -1,5 +1,5 @@
 <?php
-require_once 'includes/session_bootstrap.php';
+require_once __DIR__ . '/includes/session_bootstrap.php';
 
 // Verifica se o usuário está logado
 if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
@@ -7,7 +7,7 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
     exit;
 }
 
-require_once 'includes/db_connect.php';
+require_once __DIR__ . '/includes/db_connect.php';
 
 $pedido_id = $_GET['id'] ?? 0;
 
@@ -53,7 +53,7 @@ while ($item = $result_itens->fetch_assoc()) {
     $itens_pedido[] = $item;
 }
 
-include_once 'includes/header.php';
+include_once __DIR__ . '/includes/header.php';
 ?>
 
 <!-- Page Header -->
@@ -343,6 +343,6 @@ include_once 'includes/header.php';
 
 <?php
 $conn->close();
-include_once 'includes/footer.php';
+include_once __DIR__ . '/includes/footer.php';
 ?>
 

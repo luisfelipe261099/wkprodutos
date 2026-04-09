@@ -1,6 +1,6 @@
 <?php 
 session_start();
-include 'includes/header.php'; 
+include __DIR__ . '/includes/header.php'; 
 ?>
 
         <!-- Conteúdo da página -->
@@ -73,4 +73,4 @@ include 'includes/header.php';
             </div>
         </div>
 
-<?php include 'includes/footer.php'; ?>
+<?php include __DIR__ . '/includes/footer.php'; ?>

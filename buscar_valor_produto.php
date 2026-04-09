@@ -1,12 +1,12 @@
 <?php
-require_once 'includes/session_bootstrap.php';
+require_once __DIR__ . '/includes/session_bootstrap.php';
 if (!isset($_SESSION['user_id'])) {
     header('HTTP/1.1 401 Unauthorized');
     echo json_encode(['error' => 'Usuário não autenticado']);
     exit;
 }
 
-include 'includes/db_connect.php'; // Confirme se o caminho para db_connect.php está correto
+include __DIR__ . '/includes/db_connect.php'; // Confirme se o caminho para db_connect.php está correto
 
 $response = ['valor_venda' => null];
 

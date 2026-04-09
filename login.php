@@ -1,6 +1,6 @@
 <?php
 // Inicia a sessão no início do script. Isso é fundamental para gerenciar o estado do usuário.
-require_once 'includes/session_bootstrap.php';
+require_once __DIR__ . '/includes/session_bootstrap.php';
 
 // Se o usuário já está logado, redireciona para o dashboard
 if (isset($_SESSION["loggedin"]) && $_SESSION["loggedin"] === true) {
@@ -10,7 +10,7 @@ if (isset($_SESSION["loggedin"]) && $_SESSION["loggedin"] === true) {
 
 // Inclui o arquivo de conexão com o banco de dados.
 // Usamos 'require_once' para garantir que a conexão seja estabelecida e para exibir um erro fatal se o arquivo não for encontrado.
-require_once 'includes/db_connect.php';
+require_once __DIR__ . '/includes/db_connect.php';
 
 // Inicializa a variável para mensagens de erro de login.
 $login_err = "";

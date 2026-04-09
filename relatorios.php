@@ -3,14 +3,14 @@
 ini_set('display_errors', 1);
 error_reporting(E_ALL);
 
-require_once 'includes/session_bootstrap.php';
+require_once __DIR__ . '/includes/session_bootstrap.php';
 
 if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
     header("location: index.php");
     exit;
 }
 
-require_once 'includes/db_connect.php';
+require_once __DIR__ . '/includes/db_connect.php';
 
 // --- FUNÇÕES DE GERAÇÃO DE RELATÓRIO ---
 
@@ -233,7 +233,7 @@ try {
     $empresas_options = false;
 }
 
-include_once 'includes/header.php';
+include_once __DIR__ . '/includes/header.php';
 ?>
 
 <!-- CSS especializado para impressão de relatórios -->
@@ -600,7 +600,7 @@ if (isset($conn) && $conn) {
 }
 ?>
 
-<?php include_once 'includes/footer.php'; ?>
+<?php include_once __DIR__ . '/includes/footer.php'; ?>
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {

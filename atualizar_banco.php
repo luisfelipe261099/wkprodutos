@@ -7,14 +7,14 @@
  * Acesse: http://seusite.com/atualizar_banco.php
  */
 
-require_once 'includes/session_bootstrap.php';
+require_once __DIR__ . '/includes/session_bootstrap.php';
 
 // Verifica se o usuário está logado (segurança)
 if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
     die('Acesso negado. Faça login primeiro.');
 }
 
-require_once 'includes/db_connect.php';
+require_once __DIR__ . '/includes/db_connect.php';
 
 echo '<!DOCTYPE html>
 <html lang="pt-BR">

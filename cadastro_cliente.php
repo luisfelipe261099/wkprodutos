@@ -4,7 +4,7 @@
 // ini_set('display_startup_errors', 1);
 // error_reporting(E_ALL);
 
-require_once 'includes/session_bootstrap.php';
+require_once __DIR__ . '/includes/session_bootstrap.php';
 
 // 1. VERIFICAÇÃO DE LOGIN
 if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
@@ -13,7 +13,7 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
 }
 
 // 2. CONEXÃO E DECLARAÇÃO DE VARIÁVEIS
-require_once 'includes/db_connect.php';
+require_once __DIR__ . '/includes/db_connect.php';
 
 $id = $nome = $nome_fantasia = $tipo_pessoa = $cpf_cnpj = $inscricao_estadual = $email = $telefone = $endereco = $numero = $ponto_referencia = $cidade = $estado = $cep = "";
 $title = "Cadastrar Novo Cliente";
@@ -132,7 +132,7 @@ if (isset($_GET["id"]) && $_SERVER["REQUEST_METHOD"] !== "POST") {
 
 $conn->close();
 
-include_once 'includes/header.php';
+include_once __DIR__ . '/includes/header.php';
 ?>
 
 <div class="page-header fade-in-up">
@@ -364,4 +364,4 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 </script>
 
-<?php include_once 'includes/footer.php'; ?>
+<?php include_once __DIR__ . '/includes/footer.php'; ?>

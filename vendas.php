@@ -6,7 +6,7 @@ ini_set('display_errors', 1);
 
 //echo "DEBUG: vendas.php - Antes de session_start()<br>";
 //flush();
-require_once 'includes/session_bootstrap.php';
+require_once __DIR__ . '/includes/session_bootstrap.php';
 //echo "DEBUG: vendas.php - Depois de session_start()<br>";
 //flush();
 
@@ -22,7 +22,7 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
 
 //echo "DEBUG: vendas.php - Antes de db_connect.php<br>";
 //flush();
-require_once 'includes/db_connect.php';
+require_once __DIR__ . '/includes/db_connect.php';
 //echo "DEBUG: vendas.php - Depois de db_connect.php<br>";
 //flush();
 
@@ -288,7 +288,7 @@ if (!$result_vendas) {
 //echo "DEBUG: vendas.php - Resultado do select vendas obtido<br>";
 //flush();
 
-include_once 'includes/header.php';
+include_once __DIR__ . '/includes/header.php';
 //echo "DEBUG: vendas.php - Depois de incluir header.php<br>";
 //flush();
 ?>
@@ -615,7 +615,7 @@ document.addEventListener('DOMContentLoaded', function() {
 </script>
 
 <?php //echo "DEBUG: vendas.php - Antes de incluir footer.php<br>"; flush(); ?>
-<?php include_once 'includes/footer.php'; ?>
+<?php include_once __DIR__ . '/includes/footer.php'; ?>
 <?php //echo "DEBUG: vendas.php - Depois de incluir footer.php<br>"; flush(); ?>
 
 

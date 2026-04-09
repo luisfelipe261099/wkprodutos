@@ -1,5 +1,5 @@
 <?php
-require_once 'includes/session_bootstrap.php';
+require_once __DIR__ . '/includes/session_bootstrap.php';
 
 // Verifica se o usuário está logado
 if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
@@ -7,7 +7,7 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
     exit;
 }
 
-require_once 'includes/db_connect.php';
+require_once __DIR__ . '/includes/db_connect.php';
 
 $id = $tipo = $valor = $data_transacao = $descricao = $categoria = $referencia_id = $tabela_referencia = "";
 $title = "Registrar Nova Transação";
@@ -123,7 +123,7 @@ if (isset($_GET["id"]) && empty($message)) {
 // Não fechar a conexão aqui pois ainda vamos usar no HTML
 // $conn->close();
 
-include_once 'includes/header.php';
+include_once __DIR__ . '/includes/header.php';
 ?>
 
 <!-- Page Header -->
@@ -252,5 +252,5 @@ include_once 'includes/header.php';
 
 <?php
 $conn->close();
-include_once 'includes/footer.php';
+include_once __DIR__ . '/includes/footer.php';
 ?>

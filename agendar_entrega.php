@@ -1,5 +1,5 @@
 <?php
-require_once 'includes/session_bootstrap.php';
+require_once __DIR__ . '/includes/session_bootstrap.php';
 
 // Verifica se o usuário está logado
 if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
@@ -7,7 +7,7 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
     exit;
 }
 
-require_once 'includes/db_connect.php';
+require_once __DIR__ . '/includes/db_connect.php';
 
 $agendamento_id = $venda_id = $orcamento_id = $cliente_id = $data_hora_entrega = $endereco_entrega = $status_entrega = $observacoes = "";
 $title = "Agendar Nova Entrega";
@@ -150,7 +150,7 @@ if (!empty($from_venda_id) && empty($agendamento_id) && empty($message)) { // Se
 // Não fechar a conexão aqui pois ainda vamos usar no HTML
 // $conn->close();
 
-include_once 'includes/header.php';
+include_once __DIR__ . '/includes/header.php';
 ?>
 
 <!-- Page Header -->
@@ -327,5 +327,5 @@ include_once 'includes/header.php';
 
 <?php
 $conn->close();
-include_once 'includes/footer.php';
+include_once __DIR__ . '/includes/footer.php';
 ?>

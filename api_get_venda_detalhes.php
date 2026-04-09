@@ -4,8 +4,8 @@ ini_set('display_errors', 0);
 ini_set('log_errors', 1);
 // error_log("API chamada", 3, "/path/to/your/debug.log"); // Descomente para debug avançado
 
-require_once 'includes/session_bootstrap.php';
-require_once 'includes/db_connect.php';
+require_once __DIR__ . '/includes/session_bootstrap.php';
+require_once __DIR__ . '/includes/db_connect.php';
 
 header('Content-Type: application/json');
 

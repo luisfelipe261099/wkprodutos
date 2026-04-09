@@ -1,13 +1,13 @@
 <?php
 // empresa_logos.php - Página para gerenciar logos das empresas representadas
-require_once 'includes/session_bootstrap.php';
+require_once __DIR__ . '/includes/session_bootstrap.php';
 
 if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
     header("location: index.php");
     exit;
 }
 
-require_once 'includes/db_connect.php';
+require_once __DIR__ . '/includes/db_connect.php';
 
 // Processar upload de logo
 if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['upload_logo'])) {

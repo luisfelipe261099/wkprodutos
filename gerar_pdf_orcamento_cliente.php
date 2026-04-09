@@ -4,8 +4,8 @@
  * Reutiliza a mesma função gerarPDFModerno() do gerar_pdf_orcamento.php.
  */
 ob_start();
-require_once 'includes/session_bootstrap.php';
-require_once 'includes/db_connect.php';
+require_once __DIR__ . '/includes/session_bootstrap.php';
+require_once __DIR__ . '/includes/db_connect.php';
 
 // Autenticação via token
 $token = $_GET['token'] ?? '';
@@ -45,7 +45,7 @@ if ($result_check->num_rows === 0) {
 $stmt_check->close();
 
 // Incluir PDFHelper e carregar função de geração de PDF
-require_once 'includes/PDFHelper.php';
+require_once __DIR__ . '/includes/PDFHelper.php';
 
 // Buscar dados completos do orçamento (mesma query do gerar_pdf_orcamento.php)
 $sql_orcamento = "SELECT o.*, c.nome as cliente_nome, c.email as cliente_email, c.telefone, c.inscricao_estadual,

@@ -1,9 +1,9 @@
 <?php
 // Inicia o output buffering para evitar problemas de "headers already sent"
 ob_start();
-require_once 'includes/session_bootstrap.php';
-require_once 'includes/db_connect.php';
-require_once 'includes/PDFHelper.php';
+require_once __DIR__ . '/includes/session_bootstrap.php';
+require_once __DIR__ . '/includes/db_connect.php';
+require_once __DIR__ . '/includes/PDFHelper.php';
 
 // Se chamado como include para carregar apenas a função, pula a lógica principal
 if (!defined('PDF_FUNCTION_ONLY')) {

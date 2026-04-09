@@ -1,5 +1,5 @@
 <?php
-require_once 'includes/session_bootstrap.php';
+require_once __DIR__ . '/includes/session_bootstrap.php';
 
 // Verifica se o usuário está logado
 if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
@@ -7,7 +7,7 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
     exit;
 }
 
-require_once 'includes/db_connect.php';
+require_once __DIR__ . '/includes/db_connect.php';
 
 $orcamento_id = $_GET['id'] ?? null;
 $orcamento = null;
@@ -62,7 +62,7 @@ if ($orcamento_id) {
 
 $conn->close();
 
-include_once 'includes/header.php';
+include_once __DIR__ . '/includes/header.php';
 ?>
 
 <h2 class="mb-4"><i class="fas fa-file-invoice me-2"></i> Detalhes do Orçamento #<?php echo htmlspecialchars($orcamento_id); ?></h2>
@@ -179,4 +179,4 @@ include_once 'includes/header.php';
 
 <?php endif; ?>
 
-<?php include_once 'includes/footer.php'; ?>
+<?php include_once __DIR__ . '/includes/footer.php'; ?>

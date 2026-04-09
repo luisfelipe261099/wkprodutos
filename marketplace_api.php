@@ -1,6 +1,6 @@
 <?php
 header('Content-Type: application/json');
-require_once 'includes/db_connect.php';
+require_once __DIR__ . '/includes/db_connect.php';
 
 // Receber dados JSON
 $input = json_decode(file_get_contents('php://input'), true);

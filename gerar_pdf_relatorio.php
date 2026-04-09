@@ -6,7 +6,7 @@ ob_start();
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
-require_once 'includes/session_bootstrap.php';
+require_once __DIR__ . '/includes/session_bootstrap.php';
 
 // Verifica se o usuário está logado
 if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
@@ -15,8 +15,8 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
     exit;
 }
 
-require_once 'includes/db_connect.php';
-require_once 'includes/PDFHelper.php';
+require_once __DIR__ . '/includes/db_connect.php';
+require_once __DIR__ . '/includes/PDFHelper.php';
 require_once __DIR__ . '/vendor/setasign/fpdf/fpdf.php';
 
 // Buscar os dados do usuário logado

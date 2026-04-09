@@ -1,7 +1,7 @@
 <?php
 // Inicia o output buffering para evitar problemas de "headers already sent"
 ob_start();
-require_once 'includes/session_bootstrap.php';
+require_once __DIR__ . '/includes/session_bootstrap.php';
 
 // ===================================================================================
 // 1. SETUP INICIAL E INCLUSÃO DE BIBLIOTECAS
@@ -23,7 +23,7 @@ use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
 
 require_once 'vendor/autoload.php';
-require_once 'includes/db_connect.php';
+require_once __DIR__ . '/includes/db_connect.php';
 
 // ===================================================================================
 // 2. DEFINIÇÃO DE FUNÇÕES AUXILIARES
@@ -369,7 +369,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['action']) && $_GET['act
         $mail = new PHPMailer(true);
         try {
             // Carrega configurações do SMTP do arquivo de configuração
-            $email_config = include 'includes/email_config.php';
+            $email_config = include __DIR__ . '/includes/email_config.php';
 
             // Configurações do servidor SMTP
             $mail->isSMTP();
@@ -540,7 +540,7 @@ if ($result_all_orcamentos_stats) {
 // 5. RENDERIZAÇÃO DA PÁGINA HTML
 // ===================================================================================
 
-include_once 'includes/header.php';
+include_once __DIR__ . '/includes/header.php';
 ?>
 
 <div class="page-header fade-in-up">
@@ -868,7 +868,7 @@ if (isset($erro_conversao)) {
 </div>
 
 <?php
-include_once 'includes/footer.php';
+include_once __DIR__ . '/includes/footer.php';
 if (ob_get_length()) ob_end_flush(); // Libera o buffer de saída
 ?>
 

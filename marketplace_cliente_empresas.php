@@ -1,5 +1,5 @@
 <?php
-require_once 'includes/session_bootstrap.php';
+require_once __DIR__ . '/includes/session_bootstrap.php';
 
 // Verifica se o usuário está logado
 if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
@@ -7,7 +7,7 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
     exit;
 }
 
-require_once 'includes/db_connect.php';
+require_once __DIR__ . '/includes/db_connect.php';
 
 $message = '';
 $message_type = '';
@@ -70,7 +70,7 @@ $result_clientes = $conn->query($sql_clientes);
 $sql_empresas = "SELECT id, nome_empresa FROM empresas_representadas ORDER BY nome_empresa ASC";
 $result_empresas = $conn->query($sql_empresas);
 
-include_once 'includes/header.php';
+include_once __DIR__ . '/includes/header.php';
 ?>
 
 <div class="page-header fade-in-up">
@@ -222,7 +222,7 @@ include_once 'includes/header.php';
 
 <?php
 $conn->close();
-include_once 'includes/footer.php';
+include_once __DIR__ . '/includes/footer.php';
 ?>
 
 <script src="js/search-utils.js"></script>

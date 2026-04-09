@@ -1,6 +1,6 @@
 <?php
 // Inicia a sessão. É o primeiro passo para gerenciar o login do usuário.
-require_once 'includes/session_bootstrap.php';
+require_once __DIR__ . '/includes/session_bootstrap.php';
 
 // Verifica se o usuário está logado. Se não estiver, redireciona para a página de login (index.php).
 if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
@@ -9,10 +9,10 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
 }
 
 // Inclui o arquivo de conexão com o banco de dados.
-require_once 'includes/db_connect.php';
+require_once __DIR__ . '/includes/db_connect.php';
 
 // ✅ Verificar encoding de produtos - Alerta automático se houver problema
-require_once 'includes/encoding_helper.php';
+require_once __DIR__ . '/includes/encoding_helper.php';
 checkAndAlertEncoding($conn);
 
 // --- Lógica para buscar dados dinâmicos para o Dashboard ---
@@ -134,7 +134,7 @@ if ($result = $conn->query($sql_produtos_estoque_baixo)) {
 $conn->close();
 
 // Inclui o cabeçalho da página
-include_once 'includes/header.php';
+include_once __DIR__ . '/includes/header.php';
 ?>
 
 <div class="page-header fade-in-up">
@@ -485,4 +485,4 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 </script>
 
-<?php include_once 'includes/footer.php'; ?>
+<?php include_once __DIR__ . '/includes/footer.php'; ?>

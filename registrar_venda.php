@@ -1,5 +1,5 @@
 <?php
-require_once 'includes/session_bootstrap.php';
+require_once __DIR__ . '/includes/session_bootstrap.php';
 
 // Verifica se o usuário está logado
 if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
@@ -7,7 +7,7 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
     exit;
 }
 
-require_once 'includes/db_connect.php';
+require_once __DIR__ . '/includes/db_connect.php';
 
 function getNextTableId($conn, $tableName) {
     if (!preg_match('/^[a-zA-Z0-9_]+$/', $tableName)) {
@@ -212,7 +212,7 @@ $produtos_options = $conn->query("SELECT id, nome, sku, preco_venda, quantidade_
 // Fecha a conexão com o banco de dados APÓS todas as operações de leitura
 $conn->close();
 
-include_once 'includes/header.php';
+include_once __DIR__ . '/includes/header.php';
 ?>
 
 <!-- Select2 CSS -->
@@ -398,7 +398,7 @@ include_once 'includes/header.php';
     </div>
 </div>
 
-<?php include_once 'includes/footer.php'; ?>
+<?php include_once __DIR__ . '/includes/footer.php'; ?>
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {

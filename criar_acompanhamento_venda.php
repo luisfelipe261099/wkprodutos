@@ -1,6 +1,6 @@
 <?php
-require_once 'includes/session_bootstrap.php';
-require_once 'includes/db_connect.php';
+require_once __DIR__ . '/includes/session_bootstrap.php';
+require_once __DIR__ . '/includes/db_connect.php';
 
 // Verifica se o usuário está logado
 if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
@@ -54,7 +54,7 @@ $sql_vendas = "SELECT v.id, v.data_venda, c.id as cliente_id, c.nome as nome_cli
                ORDER BY v.data_venda DESC";
 $vendas_para_acompanhar = $conn->query($sql_vendas);
 
-include_once 'includes/header.php';
+include_once __DIR__ . '/includes/header.php';
 ?>
 
 <div class="page-header fade-in-up">
@@ -150,7 +150,7 @@ include_once 'includes/header.php';
 
 <?php
 $conn->close();
-include_once 'includes/footer.php';
+include_once __DIR__ . '/includes/footer.php';
 ?>
 
 <script>

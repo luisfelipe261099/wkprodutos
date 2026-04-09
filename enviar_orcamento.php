@@ -1,7 +1,7 @@
 <?php
 // Inicia o output buffering e a sessão
 ob_start();
-require_once 'includes/session_bootstrap.php';
+require_once __DIR__ . '/includes/session_bootstrap.php';
 
 // Habilita a exibição de erros para facilitar a depuração.
 ini_set('display_errors', 1);
@@ -9,7 +9,7 @@ error_reporting(E_ALL);
 
 // Dependências
 require 'vendor/autoload.php';
-require_once 'includes/db_connect.php';
+require_once __DIR__ . '/includes/db_connect.php';
 require_once __DIR__ . '/vendor/setasign/fpdf/fpdf.php';
 
 use PHPMailer\PHPMailer\PHPMailer;

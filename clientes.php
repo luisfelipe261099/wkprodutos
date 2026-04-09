@@ -1,5 +1,5 @@
 <?php
-require_once 'includes/session_bootstrap.php';
+require_once __DIR__ . '/includes/session_bootstrap.php';
 
 // Verifica se o usuário está logado
 if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
@@ -7,7 +7,7 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
     exit;
 }
 
-require_once 'includes/db_connect.php';
+require_once __DIR__ . '/includes/db_connect.php';
 
 $message = '';
 $message_type = '';
@@ -88,7 +88,7 @@ if ($result_clientes) {
 
 // $conn->close(); // Fechamento do banco movido para o final do script
 
-include_once 'includes/header.php';
+include_once __DIR__ . '/includes/header.php';
 ?>
 
 <style>
@@ -476,4 +476,4 @@ document.addEventListener('DOMContentLoaded', function() {
 
 <?php 
 $conn->close(); // Fechar conexão aqui
-include_once 'includes/footer.php'; ?>
+include_once __DIR__ . '/includes/footer.php'; ?>

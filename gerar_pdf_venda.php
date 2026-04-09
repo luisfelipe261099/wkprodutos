@@ -1,5 +1,5 @@
 <?php
-require_once 'includes/session_bootstrap.php';
+require_once __DIR__ . '/includes/session_bootstrap.php';
 
 // Verifica se o usuário está logado
 if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
@@ -7,8 +7,8 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
     exit;
 }
 
-require_once 'includes/db_connect.php';
-require_once 'includes/PDFHelper.php';
+require_once __DIR__ . '/includes/db_connect.php';
+require_once __DIR__ . '/includes/PDFHelper.php';
 
 // Verificar se o ID da venda foi fornecido
 if (!isset($_GET['id']) || !is_numeric($_GET['id'])) {

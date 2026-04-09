@@ -1,5 +1,5 @@
 <?php
-require_once 'includes/session_bootstrap.php';
+require_once __DIR__ . '/includes/session_bootstrap.php';
 
 // Verifica se o usuário está logado
 if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
@@ -16,7 +16,7 @@ header("Expires: 0");
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
-require_once 'includes/db_connect.php';
+require_once __DIR__ . '/includes/db_connect.php';
 
 /**
  * Função auxiliar para gerar o próximo ID da tabela de orçamentos
@@ -389,7 +389,7 @@ if (!empty($orcamento_id_get) && empty($message)) {
     }
 }
 
-include_once 'includes/header.php';
+include_once __DIR__ . '/includes/header.php';
 ?>
 
 <style>
@@ -1285,6 +1285,6 @@ if (tipoFaturamentoSelect && tipoFaturamentoMobileSelect) {
 }
 </script>
 
-<?php include_once 'includes/footer.php'; ?>
+<?php include_once __DIR__ . '/includes/footer.php'; ?>
 
 
