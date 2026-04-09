@@ -4,7 +4,7 @@ use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\SMTP;
 use PHPMailer\PHPMailer\Exception;
 
-require 'vendor/autoload.php'; // Certifique-se de ter o PHPMailer instalado via Composer
+require __DIR__ . '/vendor/autoload.php'; // Certifique-se de ter o PHPMailer instalado via Composer
 
 // Adicionar log para depuração
 function logMessage($message) {
