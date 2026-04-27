@@ -26,8 +26,65 @@ require_once __DIR__ . '/includes/db_connect.php';
 //echo "DEBUG: vendas.php - Depois de db_connect.php<br>";
 //flush();
 
+function getNextTableId($conn, $tableName) {
+    if (!preg_match('/^[a-zA-Z0-9_]+$/', $tableName)) {
+        throw new Exception('Nome de tabela invalido para geracao de ID.');
+    }
+
+    $result = $conn->query("SELECT IFNULL(MAX(id), 0) + 1 AS next_id FROM {$tableName}");
+    if (!$result) {
+        throw new Exception("Erro ao buscar proximo ID para {$tableName}: " . $conn->error);
+    }
+
+    $row = $result->fetch_assoc();
+    return (int)$row['next_id'];
+}
+
+function columnExists(mysqli $conn, string $table, string $column): bool {
+    if (!preg_match('/^[a-zA-Z0-9_]+$/', $table) || !preg_match('/^[a-zA-Z0-9_]+$/', $column)) {
+        return false;
+    }
+
+    $sql = "SELECT 1 FROM information_schema.COLUMNS
+            WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = ? AND COLUMN_NAME = ?
+            LIMIT 1";
+    $stmt = $conn->prepare($sql);
+    if (!$stmt) {
+        return false;
+    }
+
+    $stmt->bind_param('ss', $table, $column);
+    $stmt->execute();
+    $exists = $stmt->get_result()->num_rows > 0;
+    $stmt->close();
+    return $exists;
+}
+
+function normalizarFormaPagamentoOrcamento(string $formaPagamentoVenda): string {
+    $normalizado = strtolower(str_replace([' ', '-', '_'], '', trim($formaPagamentoVenda)));
+
+    if (strpos($normalizado, 'pix') !== false) {
+        return 'pix';
+    }
+    if (strpos($normalizado, 'debito') !== false) {
+        return 'debito';
+    }
+    if (strpos($normalizado, 'credito') !== false) {
+        return 'credito';
+    }
+    if (strpos($normalizado, 'dinheiro') !== false) {
+        return 'dinheiro';
+    }
+    if (strpos($normalizado, 'boleto') !== false) {
+        return 'boleto';
+    }
+
+    return 'faturamento';
+}
+
 $message = '';
 $message_type = '';
+$has_prazo_pagamento_column = columnExists($conn, 'vendas', 'prazo_pagamento');
 
 // Verificar se há mensagem de sucesso de conversão de orçamento
 if (isset($_GET['success']) && $_GET['success'] === 'orcamento_convertido') {
@@ -168,6 +225,104 @@ if (isset($_POST['action']) && $_POST['action'] == 'change_status') {
     //echo "DEBUG: vendas.php - Saiu de AÇÃO: MUDAR STATUS DA VENDA<br>";
     //flush();
 }
+
+    // AÇÃO: VOLTAR VENDA PARA ORÇAMENTO (GET)
+    if (isset($_GET['action']) && $_GET['action'] == 'return_to_orcamento' && isset($_GET['id'])) {
+        $venda_id_to_convert = intval($_GET['id']);
+
+        if ($venda_id_to_convert <= 0) {
+            $message = "Erro ao voltar venda para orçamento: ID inválido.";
+            $message_type = "danger";
+        } else {
+            $conn->begin_transaction();
+            try {
+                $sql_venda = $has_prazo_pagamento_column
+                    ? "SELECT id, cliente_id, valor_total, forma_pagamento, status_venda, prazo_pagamento FROM vendas WHERE id = ?"
+                    : "SELECT id, cliente_id, valor_total, forma_pagamento, status_venda FROM vendas WHERE id = ?";
+
+                $stmt_venda = $conn->prepare($sql_venda);
+                $stmt_venda->bind_param("i", $venda_id_to_convert);
+                $stmt_venda->execute();
+                $venda = $stmt_venda->get_result()->fetch_assoc();
+                $stmt_venda->close();
+
+                if (!$venda) {
+                    throw new Exception("Venda não encontrada para conversão.");
+                }
+
+                $stmt_itens = $conn->prepare("SELECT produto_id, quantidade, preco_unitario FROM itens_venda WHERE venda_id = ?");
+                $stmt_itens->bind_param("i", $venda_id_to_convert);
+                $stmt_itens->execute();
+                $itens = $stmt_itens->get_result()->fetch_all(MYSQLI_ASSOC);
+                $stmt_itens->close();
+
+                if (empty($itens)) {
+                    throw new Exception("A venda não possui itens para gerar orçamento.");
+                }
+
+                if (($venda['status_venda'] ?? '') !== 'cancelada') {
+                    foreach ($itens as $item) {
+                        $stmt_stock = $conn->prepare("UPDATE produtos SET quantidade_estoque = quantidade_estoque + ? WHERE id = ?");
+                        $qty = (int)$item['quantidade'];
+                        $produto_id = (int)$item['produto_id'];
+                        $stmt_stock->bind_param("ii", $qty, $produto_id);
+                        if (!$stmt_stock->execute()) {
+                            throw new Exception("Erro ao devolver estoque do produto ID {$produto_id}: " . $stmt_stock->error);
+                        }
+                        $stmt_stock->close();
+                    }
+                }
+
+                $stmt_cancel = $conn->prepare("UPDATE vendas SET status_venda = 'cancelada' WHERE id = ?");
+                $stmt_cancel->bind_param("i", $venda_id_to_convert);
+                $stmt_cancel->execute();
+                $stmt_cancel->close();
+
+                $stmt_trans = $conn->prepare("DELETE FROM transacoes_financeiras WHERE referencia_id = ? AND tabela_referencia = 'vendas'");
+                $stmt_trans->bind_param("i", $venda_id_to_convert);
+                $stmt_trans->execute();
+                $stmt_trans->close();
+
+                $novo_orcamento_id = getNextTableId($conn, 'orcamentos');
+                $novo_item_orcamento_id = getNextTableId($conn, 'itens_orcamento');
+
+                $forma_pagamento_orc = normalizarFormaPagamentoOrcamento((string)($venda['forma_pagamento'] ?? 'faturamento'));
+                $prazo_origem = $has_prazo_pagamento_column ? trim((string)($venda['prazo_pagamento'] ?? '')) : '';
+                $observacao = "Gerado a partir da venda #{$venda_id_to_convert}.";
+                if ($prazo_origem !== '') {
+                    $observacao .= " Prazo original: {$prazo_origem}.";
+                }
+
+                $stmt_orc = $conn->prepare("INSERT INTO orcamentos (id, cliente_id, valor_total, status_orcamento, observacoes, forma_pagamento, tipo_faturamento, data_orcamento, data_criacao) VALUES (?, ?, ?, 'pendente', ?, ?, 'avista', NOW(), CURDATE())");
+                $stmt_orc->bind_param("iidss", $novo_orcamento_id, $venda['cliente_id'], $venda['valor_total'], $observacao, $forma_pagamento_orc);
+                if (!$stmt_orc->execute()) {
+                    throw new Exception("Erro ao criar orçamento da venda: " . $stmt_orc->error);
+                }
+                $stmt_orc->close();
+
+                $stmt_item_orc = $conn->prepare("INSERT INTO itens_orcamento (id, orcamento_id, produto_id, quantidade, preco_unitario) VALUES (?, ?, ?, ?, ?)");
+                foreach ($itens as $item) {
+                    $current_item_id = $novo_item_orcamento_id++;
+                    $produto_id = (int)$item['produto_id'];
+                    $quantidade = (int)$item['quantidade'];
+                    $preco_unitario = (float)$item['preco_unitario'];
+                    $stmt_item_orc->bind_param("iiiid", $current_item_id, $novo_orcamento_id, $produto_id, $quantidade, $preco_unitario);
+                    if (!$stmt_item_orc->execute()) {
+                        throw new Exception("Erro ao inserir item no orçamento: " . $stmt_item_orc->error);
+                    }
+                }
+                $stmt_item_orc->close();
+
+                $conn->commit();
+                $message = "Venda #{$venda_id_to_convert} voltou para orçamento com sucesso (Orçamento #{$novo_orcamento_id}).";
+                $message_type = "success";
+            } catch (Exception $e) {
+                $conn->rollback();
+                $message = "Erro ao voltar venda para orçamento: " . $e->getMessage();
+                $message_type = "danger";
+            }
+        }
+    }
 
 // AÇÃO: EXCLUIR VENDA (GET)
 if (isset($_GET['action']) && $_GET['action'] == 'delete' && isset($_GET['id'])) {
@@ -392,6 +547,7 @@ include_once __DIR__ . '/includes/header.php';
                                         <button type="button" class="btn btn-sm btn-outline-primary me-1" data-bs-toggle="modal" data-bs-target="#changeStatusModal" data-venda-id="<?php echo $venda['id']; ?>" data-current-status="<?php echo $venda['status_venda']; ?>" title="Mudar Status">
                                             <i class="fas fa-exchange-alt"></i>
                                         </button>
+                                        <a href="vendas.php?action=return_to_orcamento&id=<?php echo $venda['id']; ?>" class="btn btn-sm btn-outline-warning me-1" title="Voltar para Orçamento" onclick="return confirm('Deseja voltar esta venda para orçamento? A venda será cancelada, o estoque será devolvido e um novo orçamento será criado.');"><i class="fas fa-undo"></i></a>
                                         <a href="agendar_entrega.php?venda_id=<?php echo $venda['id']; ?>" class="btn btn-sm btn-outline-secondary me-1" title="Agendar Entrega"><i class="fas fa-truck"></i></a>
                                         <a href="gerar_pdf_venda.php?id=<?php echo $venda['id']; ?>" class="btn btn-sm btn-outline-success me-1" title="Gerar PDF" target="_blank"><i class="fas fa-file-pdf"></i></a>
                                         <a href="vendas.php?action=delete&id=<?php echo $venda['id']; ?>" class="btn btn-sm btn-outline-danger" title="Excluir Venda" onclick="return confirm('Tem certeza que deseja excluir esta venda? Esta ação também reverterá o estoque e excluirá transações financeiras e agendamentos associados.');"><i class="fas fa-trash-alt"></i></a>
@@ -463,6 +619,9 @@ include_once __DIR__ . '/includes/header.php';
                             <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#changeStatusModal" data-venda-id="<?php echo $venda['id']; ?>" data-current-status="<?php echo $venda['status_venda']; ?>" title="Mudar Status">
                                 <i class="fas fa-exchange-alt me-1"></i> Status
                             </button>
+                            <a href="vendas.php?action=return_to_orcamento&id=<?php echo $venda['id']; ?>" class="btn btn-sm btn-outline-warning" title="Voltar para Orçamento" onclick="return confirm('Deseja voltar esta venda para orçamento? A venda será cancelada, o estoque será devolvido e um novo orçamento será criado.');">
+                                <i class="fas fa-undo me-1"></i> Orçamento
+                            </a>
                             <a href="agendar_entrega.php?venda_id=<?php echo $venda['id']; ?>" class="btn btn-sm btn-outline-secondary" title="Agendar Entrega">
                                 <i class="fas fa-truck me-1"></i> Entrega
                             </a>

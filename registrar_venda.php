@@ -23,13 +23,128 @@ function getNextTableId($conn, $tableName) {
     return (int)$row['next_id'];
 }
 
+function aggregateItemQuantities(array $items): array {
+    $quantities = [];
+    foreach ($items as $item) {
+        $produtoId = (int)($item['id'] ?? 0);
+        $quantidade = (int)($item['quantidade'] ?? 0);
+
+        if ($produtoId <= 0 || $quantidade <= 0) {
+            continue;
+        }
+
+        if (!isset($quantities[$produtoId])) {
+            $quantities[$produtoId] = 0;
+        }
+        $quantities[$produtoId] += $quantidade;
+    }
+
+    return $quantities;
+}
+
+function getIntegerColumnBounds(mysqli $conn, string $table, string $column): array {
+    static $cache = [];
+    $cache_key = $table . '.' . $column;
+    if (isset($cache[$cache_key])) {
+        return $cache[$cache_key];
+    }
+
+    if (!preg_match('/^[a-zA-Z0-9_]+$/', $table) || !preg_match('/^[a-zA-Z0-9_]+$/', $column)) {
+        throw new Exception('Tabela ou coluna inválida para leitura de limites.');
+    }
+
+    $sql = "SELECT COLUMN_TYPE, DATA_TYPE FROM information_schema.COLUMNS
+            WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = ? AND COLUMN_NAME = ?";
+    $stmt = $conn->prepare($sql);
+    if (!$stmt) {
+        throw new Exception('Erro ao preparar leitura dos limites da coluna: ' . $conn->error);
+    }
+
+    $stmt->bind_param('ss', $table, $column);
+    if (!$stmt->execute()) {
+        $err = $stmt->error;
+        $stmt->close();
+        throw new Exception('Erro ao ler metadados da coluna: ' . $err);
+    }
+
+    $meta = $stmt->get_result()->fetch_assoc();
+    $stmt->close();
+
+    if (!$meta) {
+        throw new Exception("Não foi possível localizar metadados de {$table}.{$column}.");
+    }
+
+    $data_type = strtolower((string)$meta['DATA_TYPE']);
+    $column_type = strtolower((string)$meta['COLUMN_TYPE']);
+
+    $bits_map = [
+        'tinyint' => 8,
+        'smallint' => 16,
+        'mediumint' => 24,
+        'int' => 32,
+        'integer' => 32,
+        'bigint' => 64
+    ];
+
+    if (!isset($bits_map[$data_type])) {
+        throw new Exception("Tipo de coluna não suportado para validação de limites: {$data_type}.");
+    }
+
+    $is_unsigned = strpos($column_type, 'unsigned') !== false;
+    $bits = $bits_map[$data_type];
+
+    if ($bits >= 63) {
+        $max = PHP_INT_MAX;
+        $min = $is_unsigned ? 0 : PHP_INT_MIN;
+    } else {
+        if ($is_unsigned) {
+            $min = 0;
+            $max = (2 ** $bits) - 1;
+        } else {
+            $max = (2 ** ($bits - 1)) - 1;
+            $min = -1 * (2 ** ($bits - 1));
+        }
+    }
+
+    $cache[$cache_key] = ['min' => (int)$min, 'max' => (int)$max, 'unsigned' => $is_unsigned];
+    return $cache[$cache_key];
+}
+
+function columnExists(mysqli $conn, string $table, string $column): bool {
+    if (!preg_match('/^[a-zA-Z0-9_]+$/', $table) || !preg_match('/^[a-zA-Z0-9_]+$/', $column)) {
+        return false;
+    }
+
+    $sql = "SELECT 1 FROM information_schema.COLUMNS
+            WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = ? AND COLUMN_NAME = ?
+            LIMIT 1";
+    $stmt = $conn->prepare($sql);
+    if (!$stmt) {
+        return false;
+    }
+
+    $stmt->bind_param('ss', $table, $column);
+    $stmt->execute();
+    $exists = $stmt->get_result()->num_rows > 0;
+    $stmt->close();
+    return $exists;
+}
+
+function normalizePrazoPagamento(string $prazo): string {
+    $validos = ['20/28/35/42', '20/28/35', '28/35', '15/30'];
+    return in_array($prazo, $validos, true) ? $prazo : '';
+}
+
 $venda_id = $cliente_id = $data_venda = $valor_total = $forma_pagamento = $status_venda = "";
+$prazo_pagamento = "";
 $from_orcamento_id = '';
 $title = "Registrar Nova Venda";
 $submit_button_text = "Registrar Venda";
 $message = '';
 $message_type = '';
 $itens_da_venda = [];
+
+$has_prazo_pagamento_column = columnExists($conn, 'vendas', 'prazo_pagamento');
 
 // --- LÓGICA DE PROCESSAMENTO DO FORMULÁRIO (POST) ---
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
@@ -38,9 +153,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $from_orcamento_id = $from_orcamento_id_posted > 0 ? $from_orcamento_id_posted : '';
     $cliente_id = trim($_POST["cliente_id"]);
     $forma_pagamento = trim($_POST["forma_pagamento"]);
+    $prazo_pagamento = normalizePrazoPagamento(trim($_POST["prazo_pagamento"] ?? ''));
     $status_venda = trim($_POST["status_venda"]);
     $itens_selecionados_json = $_POST["itens_selecionados_json"] ?? '[]';
     $itens_da_venda_post = json_decode($itens_selecionados_json, true);
+    if (!is_array($itens_da_venda_post)) {
+        $itens_da_venda_post = [];
+    }
 
     $calculated_valor_total = 0;
     foreach ($itens_da_venda_post as $item) {
@@ -57,48 +176,75 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $is_new_sale = empty($venda_id_posted);
             $current_venda_id = $venda_id_posted;
 
+            $old_items_quantities = [];
+
             if ($is_new_sale) {
                 // Gerar ID manualmente (compatível com TiDB Cloud sem AUTO_INCREMENT)
                 $current_venda_id = getNextTableId($conn, 'vendas');
 
-                $sql = "INSERT INTO vendas (id, cliente_id, valor_total, forma_pagamento, status_venda) VALUES (?, ?, ?, ?, ?)";
+                if ($has_prazo_pagamento_column) {
+                    $sql = "INSERT INTO vendas (id, cliente_id, valor_total, forma_pagamento, prazo_pagamento, status_venda) VALUES (?, ?, ?, ?, ?, ?)";
+                } else {
+                    $sql = "INSERT INTO vendas (id, cliente_id, valor_total, forma_pagamento, status_venda) VALUES (?, ?, ?, ?, ?)";
+                }
                 $stmt = $conn->prepare($sql);
-                $stmt->bind_param("iidss", $current_venda_id, $cliente_id, $valor_total, $forma_pagamento, $status_venda);
+                if ($has_prazo_pagamento_column) {
+                    $prazo_param = $prazo_pagamento !== '' ? $prazo_pagamento : null;
+                    $stmt->bind_param("iidsss", $current_venda_id, $cliente_id, $valor_total, $forma_pagamento, $prazo_param, $status_venda);
+                } else {
+                    $stmt->bind_param("iidss", $current_venda_id, $cliente_id, $valor_total, $forma_pagamento, $status_venda);
+                }
                 if (!$stmt->execute()) throw new Exception("Erro ao registrar venda: " . $stmt->error);
                 $stmt->close();
             } else {
-                // Lógica para reverter estoque ao editar
+                // Captura quantidades antigas para ajustar apenas o delta de estoque.
                 $sql_old_items = "SELECT produto_id, quantidade FROM itens_venda WHERE venda_id = ?";
                 $stmt_old_items = $conn->prepare($sql_old_items);
                 $stmt_old_items->bind_param("i", $current_venda_id);
                 $stmt_old_items->execute();
                 $result_old_items = $stmt_old_items->get_result();
                 while ($old_item = $result_old_items->fetch_assoc()) {
-                    $conn->query("UPDATE produtos SET quantidade_estoque = quantidade_estoque + {$old_item['quantidade']} WHERE id = {$old_item['produto_id']}");
+                    $old_produto_id = (int)$old_item['produto_id'];
+                    $old_quantidade = (int)$old_item['quantidade'];
+                    if (!isset($old_items_quantities[$old_produto_id])) {
+                        $old_items_quantities[$old_produto_id] = 0;
+                    }
+                    $old_items_quantities[$old_produto_id] += $old_quantidade;
                 }
                 $stmt_old_items->close();
-                
-                $conn->query("DELETE FROM itens_venda WHERE venda_id = {$current_venda_id}");
 
-                $sql = "UPDATE vendas SET cliente_id = ?, valor_total = ?, forma_pagamento = ?, status_venda = ? WHERE id = ?";
+                if ($has_prazo_pagamento_column) {
+                    $sql = "UPDATE vendas SET cliente_id = ?, valor_total = ?, forma_pagamento = ?, prazo_pagamento = ?, status_venda = ? WHERE id = ?";
+                } else {
+                    $sql = "UPDATE vendas SET cliente_id = ?, valor_total = ?, forma_pagamento = ?, status_venda = ? WHERE id = ?";
+                }
                 $stmt = $conn->prepare($sql);
-                $stmt->bind_param("idssi", $cliente_id, $valor_total, $forma_pagamento, $status_venda, $current_venda_id);
+                if ($has_prazo_pagamento_column) {
+                    $prazo_param = $prazo_pagamento !== '' ? $prazo_pagamento : null;
+                    $stmt->bind_param("idsssi", $cliente_id, $valor_total, $forma_pagamento, $prazo_param, $status_venda, $current_venda_id);
+                } else {
+                    $stmt->bind_param("idssi", $cliente_id, $valor_total, $forma_pagamento, $status_venda, $current_venda_id);
+                }
                 if (!$stmt->execute()) throw new Exception("Erro ao atualizar venda: " . $stmt->error);
                 $stmt->close();
             }
 
+            $stmt_delete_items = $conn->prepare("DELETE FROM itens_venda WHERE venda_id = ?");
+            $stmt_delete_items->bind_param("i", $current_venda_id);
+            if (!$stmt_delete_items->execute()) throw new Exception("Erro ao limpar itens da venda: " . $stmt_delete_items->error);
+            $stmt_delete_items->close();
+
             $next_item_venda_id = getNextTableId($conn, 'itens_venda');
+            $new_items_quantities = aggregateItemQuantities($itens_da_venda_post);
 
             foreach ($itens_da_venda_post as $item) {
-                $produto_id = $item['id'];
-                $quantidade = $item['quantidade'];
-                $preco_unitario = $item['preco_unitario'];
+                $produto_id = (int)($item['id'] ?? 0);
+                $quantidade = (int)($item['quantidade'] ?? 0);
+                $preco_unitario = (float)($item['preco_unitario'] ?? 0);
                 $current_item_venda_id = $next_item_venda_id++;
 
-                // Verifica estoque antes de inserir o item e dar baixa
-                $stock_row = $conn->query("SELECT quantidade_estoque FROM produtos WHERE id = {$produto_id}")->fetch_assoc();
-                if ($stock_row['quantidade_estoque'] < $quantidade) {
-                    throw new Exception("Estoque insuficiente para o produto ID {$produto_id}. Disponível: {$stock_row['quantidade_estoque']}");
+                if ($produto_id <= 0 || $quantidade <= 0 || $preco_unitario < 0) {
+                    throw new Exception("Item da venda inválido informado no formulário.");
                 }
 
                 $sql_item = "INSERT INTO itens_venda (id, venda_id, produto_id, quantidade, preco_unitario) VALUES (?, ?, ?, ?, ?)";
@@ -106,8 +252,68 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 $stmt_item->bind_param("iiiid", $current_item_venda_id, $current_venda_id, $produto_id, $quantidade, $preco_unitario);
                 if (!$stmt_item->execute()) throw new Exception("Erro ao inserir item da venda: " . $stmt_item->error);
                 $stmt_item->close();
+            }
 
-                $conn->query("UPDATE produtos SET quantidade_estoque = quantidade_estoque - {$quantidade} WHERE id = {$produto_id}");
+            $stock_bounds = getIntegerColumnBounds($conn, 'produtos', 'quantidade_estoque');
+            $stock_min = (int)$stock_bounds['min'];
+            $stock_max = (int)$stock_bounds['max'];
+
+            $produto_ids = array_unique(array_merge(array_keys($old_items_quantities), array_keys($new_items_quantities)));
+            sort($produto_ids);
+
+            foreach ($produto_ids as $produto_id) {
+                $old_qty = (int)($old_items_quantities[$produto_id] ?? 0);
+                $new_qty = (int)($new_items_quantities[$produto_id] ?? 0);
+                $delta_qty = $new_qty - $old_qty;
+
+                if ($delta_qty > 0) {
+                    $stmt_stock = $conn->prepare("SELECT quantidade_estoque FROM produtos WHERE id = ?");
+                    $stmt_stock->bind_param("i", $produto_id);
+                    $stmt_stock->execute();
+                    $stock_result = $stmt_stock->get_result()->fetch_assoc();
+                    $stmt_stock->close();
+
+                    if (!$stock_result) {
+                        throw new Exception("Produto ID {$produto_id} não encontrado para ajuste de estoque.");
+                    }
+
+                    $estoque_atual = (int)$stock_result['quantidade_estoque'];
+                    if ($estoque_atual < $delta_qty) {
+                        throw new Exception("Estoque insuficiente para o produto ID {$produto_id}. Disponível: {$estoque_atual}");
+                    }
+
+                    $novo_estoque = $estoque_atual - $delta_qty;
+                    if ($novo_estoque < $stock_min || $novo_estoque > $stock_max) {
+                        throw new Exception("Ajuste de estoque inválido para o produto ID {$produto_id}. Limite permitido: {$stock_min} a {$stock_max}.");
+                    }
+
+                    $stmt_update_stock = $conn->prepare("UPDATE produtos SET quantidade_estoque = quantidade_estoque - ? WHERE id = ?");
+                    $stmt_update_stock->bind_param("ii", $delta_qty, $produto_id);
+                    if (!$stmt_update_stock->execute()) throw new Exception("Erro ao baixar estoque do produto ID {$produto_id}: " . $stmt_update_stock->error);
+                    $stmt_update_stock->close();
+                } elseif ($delta_qty < 0) {
+                    $increase_qty = abs($delta_qty);
+                    $stmt_stock = $conn->prepare("SELECT quantidade_estoque FROM produtos WHERE id = ?");
+                    $stmt_stock->bind_param("i", $produto_id);
+                    $stmt_stock->execute();
+                    $stock_result = $stmt_stock->get_result()->fetch_assoc();
+                    $stmt_stock->close();
+
+                    if (!$stock_result) {
+                        throw new Exception("Produto ID {$produto_id} não encontrado para ajuste de estoque.");
+                    }
+
+                    $estoque_atual = (int)$stock_result['quantidade_estoque'];
+                    $novo_estoque = $estoque_atual + $increase_qty;
+                    if ($novo_estoque < $stock_min || $novo_estoque > $stock_max) {
+                        throw new Exception("Ajuste de estoque inválido para o produto ID {$produto_id}. Limite permitido: {$stock_min} a {$stock_max}.");
+                    }
+
+                    $stmt_update_stock = $conn->prepare("UPDATE produtos SET quantidade_estoque = quantidade_estoque + ? WHERE id = ?");
+                    $stmt_update_stock->bind_param("ii", $increase_qty, $produto_id);
+                    if (!$stmt_update_stock->execute()) throw new Exception("Erro ao devolver estoque do produto ID {$produto_id}: " . $stmt_update_stock->error);
+                    $stmt_update_stock->close();
+                }
             }
 
             if ($status_venda == 'concluida') {
@@ -155,7 +361,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $title = "Editar Venda #" . htmlspecialchars($venda_id);
         $submit_button_text = "Atualizar Venda";
         
-        $sql_venda = "SELECT id, cliente_id, valor_total, forma_pagamento, status_venda FROM vendas WHERE id = ?";
+        $sql_venda = $has_prazo_pagamento_column
+            ? "SELECT id, cliente_id, valor_total, forma_pagamento, prazo_pagamento, status_venda FROM vendas WHERE id = ?"
+            : "SELECT id, cliente_id, valor_total, forma_pagamento, status_venda FROM vendas WHERE id = ?";
         $stmt_venda = $conn->prepare($sql_venda);
         $stmt_venda->bind_param("i", $venda_id);
         $stmt_venda->execute();
@@ -163,6 +371,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         if ($row_venda) {
             $cliente_id = $row_venda['cliente_id'];
             $forma_pagamento = $row_venda['forma_pagamento'];
+            $prazo_pagamento = $has_prazo_pagamento_column ? normalizePrazoPagamento((string)($row_venda['prazo_pagamento'] ?? '')) : '';
             $status_venda = $row_venda['status_venda'];
         }
         
@@ -300,6 +509,16 @@ include_once __DIR__ . '/includes/header.php';
                         <option value="Boleto" <?php echo ($forma_pagamento == 'Boleto' ? 'selected' : ''); ?>>Boleto</option>
                         <option value="Dinheiro" <?php echo ($forma_pagamento == 'Dinheiro' ? 'selected' : ''); ?>>Dinheiro</option>
                         <option value="Outro" <?php echo ($forma_pagamento == 'Outro' ? 'selected' : ''); ?>>Outro</option>
+                    </select>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <label for="prazo_pagamento" class="form-label">Prazo</label>
+                    <select class="form-select" id="prazo_pagamento" name="prazo_pagamento">
+                        <option value="">Selecione...</option>
+                        <option value="20/28/35/42" <?php echo ($prazo_pagamento === '20/28/35/42' ? 'selected' : ''); ?>>20/28/35/42</option>
+                        <option value="20/28/35" <?php echo ($prazo_pagamento === '20/28/35' ? 'selected' : ''); ?>>20/28/35</option>
+                        <option value="28/35" <?php echo ($prazo_pagamento === '28/35' ? 'selected' : ''); ?>>28/35</option>
+                        <option value="15/30" <?php echo ($prazo_pagamento === '15/30' ? 'selected' : ''); ?>>15/30</option>
                     </select>
                 </div>
                 <div class="col-md-3 mb-3">
