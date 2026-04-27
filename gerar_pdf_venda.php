@@ -112,6 +112,74 @@ function gerarPDFVenda($venda, $itens, $empresas_logos = []) {
     try {
         require_once __DIR__ . '/vendor/setasign/fpdf/fpdf.php';
 
+        $formatFormaPagamento = static function ($forma) {
+            $forma = strtolower(trim((string)$forma));
+            $mapa = [
+                'faturamento' => 'Faturamento',
+                'pix' => 'PIX',
+                'debito' => 'Debito',
+                'credito' => 'Credito',
+                'dinheiro' => 'Dinheiro',
+                'boleto' => 'Boleto'
+            ];
+
+            if ($forma === '') {
+                return 'Nao informado';
+            }
+
+            return $mapa[$forma] ?? ucfirst($forma);
+        };
+
+        $formatPrazoPagamento = static function ($prazo) {
+            $prazo = trim((string)$prazo);
+            if ($prazo === '') {
+                return 'Nao informado';
+            }
+
+            $parcelas = array_values(array_filter(array_map('trim', explode('/', $prazo)), static function ($item) {
+                return $item !== '';
+            }));
+
+            if (empty($parcelas)) {
+                return $prazo;
+            }
+
+            return implode('/', $parcelas) . ' dias';
+        };
+
+        $formatTipoFaturamento = static function ($tipo) {
+            $tipo = strtolower(trim((string)$tipo));
+            $mapa = [
+                'avista' => 'A vista',
+                'faturado_15' => 'Faturado 15 dias',
+                'faturado_20' => 'Faturado 20 dias',
+                'faturado_28' => 'Faturado 28 dias',
+                'faturado_30' => 'Faturado 30 dias',
+                'faturado_35' => 'Faturado 35 dias',
+                'faturado_42' => 'Faturado 42 dias'
+            ];
+
+            if ($tipo === '') {
+                return '';
+            }
+
+            return $mapa[$tipo] ?? ucfirst(str_replace('_', ' ', $tipo));
+        };
+
+        $formatDataVencimento = static function ($data) {
+            $data = trim((string)$data);
+            if ($data === '') {
+                return '';
+            }
+
+            $timestamp = strtotime($data);
+            if ($timestamp === false) {
+                return $data;
+            }
+
+            return date('d/m/Y', $timestamp);
+        };
+
         class VendaPDF extends FPDF {
             private $primaryColor = [28, 79, 140];
             private $accentColor = [13, 110, 253];
@@ -372,9 +440,24 @@ function gerarPDFVenda($venda, $itens, $empresas_logos = []) {
         // Dados da venda
         $data_venda = isset($venda['data_venda']) ? date('d/m/Y H:i', strtotime($venda['data_venda'])) : date('d/m/Y H:i');
         $status = isset($venda['status_venda']) ? ucfirst($venda['status_venda']) : 'Pendente';
+        $forma_pagamento_texto = $formatFormaPagamento($venda['forma_pagamento'] ?? '');
+        $prazo_pagamento_texto = $formatPrazoPagamento($venda['prazo_pagamento'] ?? '');
+
         $sale_details = "Data da Venda: " . $data_venda . "\n";
         $sale_details .= "Status: " . $status . "\n";
-        $sale_details .= "Forma de Pagamento: " . ucfirst($venda['forma_pagamento'] ?? 'Não informado') . "\n";
+        $sale_details .= "Forma de Pagamento: " . $forma_pagamento_texto . "\n";
+        $sale_details .= "Prazo de Pagamento: " . $prazo_pagamento_texto . "\n";
+
+        $tipo_faturamento_texto = $formatTipoFaturamento($venda['tipo_faturamento'] ?? '');
+        if ($tipo_faturamento_texto !== '') {
+            $sale_details .= "Tipo de Faturamento: " . $tipo_faturamento_texto . "\n";
+        }
+
+        $data_vencimento_texto = $formatDataVencimento($venda['data_vencimento'] ?? '');
+        if ($data_vencimento_texto !== '') {
+            $sale_details .= "Vencimento: " . $data_vencimento_texto . "\n";
+        }
+
         $sale_details .= "Responsavel: Equipe de Vendas";
 
         $client_lines = max(1, count(explode("\n", $client_details)));
