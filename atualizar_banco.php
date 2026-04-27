@@ -200,7 +200,9 @@ try {
             echo '<div class="success">✅ AUTO_INCREMENT adicionado ao campo <code>id</code> da tabela <strong>vendas</strong> com sucesso! (próximo ID: ' . $next_id . ')</div>';
             $success[] = 'vendas_auto_increment';
         } else {
-            throw new Exception("Erro ao corrigir AUTO_INCREMENT da tabela vendas: " . $conn->error);
+            // TiDB Cloud e alguns bancos não suportam AUTO_INCREMENT — ignorar sem interromper
+            echo '<div class="info">ℹ️ AUTO_INCREMENT não suportado neste banco (' . htmlspecialchars($conn->error) . '). Pulando etapa.</div>';
+            $success[] = 'vendas_auto_increment';
         }
     } else {
         echo '<div class="info">ℹ️ Tabela <code>vendas</code> já possui AUTO_INCREMENT no campo <code>id</code>. Nenhuma alteração necessária.</div>';
