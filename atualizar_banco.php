@@ -208,6 +208,23 @@ try {
     }
     echo '</div>';
     
+    // 5. Adicionar coluna prazo_pagamento na tabela vendas
+    echo '<div class="step"><h3>Passo 5: Adicionando coluna <code>prazo_pagamento</code> na tabela <code>vendas</code>...</h3>';
+    $result_prazo = $conn->query("SHOW COLUMNS FROM `vendas` LIKE 'prazo_pagamento'");
+    if ($result_prazo && $result_prazo->num_rows === 0) {
+        $sql_add_prazo = "ALTER TABLE `vendas` ADD COLUMN `prazo_pagamento` VARCHAR(20) NULL DEFAULT NULL AFTER `forma_pagamento`";
+        if ($conn->query($sql_add_prazo) === TRUE) {
+            echo '<div class="success">✅ Coluna <code>prazo_pagamento</code> adicionada à tabela <strong>vendas</strong> com sucesso!</div>';
+            $success[] = 'vendas_prazo_pagamento';
+        } else {
+            throw new Exception("Erro ao adicionar coluna prazo_pagamento: " . $conn->error);
+        }
+    } else {
+        echo '<div class="info">ℹ️ Coluna <code>prazo_pagamento</code> já existe na tabela <code>vendas</code>. Nenhuma alteração necessária.</div>';
+        $success[] = 'vendas_prazo_pagamento';
+    }
+    echo '</div>';
+
     // Sucesso final
     echo '<div class="success" style="font-size: 18px; font-weight: bold;">
             🎉 ATUALIZAÇÃO CONCLUÍDA COM SUCESSO!
@@ -218,7 +235,8 @@ try {
             1. ✅ Banco de dados atualizado<br>
             2. ✅ Agora você pode usar "Boleto" nos orçamentos<br>
             3. ✅ Todos os novos prazos de pagamento estão disponíveis<br>
-            4. ⚠️ <strong>IMPORTANTE:</strong> Delete este arquivo (atualizar_banco.php) por segurança
+            4. ✅ Coluna prazo_pagamento adicionada nas vendas<br>
+            5. ⚠️ <strong>IMPORTANTE:</strong> Delete este arquivo (atualizar_banco.php) por segurança
           </div>';
     
 } catch (Exception $e) {

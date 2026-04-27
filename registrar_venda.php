@@ -370,7 +370,16 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $row_venda = $stmt_venda->get_result()->fetch_assoc();
         if ($row_venda) {
             $cliente_id = $row_venda['cliente_id'];
-            $forma_pagamento = $row_venda['forma_pagamento'];
+            // Normaliza para casar com os valores dos <option> do formulário
+            $forma_raw = strtolower(trim((string)($row_venda['forma_pagamento'] ?? '')));
+            $forma_map = [
+                'pix'           => 'Pix',
+                'boleto'        => 'Boleto',
+                'dinheiro'      => 'Dinheiro',
+                'cartao_credito'=> 'Cartao_Credito',
+                'outro'         => 'Outro',
+            ];
+            $forma_pagamento = $forma_map[$forma_raw] ?? $row_venda['forma_pagamento'];
             $prazo_pagamento = $has_prazo_pagamento_column ? normalizePrazoPagamento((string)($row_venda['prazo_pagamento'] ?? '')) : '';
             $status_venda = $row_venda['status_venda'];
         }
