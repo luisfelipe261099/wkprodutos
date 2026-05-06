@@ -359,7 +359,12 @@ function gerarPDFModerno($orcamento, $itens, $empresas_logos = []) {
             if (!empty($orcamento['nome_fantasia']) && $orcamento['tipo_pessoa'] === 'juridica') {
                 $client_details .= "\nNome Fantasia: " . $orcamento['nome_fantasia'];
             }
+
             $client_details .= "\n";
+        }
+
+        if (!empty($orcamento['inscricao_estadual'])) {
+            $client_details .= "I.E.: " . $orcamento['inscricao_estadual'] . "\n";
         }
 
         // Email e telefone na mesma linha se ambos existirem
@@ -462,7 +467,7 @@ function gerarPDFModerno($orcamento, $itens, $empresas_logos = []) {
         // Criar caixas de informação com altura ajustada dinamicamente (COMPACTO)
         // Calcula altura necessária baseada no conteúdo
         $client_lines = substr_count($client_details, "\n") + 1;
-        $box_height = max(22, min(28, $client_lines * 3 + 8)); // Reduzido: Entre 22 e 28mm
+        $box_height = max(22, min(32, $client_lines * 3 + 8));
 
         $pdf->ShadowBox(15, $currentY, 85, $box_height, 'DADOS DO CLIENTE', $client_details);
         $pdf->ShadowBox(110, $currentY, 85, $box_height, 'DADOS DO ORCAMENTO', $budget_details);
