@@ -33,16 +33,48 @@ if (isset($_GET['action']) && $_GET['action'] == 'delete' && isset($_GET['id']))
     }
 }
 
-// --- Lógica para buscar todos os clientes e calcular estatísticas com PAGINAÇÃO ---
-$itens_por_pagina = 15; // Defina quantos itens por página
-$pagina_atual = isset($_GET['page']) && is_numeric($_GET['page']) ? (int)$_GET['page'] : 1;
-$offset = ($pagina_atual - 1) * $itens_por_pagina;
+// --- Lógica para buscar clientes com busca, quantidade por página e paginação ---
+$opcoes_por_pagina = [15, 30, 50, 100];
+$itens_por_pagina = isset($_GET['por_pagina']) && in_array((int)$_GET['por_pagina'], $opcoes_por_pagina, true) ? (int)$_GET['por_pagina'] : 15;
+$pagina_atual = isset($_GET['page']) && is_numeric($_GET['page']) ? max(1, (int)$_GET['page']) : 1;
+$filtro_busca = isset($_GET['q']) ? trim($_GET['q']) : '';
 
-// Contar o total de clientes para a paginação
+// Total geral para os cards
 $sql_total_clientes = "SELECT COUNT(*) AS total FROM clientes";
 $result_total = $conn->query($sql_total_clientes);
 $total_clientes_db = $result_total->fetch_assoc()['total'];
-$total_paginas = ceil($total_clientes_db / $itens_por_pagina);
+
+$where_conditions = [];
+$params = [];
+$types = "";
+
+if ($filtro_busca !== '') {
+    $where_conditions[] = "(nome LIKE ? OR cpf_cnpj LIKE ? OR email LIKE ? OR telefone LIKE ? OR cidade LIKE ? OR estado LIKE ? OR endereco LIKE ? OR CAST(id AS CHAR) LIKE ?)";
+    $search_term = "%{$filtro_busca}%";
+    for ($i = 0; $i < 8; $i++) {
+        $params[] = $search_term;
+    }
+    $types .= "ssssssss";
+}
+
+$where_clause = !empty($where_conditions) ? "WHERE " . implode(" AND ", $where_conditions) : "";
+
+// Contar o total de clientes filtrados para a paginação
+$sql_total_filtrado = "SELECT COUNT(*) AS total FROM clientes $where_clause";
+$stmt_total_filtrado = $conn->prepare($sql_total_filtrado);
+if ($types !== '') {
+    $stmt_total_filtrado->bind_param($types, ...$params);
+}
+$stmt_total_filtrado->execute();
+$result_total_filtrado = $stmt_total_filtrado->get_result();
+$total_clientes_filtrados = (int)$result_total_filtrado->fetch_assoc()['total'];
+$stmt_total_filtrado->close();
+
+$total_paginas = max(1, (int)ceil($total_clientes_filtrados / $itens_por_pagina));
+if ($pagina_atual > $total_paginas) {
+    $pagina_atual = $total_paginas;
+}
+$offset = ($pagina_atual - 1) * $itens_por_pagina;
 
 $clientes_data = [];
 // As estatísticas dos cards (Total de Clientes, PF, PJ, Cidades) devem ser calculadas globalmente, não apenas na página atual.
@@ -70,11 +102,16 @@ if ($result_stats_globais) {
 
 $sql_select_clientes = "SELECT id, nome, tipo_pessoa, cpf_cnpj, email, telefone, endereco, cidade, estado, cep 
                         FROM clientes 
+                        $where_clause
                         ORDER BY nome ASC 
                         LIMIT ? OFFSET ?";
 
 $stmt_clientes = $conn->prepare($sql_select_clientes);
-$stmt_clientes->bind_param("ii", $itens_por_pagina, $offset);
+$params_clientes = $params;
+$types_clientes = $types . "ii";
+$params_clientes[] = $itens_por_pagina;
+$params_clientes[] = $offset;
+$stmt_clientes->bind_param($types_clientes, ...$params_clientes);
 $stmt_clientes->execute();
 $result_clientes = $stmt_clientes->get_result();
 
@@ -245,12 +282,20 @@ include_once __DIR__ . '/includes/header.php';
                         <button class="btn btn-outline-primary" onclick="window.print()"><i class="fas fa-print me-2"></i> Imprimir</button>
                         <button class="btn btn-outline-primary" onclick="exportClients()"><i class="fas fa-download me-2"></i> Exportar</button>
                     </div>
-                    <div class="d-flex gap-2 flex-grow-1 flex-md-grow-0">
-                        <div class="input-group" style="max-width: 300px;">
-                            <input type="text" class="form-control" placeholder="Buscar clientes..." id="searchInput">
-                            <button class="btn btn-outline-primary" type="button"><i class="fas fa-search"></i></button>
+                    <form method="get" action="clientes.php" class="d-flex flex-column flex-sm-row gap-2 flex-grow-1 flex-md-grow-0 align-items-stretch align-items-sm-center">
+                        <div class="input-group" style="max-width: 320px;">
+                            <input type="text" class="form-control" placeholder="Buscar clientes..." id="searchInput" name="q" value="<?php echo htmlspecialchars($filtro_busca); ?>">
+                            <button class="btn btn-outline-primary" type="submit" title="Buscar"><i class="fas fa-search"></i></button>
                         </div>
-                    </div>
+                        <select class="form-select" name="por_pagina" style="max-width: 150px;" onchange="this.form.submit()" aria-label="Clientes por pagina">
+                            <?php foreach ($opcoes_por_pagina as $opcao): ?>
+                                <option value="<?php echo $opcao; ?>" <?php echo $itens_por_pagina === $opcao ? 'selected' : ''; ?>><?php echo $opcao; ?> por pagina</option>
+                            <?php endforeach; ?>
+                        </select>
+                        <?php if ($filtro_busca !== ''): ?>
+                            <a href="clientes.php?por_pagina=<?php echo $itens_por_pagina; ?>" class="btn btn-outline-secondary" title="Limpar busca"><i class="fas fa-times"></i></a>
+                        <?php endif; ?>
+                    </form>
                 </div>
             </div>
         </div>
@@ -262,11 +307,11 @@ include_once __DIR__ . '/includes/header.php';
         <i class="fas fa-list"></i>
         Lista de Clientes
         <div class="ms-auto">
-            <span class="badge bg-primary"><?php echo $total_clientes_db; ?> clientes</span>
+            <span class="badge bg-primary"><?php echo $total_clientes_filtrados; ?> clientes</span>
         </div>
     </div>
     <div class="card-body-modern">
-        <?php if ($total_clientes_db > 0): ?>
+        <?php if ($total_clientes_filtrados > 0): ?>
             <div class="table-responsive d-none d-md-block">
                 <table class="table table-hover mb-0" id="clientesTable">
                     <thead>
@@ -374,9 +419,15 @@ include_once __DIR__ . '/includes/header.php';
         <?php else: ?>
             <div class="text-center py-5">
                 <div class="stats-icon primary mx-auto mb-3"><i class="fas fa-user-plus"></i></div>
-                <h5 class="text-muted mb-2">Nenhum cliente cadastrado</h5>
-                <p class="text-muted">Comece adicionando seu primeiro cliente ao sistema.</p>
-                <a href="cadastro_cliente.php" class="btn btn-primary"><i class="fas fa-user-plus me-2"></i> Adicionar Primeiro Cliente</a>
+                <?php if ($filtro_busca !== ''): ?>
+                    <h5 class="text-muted mb-2">Nenhum cliente encontrado</h5>
+                    <p class="text-muted">Tente buscar por nome, documento, email, telefone, cidade ou código.</p>
+                    <a href="clientes.php?por_pagina=<?php echo $itens_por_pagina; ?>" class="btn btn-outline-primary"><i class="fas fa-times me-2"></i> Limpar Busca</a>
+                <?php else: ?>
+                    <h5 class="text-muted mb-2">Nenhum cliente cadastrado</h5>
+                    <p class="text-muted">Comece adicionando seu primeiro cliente ao sistema.</p>
+                    <a href="cadastro_cliente.php" class="btn btn-primary"><i class="fas fa-user-plus me-2"></i> Adicionar Primeiro Cliente</a>
+                <?php endif; ?>
             </div>
         <?php endif; ?>
 
@@ -385,8 +436,14 @@ include_once __DIR__ . '/includes/header.php';
             'current_page' => $pagina_atual,
             'total_pages' => $total_paginas,
             'page_param' => 'page',
+            'base_params' => array_filter([
+                'q' => $filtro_busca,
+                'por_pagina' => $itens_por_pagina
+            ], function ($value) {
+                return $value !== '' && $value !== null;
+            }),
             'aria_label' => 'Paginacao de clientes',
-            'summary' => $total_clientes_db . ' clientes cadastrados',
+            'summary' => $filtro_busca !== '' ? $total_clientes_filtrados . ' clientes encontrados' : $total_clientes_db . ' clientes cadastrados',
             'window' => 5
         ]);
         ?>
@@ -394,7 +451,6 @@ include_once __DIR__ . '/includes/header.php';
 </div>
 
 <script>
-// Nenhuma alteração necessária no JavaScript. Ele já está funcional.
 function confirmDelete(id) {
     if (confirm('Tem certeza que deseja excluir este cliente? Isso pode afetar vendas e orçamentos relacionados.')) {
         const button = event.target.closest('button');
@@ -404,26 +460,6 @@ function confirmDelete(id) {
             window.location.href = `clientes.php?action=delete&id=${id}`;
         }, 500);
     }
-}
-
-function searchClients() {
-    const input = document.getElementById('searchInput');
-    const filter = input.value.toLowerCase();
-    
-    // Search in desktop table
-    const table = document.getElementById('clientesTable');
-    if (table) {
-        const rows = table.getElementsByTagName('tr');
-        for (let i = 1; i < rows.length; i++) {
-            rows[i].style.display = rows[i].textContent.toLowerCase().includes(filter) ? '' : 'none';
-        }
-    }
-
-    // Search in mobile cards
-    const mobileCards = document.querySelectorAll('.mobile-client-card');
-    mobileCards.forEach(card => {
-        card.style.display = card.textContent.toLowerCase().includes(filter) ? '' : 'none';
-    });
 }
 
 function exportClients() {
@@ -463,11 +499,9 @@ function exportClients() {
 document.addEventListener('DOMContentLoaded', function() {
     const searchInput = document.getElementById('searchInput');
     if (searchInput) {
-        searchInput.addEventListener('keyup', searchClients);
         searchInput.addEventListener('keydown', function(e) {
             if (e.key === 'Escape') {
-                this.value = '';
-                searchClients();
+                window.location.href = 'clientes.php?por_pagina=<?php echo $itens_por_pagina; ?>';
             }
         });
     }
