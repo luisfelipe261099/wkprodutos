@@ -1533,6 +1533,158 @@ textarea.form-control {
 }
 
 /* =============================================
+   RESPONSIVE FIXES (consolidado)
+   ============================================= */
+
+/* --- TABLET (769-1024px): tabela com sidebar de 240px sobra pouco para a coluna de ações --- */
+@media (min-width: 769px) and (max-width: 1024px) {
+    .table-modern table { font-size: 0.82rem; }
+    .table-modern thead th,
+    .table-modern tbody td { padding: 0.6rem 0.5rem; }
+    .table-modern .btn-sm {
+        padding: 0.25rem 0.4rem;
+        min-height: auto;
+        font-size: 0.75rem;
+    }
+    .table-modern .btn-sm .me-1 { margin-right: 0.15rem !important; }
+    .table-modern td.text-center .btn { margin-right: 0.15rem; }
+    .card-header-modern .input-group { max-width: 220px !important; }
+}
+
+/* --- MOBILE (≤768px): cabeçalho do card empilha título e busca --- */
+@media (max-width: 768px) {
+    .card-header-modern {
+        flex-direction: column;
+        align-items: stretch !important;
+    }
+    .card-header-modern > div { width: 100%; }
+    .card-header-modern .input-group {
+        max-width: 100% !important;
+    }
+    .mobile-sale-actions,
+    .mobile-orcamento-actions,
+    .mobile-item-actions,
+    .mobile-agendamento-actions {
+        display: grid !important;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 0.5rem;
+        flex-wrap: initial;
+    }
+    .mobile-sale-actions .btn,
+    .mobile-orcamento-actions .btn,
+    .mobile-item-actions .btn,
+    .mobile-agendamento-actions .btn,
+    .mobile-sale-actions a,
+    .mobile-orcamento-actions a {
+        width: 100%;
+        flex: initial;
+        padding: 0.6rem 0.5rem;
+        font-size: 0.82rem;
+        min-height: 42px;
+        white-space: nowrap;
+    }
+    .mobile-sale-actions .btn i,
+    .mobile-orcamento-actions .btn i { margin-right: 0.25rem; }
+
+    /* Toolbar superior da página (Adicionar Nova...) */
+    .mb-4.text-end .btn-lg {
+        width: 100%;
+        font-size: 0.95rem;
+        padding: 0.75rem 1rem;
+    }
+}
+
+/* --- SMALL MOBILE (≤480px): apertar mais --- */
+@media (max-width: 480px) {
+    .topbar h1 { font-size: 1rem !important; }
+    .topbar { padding: 0 0.75rem; gap: 0.5rem; }
+    .user-avatar { width: 32px; height: 32px; font-size: 0.8rem; }
+    .main-content { padding: 0.75rem; }
+
+    .page-title { font-size: 1.15rem !important; }
+    .page-subtitle { font-size: 0.78rem; }
+
+    .card-body-modern { padding: 0.75rem; }
+    .card-header-modern { padding: 0.85rem 1rem; }
+
+    /* Cards de venda/orçamento: cabeçalho do card mais compacto */
+    .mobile-sale-header,
+    .mobile-orcamento-header {
+        flex-wrap: wrap;
+        gap: 0.35rem;
+    }
+    .mobile-sale-info-item,
+    .mobile-orcamento-info-item {
+        flex-wrap: wrap;
+    }
+
+    .mobile-sale-actions .btn,
+    .mobile-orcamento-actions .btn,
+    .mobile-item-actions .btn,
+    .mobile-agendamento-actions .btn {
+        font-size: 0.75rem;
+        padding: 0.5rem 0.35rem;
+        min-height: 40px;
+    }
+
+    /* Modal aproveita mais espaço */
+    .modal-dialog {
+        width: calc(100vw - 0.5rem) !important;
+        max-width: calc(100vw - 0.5rem) !important;
+        margin: 0.25rem auto;
+    }
+    .modal-body { padding: 1rem; }
+}
+
+/* --- EXTRA SMALL (≤380px): empilhar tudo --- */
+@media (max-width: 380px) {
+    /* Stats cards: uma por linha em telas mínimas */
+    .col-6 {
+        flex: 0 0 100%;
+        max-width: 100%;
+    }
+
+    /* Botões de ação em coluna única para legibilidade */
+    .mobile-sale-actions,
+    .mobile-orcamento-actions,
+    .mobile-item-actions,
+    .mobile-agendamento-actions {
+        grid-template-columns: 1fr;
+    }
+
+    /* Paginação compacta */
+    .pagination { gap: 0.15rem; flex-wrap: wrap; justify-content: center; }
+    .pagination .page-link {
+        min-width: 32px;
+        padding: 0.3rem 0.45rem;
+        font-size: 0.78rem;
+    }
+
+    /* Page header com menos espaço vertical */
+    .page-header { margin-bottom: 0.85rem; }
+}
+
+/* --- AÇÕES DE TABELA EM DESKTOP PEQUENO (≤1366px): evitar quebra horizontal --- */
+@media (min-width: 1025px) and (max-width: 1366px) {
+    .table-modern .btn-sm {
+        padding: 0.25rem 0.45rem;
+        font-size: 0.78rem;
+    }
+    .table-modern td.text-center .btn { margin-right: 0.2rem; }
+}
+
+/* --- FORMULÁRIOS: linhas de campos quebram melhor no mobile --- */
+@media (max-width: 576px) {
+    .form-row,
+    .row.g-3,
+    .row.g-2 { row-gap: 0.5rem; }
+    .form-control,
+    .form-select { font-size: 16px; } /* impede zoom no iOS */
+    .form-label { font-size: 0.85rem; margin-bottom: 0.25rem; }
+    .input-group .form-control { min-width: 0; }
+}
+
+/* =============================================
    PRINT STYLES
    ============================================= */
 

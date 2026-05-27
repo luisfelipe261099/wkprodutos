@@ -60,6 +60,52 @@ function columnExists(mysqli $conn, string $table, string $column): bool {
     return $exists;
 }
 
+function ajustarEstoqueProduto(mysqli $conn, int $produto_id, int $delta): void {
+    if ($produto_id <= 0 || $delta === 0) {
+        return;
+    }
+
+    $stmt_get = $conn->prepare("SELECT quantidade_estoque FROM produtos WHERE id = ?");
+    if (!$stmt_get) {
+        throw new Exception("Erro ao preparar leitura de estoque: " . $conn->error);
+    }
+    $stmt_get->bind_param("i", $produto_id);
+    if (!$stmt_get->execute()) {
+        $err = $stmt_get->error;
+        $stmt_get->close();
+        throw new Exception("Erro ao ler estoque do produto ID {$produto_id}: " . $err);
+    }
+    $row = $stmt_get->get_result()->fetch_assoc();
+    $stmt_get->close();
+
+    if (!$row) {
+        return;
+    }
+
+    $atual = (int)$row['quantidade_estoque'];
+    $novo  = $atual + $delta;
+
+    // INT(11) signed: clamp em [0, 2147483647] para não estourar a coluna.
+    if ($novo > 2147483647) $novo = 2147483647;
+    if ($novo < 0)          $novo = 0;
+
+    if ($novo === $atual) {
+        return;
+    }
+
+    $stmt_update = $conn->prepare("UPDATE produtos SET quantidade_estoque = ? WHERE id = ?");
+    if (!$stmt_update) {
+        throw new Exception("Erro ao preparar ajuste de estoque: " . $conn->error);
+    }
+    $stmt_update->bind_param("ii", $novo, $produto_id);
+    if (!$stmt_update->execute()) {
+        $err = $stmt_update->error;
+        $stmt_update->close();
+        throw new Exception("Erro ao ajustar estoque do produto ID {$produto_id}: " . $err);
+    }
+    $stmt_update->close();
+}
+
 function normalizarFormaPagamentoOrcamento(string $formaPagamentoVenda): string {
     $normalizado = strtolower(str_replace([' ', '-', '_'], '', trim($formaPagamentoVenda)));
 
@@ -150,11 +196,11 @@ if (isset($_POST['action']) && $_POST['action'] == 'change_status') {
                 // Reverte ou debita estoque
                 if ($status_antigo == 'cancelada' && $novo_status != 'cancelada') { // Saindo do status cancelado
                     foreach ($itens_da_venda as $item) {
-                        $conn->query("UPDATE produtos SET quantidade_estoque = quantidade_estoque - {$item['quantidade']} WHERE id = {$item['produto_id']}");
+                        ajustarEstoqueProduto($conn, (int)$item['produto_id'], -(int)$item['quantidade']);
                     }
                 } elseif ($status_antigo != 'cancelada' && $novo_status == 'cancelada') { // Entrando no status cancelado
-                     foreach ($itens_da_venda as $item) {
-                        $conn->query("UPDATE produtos SET quantidade_estoque = quantidade_estoque + {$item['quantidade']} WHERE id = {$item['produto_id']}");
+                    foreach ($itens_da_venda as $item) {
+                        ajustarEstoqueProduto($conn, (int)$item['produto_id'], (int)$item['quantidade']);
                     }
                 }
 
@@ -262,14 +308,7 @@ if (isset($_POST['action']) && $_POST['action'] == 'change_status') {
 
                 if (($venda['status_venda'] ?? '') !== 'cancelada') {
                     foreach ($itens as $item) {
-                        $stmt_stock = $conn->prepare("UPDATE produtos SET quantidade_estoque = quantidade_estoque + ? WHERE id = ?");
-                        $qty = (int)$item['quantidade'];
-                        $produto_id = (int)$item['produto_id'];
-                        $stmt_stock->bind_param("ii", $qty, $produto_id);
-                        if (!$stmt_stock->execute()) {
-                            throw new Exception("Erro ao devolver estoque do produto ID {$produto_id}: " . $stmt_stock->error);
-                        }
-                        $stmt_stock->close();
+                        ajustarEstoqueProduto($conn, (int)$item['produto_id'], (int)$item['quantidade']);
                     }
                 }
 
@@ -339,7 +378,7 @@ if (isset($_GET['action']) && $_GET['action'] == 'delete' && isset($_GET['id']))
         $stmt_itens->execute();
         $result_itens = $stmt_itens->get_result();
         while ($item = $result_itens->fetch_assoc()) {
-            $conn->query("UPDATE produtos SET quantidade_estoque = quantidade_estoque + {$item['quantidade']} WHERE id = {$item['produto_id']}");
+            ajustarEstoqueProduto($conn, (int)$item['produto_id'], (int)$item['quantidade']);
         }
         $stmt_itens->close();
 
