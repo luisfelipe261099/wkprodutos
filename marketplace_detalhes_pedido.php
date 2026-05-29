@@ -164,7 +164,7 @@ include_once __DIR__ . '/includes/header.php';
                 </div>
             </div>
             <div class="card-body-modern">
-                <div class="table-responsive">
+                <div class="table-responsive table-responsive-custom">
                     <table class="table table-hover">
                         <thead>
                             <tr>
@@ -195,6 +195,32 @@ include_once __DIR__ . '/includes/header.php';
                             </tr>
                         </tfoot>
                     </table>
+                </div>
+
+                <!-- Cards para Mobile -->
+                <div class="mobile-items-container">
+                    <?php foreach ($itens_pedido as $item): ?>
+                    <div class="mobile-item-card">
+                        <div class="mobile-item-title">
+                            <?php echo htmlspecialchars($item['produto_nome']); ?>
+                            <small class="text-muted d-block fw-normal"><?php echo htmlspecialchars($item['nome_empresa']); ?></small>
+                        </div>
+                        <div class="mobile-item-meta">
+                            <div>
+                                <span class="mobile-item-meta-label">Quantidade</span>
+                                <span class="mobile-item-meta-value"><?php echo $item['quantidade']; ?></span>
+                            </div>
+                            <div>
+                                <span class="mobile-item-meta-label">Preço Unit.</span>
+                                <span class="mobile-item-meta-value">R$ <?php echo number_format($item['preco_unitario'], 2, ',', '.'); ?></span>
+                            </div>
+                            <div>
+                                <span class="mobile-item-meta-label">Subtotal</span>
+                                <span class="mobile-item-meta-value"><strong>R$ <?php echo number_format($item['subtotal'], 2, ',', '.'); ?></strong></span>
+                            </div>
+                        </div>
+                    </div>
+                    <?php endforeach; ?>
                 </div>
             </div>
         </div>

@@ -678,12 +678,13 @@ html, body {
         padding: 0.75rem 1.25rem;
     }
     
-    .form-control {
+    .form-control,
+    .form-select {
         min-height: 48px;
         padding: 0.875rem 1rem;
         font-size: 16px; /* Evita zoom no iOS */
     }
-    
+
     /* Cards mobile */
     .card {
         margin-bottom: 1rem;
@@ -705,8 +706,11 @@ html, body {
         font-size: 0.875rem;
     }
 
+    /* !important garante que a tabela desktop seja escondida no celular mesmo
+       quando combinada com .table-modern (que redefine display:block neste
+       mesmo breakpoint mais adiante no arquivo). */
     .table-responsive-custom {
-        display: none;
+        display: none !important;
     }
 
     .mobile-items-container,
@@ -1244,30 +1248,20 @@ html, body {
     border-radius: 8px;
 }
 
-/* Modal overlay */
-.modal-backdrop {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.5);
-    z-index: 1050;
-    display: none;
+/* Modal: o posicionamento/backdrop/rolagem é controlado pelo Bootstrap.
+   NÃO sobrescrever .modal / .modal-backdrop aqui, pois isso quebra a
+   centralização e faz o rodapé (botões) ser cortado no celular.
+   Estilos visuais ficam no .modal-content. */
+.modal-content {
+    border-radius: 16px;
+    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.25);
 }
 
-.modal {
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    background: white;
-    border-radius: 16px;
-    z-index: 1060;
-    max-width: 90%;
-    max-height: 90vh;
-    overflow-y: auto;
-    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.25);
+/* Utility responsiva de largura (largura automática a partir de >=576px).
+   Usada em pares com w-100 para botões que ocupam a tela toda no celular
+   e voltam ao tamanho natural no desktop. */
+@media (min-width: 576px) {
+    .w-sm-auto { width: auto !important; }
 }
 
 /* =============================================
@@ -1627,8 +1621,10 @@ textarea.form-control {
         min-height: 40px;
     }
 
-    /* Modal aproveita mais espaço */
+    /* Modal aproveita mais espaço (mantém --bs-modal-margin em sincronia
+       com a margem para o Bootstrap calcular a altura rolável corretamente) */
     .modal-dialog {
+        --bs-modal-margin: 0.25rem;
         width: calc(100vw - 0.5rem) !important;
         max-width: calc(100vw - 0.5rem) !important;
         margin: 0.25rem auto;

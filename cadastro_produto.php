@@ -394,13 +394,13 @@ document.addEventListener('DOMContentLoaded', function() {
                 </div>
             </div>
 
-            <div class="d-flex justify-content-between mt-4">
-                <button type="submit" class="btn btn-success btn-lg">
-                    <i class="fas fa-<?php echo ($id ? 'save' : 'plus'); ?> me-2"></i> <?php echo $submit_button_text; ?>
-                </button>
-                <a href="produtos.php" class="btn btn-secondary btn-lg">
+            <div class="d-flex flex-column-reverse flex-sm-row justify-content-between gap-2 mt-4">
+                <a href="produtos.php" class="btn btn-secondary btn-lg w-100 w-sm-auto">
                     <i class="fas fa-arrow-left me-2"></i> Voltar para Produtos
                 </a>
+                <button type="submit" class="btn btn-success btn-lg w-100 w-sm-auto">
+                    <i class="fas fa-<?php echo ($id ? 'save' : 'plus'); ?> me-2"></i> <?php echo $submit_button_text; ?>
+                </button>
             </div>
         </form>
     </div>

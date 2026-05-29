@@ -350,12 +350,12 @@ include_once __DIR__ . '/includes/header.php';
 }
 
 /* Estilos para o modo de visualização normal */
-.relatorio-cabecalho, .relatorio-rodape, .comissao-info {
+.relatorio-cabecalho, .relatorio-rodape, .comissao-info, .payment-section {
     display: none;
 }
 
 @media print {
-    .relatorio-cabecalho, .relatorio-rodape, .comissao-info {
+    .relatorio-cabecalho, .relatorio-rodape, .comissao-info, .payment-section {
         display: block !important;
     }
 }
@@ -498,7 +498,7 @@ if ($relatorio_gerado) {
             <?php endif; ?>
         </div>
         
-        <div class="table-responsive">
+        <div class="table-responsive table-responsive-custom">
             <table class="table table-hover table-striped mb-0">
                 <thead>
                     <tr>
@@ -539,6 +539,87 @@ if ($relatorio_gerado) {
                     <?php endforeach; ?>
                 </tbody>
             </table>
+        </div>
+
+        <!-- Cards para Mobile -->
+        <div class="mobile-items-container">
+            <?php foreach ($dados_relatorio['dados'] as $row): ?>
+            <div class="mobile-item-card">
+                <?php if($tipo_relatorio == 'lucro_por_empresa'): ?>
+                    <div class="mobile-item-title">
+                        <?php echo htmlspecialchars($row['nome_empresa']); ?>
+                    </div>
+                    <div class="mobile-item-meta">
+                        <div>
+                            <span class="mobile-item-meta-label">Nº de Vendas</span>
+                            <span class="mobile-item-meta-value"><?php echo $row['total_vendas']; ?></span>
+                        </div>
+                        <div>
+                            <span class="mobile-item-meta-label">Itens Vendidos</span>
+                            <span class="mobile-item-meta-value"><?php echo $row['total_itens']; ?></span>
+                        </div>
+                        <div>
+                            <span class="mobile-item-meta-label">Faturamento</span>
+                            <span class="mobile-item-meta-value">R$ <?php echo number_format($row['total_faturado'], 2, ',', '.'); ?></span>
+                        </div>
+                        <div>
+                            <span class="mobile-item-meta-label">Lucro Bruto</span>
+                            <span class="mobile-item-meta-value fw-bold text-success">R$ <?php echo number_format($row['total_lucro'], 2, ',', '.'); ?></span>
+                        </div>
+                        <div>
+                            <span class="mobile-item-meta-label">Margem</span>
+                            <span class="mobile-item-meta-value"><?php echo $row['total_faturado'] > 0 ? number_format(($row['total_lucro'] / $row['total_faturado']) * 100, 1) . '%' : 'N/A'; ?></span>
+                        </div>
+                    </div>
+                <?php elseif($tipo_relatorio == 'vendas_geral'): ?>
+                    <div class="mobile-item-title">
+                        Venda #<?php echo $row['id']; ?>
+                        <small class="text-muted d-block fw-normal"><?php echo htmlspecialchars($row['cliente_nome']); ?> &middot; <?php echo date('d/m/Y', strtotime($row['data_venda'])); ?></small>
+                    </div>
+                    <div class="mobile-item-meta">
+                        <div>
+                            <span class="mobile-item-meta-label">Faturamento</span>
+                            <span class="mobile-item-meta-value">R$ <?php echo number_format($row['valor_total'], 2, ',', '.'); ?></span>
+                        </div>
+                        <div>
+                            <span class="mobile-item-meta-label">Lucro</span>
+                            <span class="mobile-item-meta-value text-success">R$ <?php echo number_format($row['lucro_total'], 2, ',', '.'); ?></span>
+                        </div>
+                        <div>
+                            <span class="mobile-item-meta-label">Margem</span>
+                            <span class="mobile-item-meta-value"><?php echo $row['valor_total'] > 0 ? number_format(($row['lucro_total'] / $row['valor_total']) * 100, 1) : 0; ?>%</span>
+                        </div>
+                        <div>
+                            <span class="mobile-item-meta-label">Status</span>
+                            <span class="mobile-item-meta-value"><span class="badge bg-<?php echo ($row['status_venda'] == 'concluida') ? 'success' : (($row['status_venda'] == 'pendente') ? 'warning text-dark' : 'danger'); ?>"><?php echo ucfirst($row['status_venda']); ?></span></span>
+                        </div>
+                    </div>
+                <?php elseif($tipo_relatorio == 'produtos_vendidos'): ?>
+                    <div class="mobile-item-title">
+                        <?php echo htmlspecialchars($row['produto_nome']); ?>
+                        <small class="text-muted d-block fw-normal"><?php echo htmlspecialchars($row['empresa_nome']); ?></small>
+                    </div>
+                    <div class="mobile-item-meta">
+                        <div>
+                            <span class="mobile-item-meta-label">Qtd.</span>
+                            <span class="mobile-item-meta-value fw-bold"><?php echo $row['total_vendido']; ?></span>
+                        </div>
+                        <div>
+                            <span class="mobile-item-meta-label">Faturamento</span>
+                            <span class="mobile-item-meta-value">R$ <?php echo number_format($row['total_faturado'], 2, ',', '.'); ?></span>
+                        </div>
+                        <div>
+                            <span class="mobile-item-meta-label">Lucro</span>
+                            <span class="mobile-item-meta-value text-success">R$ <?php echo number_format($row['total_lucro'], 2, ',', '.'); ?></span>
+                        </div>
+                        <div>
+                            <span class="mobile-item-meta-label">Margem</span>
+                            <span class="mobile-item-meta-value"><?php echo $row['total_faturado'] > 0 ? number_format(($row['total_lucro'] / $row['total_faturado']) * 100, 1) . '%' : 'N/A'; ?></span>
+                        </div>
+                    </div>
+                <?php endif; ?>
+            </div>
+            <?php endforeach; ?>
         </div>
     </div>
 </div>

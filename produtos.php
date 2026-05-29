@@ -217,7 +217,7 @@ include_once __DIR__ . '/includes/header.php';
     </div>
     <div class="card-body-modern">
         <?php if (!empty($produtos_data)): ?>
-            <div class="table-responsive d-none d-lg-block">
+            <div class="table-responsive table-responsive-custom">
                 <table class="table table-hover mb-0" id="produtosTable">
                     <thead>
                         <tr>
@@ -267,56 +267,48 @@ include_once __DIR__ . '/includes/header.php';
             </div>
 
             <!-- Cards para Mobile -->
-            <div class="mobile-products-container">
+            <div class="mobile-items-container">
                 <?php foreach ($produtos_data as $row): ?>
                     <?php $estoque_baixo = $row['quantidade_estoque'] <= $row['estoque_minimo']; ?>
-                    <div class="mobile-product-item">
-                        <div class="mobile-product-header">
-                            <div class="mobile-product-name"><?php echo htmlspecialchars($row['nome']); ?></div>
-                            <?php if (!empty($row['sku'])): ?>
-                                <div class="mobile-product-sku">SKU: <?php echo htmlspecialchars($row['sku']); ?></div>
-                            <?php endif; ?>
+                    <div class="mobile-item-card">
+                        <div class="mobile-item-title">
+                            <?php echo htmlspecialchars($row['nome']); ?>
+                            <small class="text-muted d-block fw-normal">
+                                #<?php echo $row['id']; ?>
+                                <?php if (!empty($row['sku'])): ?> &middot; SKU: <?php echo htmlspecialchars($row['sku']); ?><?php endif; ?>
+                            </small>
                         </div>
 
-                        <div class="mobile-product-info">
-                            <div class="mobile-product-info-item">
-                                <span class="mobile-product-info-label">ID:</span>
-                                <span class="mobile-product-info-value">#<?php echo $row['id']; ?></span>
+                        <div class="mobile-item-meta">
+                            <div>
+                                <span class="mobile-item-meta-label">Preço de Venda</span>
+                                <span class="mobile-item-meta-value text-success">R$ <?php echo number_format($row['preco_venda'], 2, ',', '.'); ?></span>
                             </div>
-                            <div class="mobile-product-info-item">
-                                <span class="mobile-product-info-label">Preço de Venda:</span>
-                                <span class="mobile-product-info-value text-success fw-bold">R$ <?php echo number_format($row['preco_venda'], 2, ',', '.'); ?></span>
+                            <div>
+                                <span class="mobile-item-meta-label">Margem de Lucro</span>
+                                <span class="mobile-item-meta-value"><?php echo number_format($row['percentual_lucro'], 2, ',', '.'); ?>%</span>
                             </div>
-                            <div class="mobile-product-info-item">
-                                <span class="mobile-product-info-label">Margem de Lucro:</span>
-                                <span class="mobile-product-info-value"><?php echo number_format($row['percentual_lucro'], 2, ',', '.'); ?>%</span>
-                            </div>
-                            <div class="mobile-product-info-item">
-                                <span class="mobile-product-info-label">Estoque:</span>
-                                <span class="mobile-product-info-value">
-                                    <span class="mobile-product-stock <?php echo $estoque_baixo ? 'low' : 'normal'; ?>">
-                                        <?php if ($estoque_baixo): ?>
-                                            <i class="fas fa-exclamation-triangle"></i>
-                                        <?php else: ?>
-                                            <i class="fas fa-check-circle"></i>
-                                        <?php endif; ?>
-                                        <?php echo $row['quantidade_estoque']; ?> unidades
+                            <div>
+                                <span class="mobile-item-meta-label">Estoque</span>
+                                <span class="mobile-item-meta-value">
+                                    <span class="status-badge <?php echo $estoque_baixo ? 'status-danger' : 'status-success'; ?>">
+                                        <?php echo $row['quantidade_estoque']; ?> un.
                                     </span>
                                 </span>
                             </div>
-                            <div class="mobile-product-info-item">
-                                <span class="mobile-product-info-label">Estoque Mínimo:</span>
-                                <span class="mobile-product-info-value"><?php echo $row['estoque_minimo']; ?> unidades</span>
+                            <div>
+                                <span class="mobile-item-meta-label">Estoque Mínimo</span>
+                                <span class="mobile-item-meta-value"><?php echo $row['estoque_minimo']; ?> un.</span>
                             </div>
                             <?php if (!empty($row['fornecedor'])): ?>
-                            <div class="mobile-product-info-item">
-                                <span class="mobile-product-info-label">Fornecedor:</span>
-                                <span class="mobile-product-info-value"><?php echo htmlspecialchars($row['fornecedor']); ?></span>
+                            <div>
+                                <span class="mobile-item-meta-label">Fornecedor</span>
+                                <span class="mobile-item-meta-value"><?php echo htmlspecialchars($row['fornecedor']); ?></span>
                             </div>
                             <?php endif; ?>
                         </div>
 
-                        <div class="mobile-product-actions">
+                        <div class="mobile-item-actions">
                             <a href="cadastro_produto.php?id=<?php echo $row['id']; ?>" class="btn btn-sm btn-outline-primary" title="Editar Produto">
                                 <i class="fas fa-edit me-1"></i> Editar
                             </a>

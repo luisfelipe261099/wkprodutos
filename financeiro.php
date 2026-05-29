@@ -152,7 +152,7 @@ include_once __DIR__ . '/includes/header.php';
 </div>
 
 <div class="modern-card fade-in-up">
-    <div class="card-header-modern">
+    <div class="card-header-modern d-flex flex-wrap gap-2 align-items-center">
         <i class="fas fa-list"></i>
         Histórico de Transações Manuais
         <div class="ms-auto">
@@ -163,7 +163,7 @@ include_once __DIR__ . '/includes/header.php';
     </div>
     <div class="card-body-modern">
         <?php if ($result_transacoes && $result_transacoes->num_rows > 0): ?>
-            <div class="table-modern">
+            <div class="table-modern table-responsive-custom">
                 <table class="table table-hover mb-0">
                     <thead>
                         <tr>
@@ -231,6 +231,74 @@ include_once __DIR__ . '/includes/header.php';
                     </tbody>
                 </table>
             </div>
+
+            <!-- Cards para Mobile -->
+            <div class="mobile-items-container">
+                <?php $result_transacoes->data_seek(0); ?>
+                <?php while($row = $result_transacoes->fetch_assoc()):
+                    $tipo_class = ($row['tipo'] == 'entrada') ? 'text-success' : 'text-danger';
+                    $tipo_icon = ($row['tipo'] == 'entrada') ? 'fa-arrow-up' : 'fa-arrow-down';
+                    $referencia_link = 'N/A';
+
+                    if (!empty($row['referencia_id']) && !empty($row['tabela_referencia'])) {
+                        $tabela_ref = htmlspecialchars($row['tabela_referencia']);
+                        $ref_id = htmlspecialchars($row['referencia_id']);
+                        if ($tabela_ref == 'vendas') {
+                            $referencia_link = '<a href="detalhes_venda.php?id=' . $ref_id . '" class="text-decoration-none" title="Ver Venda"><i class="fas fa-receipt"></i> Venda #' . $ref_id . '</a>';
+                        } elseif ($tabela_ref == 'orcamentos') {
+                            $referencia_link = '<a href="detalhes_orcamento.php?id=' . $ref_id . '" class="text-decoration-none" title="Ver Orçamento"><i class="fas fa-file-alt"></i> Orçam. #' . $ref_id . '</a>';
+                        }
+                    }
+                    ?>
+                    <div class="mobile-item-card">
+                        <div class="mobile-item-title">
+                            <?php echo htmlspecialchars($row['descricao']); ?>
+                            <small class="text-muted d-block fw-normal">
+                                #<?php echo htmlspecialchars($row['id']); ?> &middot; <?php echo date('d/m/Y H:i', strtotime($row['data_transacao'])); ?>
+                            </small>
+                        </div>
+
+                        <div class="mobile-item-meta">
+                            <div>
+                                <span class="mobile-item-meta-label">Tipo</span>
+                                <span class="mobile-item-meta-value">
+                                    <span class="badge bg-<?php echo ($row['tipo'] == 'entrada') ? 'success-light' : 'danger-light'; ?> text-<?php echo ($row['tipo'] == 'entrada') ? 'success' : 'danger'; ?>">
+                                        <i class="fas <?php echo $tipo_icon; ?> me-1"></i><?php echo htmlspecialchars(ucfirst($row['tipo'])); ?>
+                                    </span>
+                                </span>
+                            </div>
+                            <div>
+                                <span class="mobile-item-meta-label">Valor</span>
+                                <span class="mobile-item-meta-value <?php echo $tipo_class; ?> fw-bold">R$ <?php echo number_format($row['valor'], 2, ',', '.'); ?></span>
+                            </div>
+                            <div>
+                                <span class="mobile-item-meta-label">Categoria</span>
+                                <span class="mobile-item-meta-value">
+                                    <?php if (!empty($row['categoria'])): ?>
+                                        <span class="badge bg-light text-dark"><?php echo htmlspecialchars($row['categoria']); ?></span>
+                                    <?php else: ?>
+                                        <span class="text-muted">-</span>
+                                    <?php endif; ?>
+                                </span>
+                            </div>
+                            <div>
+                                <span class="mobile-item-meta-label">Ref.</span>
+                                <span class="mobile-item-meta-value"><?php echo $referencia_link; ?></span>
+                            </div>
+                        </div>
+
+                        <div class="mobile-item-actions">
+                            <a href="registrar_transacao.php?id=<?php echo $row['id']; ?>" class="btn btn-outline-primary btn-sm" title="Editar">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                            <a href="financeiro.php?action=delete&id=<?php echo $row['id']; ?>" class="btn btn-outline-danger btn-sm" title="Excluir" onclick="return confirm('Tem certeza que deseja excluir esta transação? Isso pode afetar o balanço financeiro.');">
+                                <i class="fas fa-trash-alt"></i>
+                            </a>
+                        </div>
+                    </div>
+                <?php endwhile; ?>
+            </div>
+
             <?php if ($total_paginas_transacoes > 1): ?>
                 <?php 
                 echo render_pagination([

@@ -107,7 +107,7 @@ include_once __DIR__ . '/includes/header.php';
         </div>
     </div>
     <div class="card-body-modern">
-        <div class="table-responsive">
+        <div class="table-responsive table-responsive-custom">
             <table class="table table-hover" id="clientesEmpresasTable">
                 <thead>
                     <tr>
@@ -158,6 +158,50 @@ include_once __DIR__ . '/includes/header.php';
                     <?php endif; ?>
                 </tbody>
             </table>
+        </div>
+
+        <!-- Cards para Mobile -->
+        <div class="mobile-items-container">
+            <?php if ($result_clientes && $result_clientes->num_rows > 0): ?>
+                <?php $result_clientes->data_seek(0); ?>
+                <?php while ($cliente = $result_clientes->fetch_assoc()): ?>
+                    <div class="mobile-item-card">
+                        <div class="mobile-item-title">
+                            <?php echo htmlspecialchars($cliente['nome']); ?>
+                            <small class="text-muted d-block fw-normal"><?php echo htmlspecialchars($cliente['email']); ?></small>
+                        </div>
+                        <div class="mobile-item-meta">
+                            <div style="grid-column: 1 / -1;">
+                                <span class="mobile-item-meta-label">Empresas Associadas</span>
+                                <span class="mobile-item-meta-value">
+                                    <?php if ($cliente['empresas_associadas'] > 0): ?>
+                                        <small class="text-muted"><?php echo htmlspecialchars($cliente['nomes_empresas']); ?></small>
+                                    <?php else: ?>
+                                        <span class="badge bg-warning">Todas as empresas</span>
+                                    <?php endif; ?>
+                                </span>
+                            </div>
+                            <div>
+                                <span class="mobile-item-meta-label">Qtd. Empresas</span>
+                                <span class="mobile-item-meta-value">
+                                    <span class="badge bg-primary"><?php echo $cliente['empresas_associadas']; ?></span>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="mobile-item-actions">
+                            <button type="button" class="btn btn-sm btn-outline-primary"
+                                    data-bs-toggle="modal"
+                                    data-bs-target="#empresasModal"
+                                    data-cliente-id="<?php echo $cliente['id']; ?>"
+                                    data-cliente-nome="<?php echo htmlspecialchars($cliente['nome']); ?>">
+                                <i class="fas fa-edit"></i> Configurar
+                            </button>
+                        </div>
+                    </div>
+                <?php endwhile; ?>
+            <?php else: ?>
+                <p class="text-center text-muted mb-0">Nenhum cliente encontrado.</p>
+            <?php endif; ?>
         </div>
     </div>
 </div>

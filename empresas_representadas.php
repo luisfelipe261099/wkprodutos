@@ -270,7 +270,7 @@ include_once __DIR__ . '/includes/header.php';
     <div class="card-body-modern">
         <?php if ($total_empresas > 0): ?>
             <!-- Desktop Table -->
-            <div class="table-modern d-none d-md-block">
+            <div class="table-modern table-responsive-custom">
                 <table class="table table-hover mb-0" id="empresasTable">
                     <thead>
                         <tr>
@@ -356,6 +356,77 @@ include_once __DIR__ . '/includes/header.php';
                     </tbody>
                 </table>
             </div>
+
+            <!-- Cards para Mobile -->
+            <div class="mobile-items-container">
+                <?php $result_empresas->data_seek(0); ?>
+                <?php while($row = $result_empresas->fetch_assoc()): ?>
+                <div class="mobile-item-card">
+                    <div class="mobile-item-title">
+                        <?php echo htmlspecialchars($row['nome_empresa']); ?>
+                        <small class="text-muted d-block fw-normal"><?php echo htmlspecialchars($row['cnpj'] ?: 'CNPJ não informado'); ?></small>
+                    </div>
+                    <div class="mobile-item-meta">
+                        <?php if (!empty($row['contato_responsavel']) || !empty($row['telefone_responsavel'])): ?>
+                        <div>
+                            <span class="mobile-item-meta-label">Contato</span>
+                            <span class="mobile-item-meta-value">
+                                <?php echo htmlspecialchars($row['contato_responsavel'] ?: '-'); ?>
+                                <?php if (!empty($row['telefone_responsavel'])): ?>
+                                    <small class="text-muted d-block"><?php echo htmlspecialchars($row['telefone_responsavel']); ?></small>
+                                <?php endif; ?>
+                            </span>
+                        </div>
+                        <?php endif; ?>
+                        <div>
+                            <span class="mobile-item-meta-label">Comissão</span>
+                            <span class="mobile-item-meta-value fw-bold text-success"><?php echo number_format($row['comissao_padrao'], 2); ?>%</span>
+                        </div>
+                        <div>
+                            <span class="mobile-item-meta-label">Produtos</span>
+                            <span class="mobile-item-meta-value">
+                                <?php echo $row['total_produtos'] ?: 0; ?>
+                                <?php if ($row['produtos_criticos'] > 0): ?>
+                                    <small class="text-warning d-block"><i class="fas fa-exclamation-triangle"></i> <?php echo $row['produtos_criticos']; ?> críticos</small>
+                                <?php endif; ?>
+                            </span>
+                        </div>
+                        <div>
+                            <span class="mobile-item-meta-label">Vendas</span>
+                            <span class="mobile-item-meta-value">
+                                <?php echo $row['total_vendas'] ?: 0; ?>
+                                <?php if ($row['valor_vendas'] > 0): ?>
+                                    <small class="text-muted d-block">R$ <?php echo number_format($row['valor_vendas'], 0, ',', '.'); ?></small>
+                                <?php endif; ?>
+                            </span>
+                        </div>
+                        <div>
+                            <span class="mobile-item-meta-label">Status</span>
+                            <span class="mobile-item-meta-value">
+                                <span class="status-badge <?php echo $row['status'] == 'ativo' ? 'status-success' : 'status-warning'; ?>">
+                                    <?php echo ucfirst($row['status']); ?>
+                                </span>
+                            </span>
+                        </div>
+                    </div>
+                    <div class="mobile-item-actions">
+                        <a href="cadastro_empresa.php?id=<?php echo $row['id']; ?>"
+                           class="btn btn-outline-primary btn-sm" title="Editar">
+                            <i class="fas fa-edit"></i>
+                        </a>
+                        <a href="relatorio_empresa.php?id=<?php echo $row['id']; ?>"
+                           class="btn btn-outline-info btn-sm" title="Relatório">
+                            <i class="fas fa-chart-bar"></i>
+                        </a>
+                        <button class="btn btn-outline-danger btn-sm"
+                                onclick="confirmDelete(<?php echo $row['id']; ?>)" title="Excluir">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                </div>
+                <?php endwhile; ?>
+            </div>
+
             <?php echo render_pagination($total_empresas, $emp_pag_atual, $emp_por_pag); ?>
         <?php else: ?>
             <div class="text-center py-5">

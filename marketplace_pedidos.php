@@ -249,7 +249,7 @@ include_once __DIR__ . '/includes/header.php';
 
 <!-- Stats Cards -->
 <div class="row g-4 mb-4">
-    <div class="col-md-3">
+    <div class="col-6 col-md-3">
         <div class="stats-card primary fade-in-up">
             <div class="stats-icon primary">
                 <i class="fas fa-shopping-cart"></i>
@@ -259,7 +259,7 @@ include_once __DIR__ . '/includes/header.php';
         </div>
     </div>
     
-    <div class="col-md-3">
+    <div class="col-6 col-md-3">
         <div class="stats-card warning fade-in-up">
             <div class="stats-icon warning">
                 <i class="fas fa-clock"></i>
@@ -269,7 +269,7 @@ include_once __DIR__ . '/includes/header.php';
         </div>
     </div>
     
-    <div class="col-md-3">
+    <div class="col-6 col-md-3">
         <div class="stats-card info fade-in-up">
             <div class="stats-icon info">
                 <i class="fas fa-check-circle"></i>
@@ -279,7 +279,7 @@ include_once __DIR__ . '/includes/header.php';
         </div>
     </div>
     
-    <div class="col-md-3">
+    <div class="col-6 col-md-3">
         <div class="stats-card success fade-in-up">
             <div class="stats-icon success">
                 <i class="fas fa-truck"></i>
@@ -347,7 +347,7 @@ include_once __DIR__ . '/includes/header.php';
         </div>
     </div>
     <div class="card-body-modern">
-        <div class="table-responsive">
+        <div class="table-responsive table-responsive-custom">
             <table class="table table-hover">
                 <thead>
                     <tr>
@@ -525,6 +525,181 @@ include_once __DIR__ . '/includes/header.php';
                     ?>
                 </tbody>
             </table>
+        </div>
+
+        <!-- Cards para Mobile -->
+        <div class="mobile-items-container">
+            <?php
+            if ($result_pedidos && $result_pedidos->num_rows > 0) {
+                $result_pedidos->data_seek(0);
+                while($pedido = $result_pedidos->fetch_assoc()) {
+                    // Define a classe de badge para o status
+                    $status_class = '';
+                    switch ($pedido['status_pedido']) {
+                        case 'confirmado':
+                        case 'preparando':
+                            $status_class = 'bg-info';
+                            break;
+                        case 'pendente':
+                            $status_class = 'bg-warning text-dark';
+                            break;
+                        case 'entregue':
+                            $status_class = 'bg-success';
+                            break;
+                        case 'cancelado':
+                            $status_class = 'bg-danger';
+                            break;
+                        default:
+                            $status_class = 'bg-secondary';
+                    }
+
+                    $tipo_faturamento_texto = '';
+                    switch ($pedido['tipo_faturamento']) {
+                        case 'avista': $tipo_faturamento_texto = 'À Vista'; break;
+                        case '15_dias': $tipo_faturamento_texto = '15 dias'; break;
+                        case '20_dias': $tipo_faturamento_texto = '20 dias'; break;
+                        case '30_dias': $tipo_faturamento_texto = '30 dias'; break;
+                    }
+                    ?>
+                    <div class="mobile-item-card">
+                        <div class="mobile-item-title">
+                            #<?php echo htmlspecialchars($pedido['numero_pedido']); ?>
+                            <small class="text-muted d-block fw-normal">
+                                <?php echo htmlspecialchars($pedido['cliente_nome']); ?>
+                                <?php if ($pedido['cliente_id']): ?>
+                                    (<?php echo codigo_cliente((int)$pedido['cliente_id']); ?>)
+                                <?php endif; ?>
+                            </small>
+                        </div>
+                        <div class="mobile-item-meta">
+                            <div>
+                                <span class="mobile-item-meta-label">Data</span>
+                                <span class="mobile-item-meta-value"><?php echo date('d/m/Y H:i', strtotime($pedido['data_pedido'])); ?></span>
+                            </div>
+                            <?php if ($pedido['data_entrega_agendada']): ?>
+                            <div>
+                                <span class="mobile-item-meta-label">Entrega</span>
+                                <span class="mobile-item-meta-value"><?php echo date('d/m/Y', strtotime($pedido['data_entrega_agendada'])); ?></span>
+                            </div>
+                            <?php endif; ?>
+                            <div>
+                                <span class="mobile-item-meta-label">Valor</span>
+                                <span class="mobile-item-meta-value">R$ <?php echo number_format($pedido['valor_total'], 2, ',', '.'); ?></span>
+                            </div>
+                            <div>
+                                <span class="mobile-item-meta-label">Faturamento</span>
+                                <span class="mobile-item-meta-value">
+                                    <?php echo $tipo_faturamento_texto; ?>
+                                    <?php if ($pedido['data_vencimento']): ?>
+                                        <small class="text-muted d-block">Venc: <?php echo date('d/m/Y', strtotime($pedido['data_vencimento'])); ?></small>
+                                    <?php endif; ?>
+                                </span>
+                            </div>
+                            <div>
+                                <span class="mobile-item-meta-label">Status</span>
+                                <span class="mobile-item-meta-value">
+                                    <span class="badge <?php echo $status_class; ?>">
+                                        <?php echo ucfirst(str_replace('_', ' ', $pedido['status_pedido'])); ?>
+                                    </span>
+                                </span>
+                            </div>
+                            <div>
+                                <span class="mobile-item-meta-label">Integração</span>
+                                <span class="mobile-item-meta-value">
+                                    <?php if ($pedido['venda_integrada'] && $pedido['transacao_integrada']): ?>
+                                        <span class="badge bg-success" title="Venda e transação financeira criadas">
+                                            <i class="fas fa-check"></i> Integrado
+                                        </span>
+                                    <?php elseif ($pedido['status_pedido'] == 'confirmado'): ?>
+                                        <span class="badge bg-warning text-dark" title="Pedido confirmado mas não integrado">
+                                            <i class="fas fa-exclamation-triangle"></i> Pendente
+                                        </span>
+                                    <?php else: ?>
+                                        <span class="badge bg-secondary" title="Aguardando confirmação">
+                                            <i class="fas fa-clock"></i> Aguardando
+                                        </span>
+                                    <?php endif; ?>
+                                </span>
+                            </div>
+                            <div>
+                                <span class="mobile-item-meta-label">Itens</span>
+                                <span class="mobile-item-meta-value">
+                                    <span class="badge bg-light text-dark"><?php echo $pedido['total_itens']; ?> itens</span>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="mobile-item-actions">
+                            <a href="marketplace_detalhes_pedido.php?id=<?php echo $pedido['id']; ?>" class="btn btn-info btn-sm" title="Ver Detalhes">
+                                <i class="fas fa-eye"></i>
+                            </a>
+
+                            <?php if ($pedido['status_pedido'] != 'cancelado' && $pedido['status_pedido'] != 'entregue'): ?>
+                                <div class="dropdown">
+                                    <button class="btn btn-primary btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <ul class="dropdown-menu">
+                                        <?php if ($pedido['status_pedido'] == 'pendente'): ?>
+                                            <li>
+                                                <form method="POST" style="display: inline;">
+                                                    <input type="hidden" name="acao" value="atualizar_status">
+                                                    <input type="hidden" name="pedido_id" value="<?php echo $pedido['id']; ?>">
+                                                    <input type="hidden" name="novo_status" value="confirmado">
+                                                    <button type="submit" class="dropdown-item">
+                                                        <i class="fas fa-check me-2"></i>Confirmar
+                                                    </button>
+                                                </form>
+                                            </li>
+                                        <?php endif; ?>
+
+                                        <?php if ($pedido['status_pedido'] == 'confirmado'): ?>
+                                            <li>
+                                                <form method="POST" style="display: inline;">
+                                                    <input type="hidden" name="acao" value="atualizar_status">
+                                                    <input type="hidden" name="pedido_id" value="<?php echo $pedido['id']; ?>">
+                                                    <input type="hidden" name="novo_status" value="preparando">
+                                                    <button type="submit" class="dropdown-item">
+                                                        <i class="fas fa-cog me-2"></i>Preparando
+                                                    </button>
+                                                </form>
+                                            </li>
+                                        <?php endif; ?>
+
+                                        <?php if ($pedido['status_pedido'] == 'preparando'): ?>
+                                            <li>
+                                                <form method="POST" style="display: inline;">
+                                                    <input type="hidden" name="acao" value="atualizar_status">
+                                                    <input type="hidden" name="pedido_id" value="<?php echo $pedido['id']; ?>">
+                                                    <input type="hidden" name="novo_status" value="entregue">
+                                                    <button type="submit" class="dropdown-item">
+                                                        <i class="fas fa-truck me-2"></i>Marcar como Entregue
+                                                    </button>
+                                                </form>
+                                            </li>
+                                        <?php endif; ?>
+
+                                        <li><hr class="dropdown-divider"></li>
+                                        <li>
+                                            <form method="POST" style="display: inline;">
+                                                <input type="hidden" name="acao" value="atualizar_status">
+                                                <input type="hidden" name="pedido_id" value="<?php echo $pedido['id']; ?>">
+                                                <input type="hidden" name="novo_status" value="cancelado">
+                                                <button type="submit" class="dropdown-item text-danger" onclick="return confirm('Tem certeza que deseja cancelar este pedido?')">
+                                                    <i class="fas fa-times me-2"></i>Cancelar
+                                                </button>
+                                            </form>
+                                        </li>
+                                    </ul>
+                                </div>
+                            <?php endif; ?>
+                        </div>
+                    </div>
+                    <?php
+                }
+            } else {
+                echo '<p class="text-center text-muted mb-0">Nenhum pedido encontrado.</p>';
+            }
+            ?>
         </div>
     </div>
 </div>

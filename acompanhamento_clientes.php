@@ -146,7 +146,7 @@ include_once __DIR__ . '/includes/header.php';
         </span>
     </div>
     <div class="card-body-modern">
-        <div class="table-responsive">
+        <div class="table-responsive table-responsive-custom">
             <table class="table table-hover table-striped">
                 <thead>
                     <tr>
@@ -207,7 +207,66 @@ include_once __DIR__ . '/includes/header.php';
                 </tbody>
             </table>
         </div>
-        
+
+        <!-- Cards para Mobile -->
+        <div class="mobile-items-container">
+            <?php if (count($lembretes) > 0): ?>
+                <?php foreach ($lembretes as $lembrete):
+                    $is_overdue = (strtotime($lembrete['data_lembrete']) < strtotime('today')) && $lembrete['status_lembrete'] == 'Pendente';
+                ?>
+                <div class="mobile-item-card">
+                    <div class="mobile-item-title">
+                        <?php if($is_overdue): ?><i class="fas fa-exclamation-circle text-danger" title="Atrasado!"></i>
+                        <?php elseif($lembrete['status_lembrete'] == 'Pendente'): ?><i class="fas fa-clock text-warning" title="Pendente"></i>
+                        <?php else: ?><i class="fas fa-check-circle text-success" title="Concluído"></i><?php endif; ?>
+                        <?php echo htmlspecialchars($lembrete['nome_cliente']); ?>
+                        <small class="text-muted d-block fw-normal"><?php echo date('d/m/Y', strtotime($lembrete['data_lembrete'])); ?></small>
+                    </div>
+                    <div class="mobile-item-meta">
+                        <div>
+                            <span class="mobile-item-meta-label">Status</span>
+                            <span class="mobile-item-meta-value">
+                                <span class="badge bg-<?php
+                                    switch ($lembrete['status_lembrete']) {
+                                        case 'Pendente': echo $is_overdue ? 'danger' : 'warning text-dark'; break;
+                                        case 'Concluído': echo 'success'; break;
+                                        default: echo 'secondary';
+                                    }
+                                ?>"><?php echo htmlspecialchars($lembrete['status_lembrete']); ?></span>
+                            </span>
+                        </div>
+                        <div>
+                            <span class="mobile-item-meta-label">Venda Assoc.</span>
+                            <span class="mobile-item-meta-value">
+                                <?php if (!empty($lembrete['venda_id'])): ?>
+                                    <a href="ver_venda.php?id=<?php echo $lembrete['venda_id']; ?>" class="btn btn-sm btn-outline-secondary" title="Ver Venda Associada">#<?php echo $lembrete['venda_id']; ?></a>
+                                <?php else: ?>
+                                    -
+                                <?php endif; ?>
+                            </span>
+                        </div>
+                        <div>
+                            <span class="mobile-item-meta-label">Criado por</span>
+                            <span class="mobile-item-meta-value"><?php echo htmlspecialchars($lembrete['nome_usuario'] ?? 'Sistema'); ?></span>
+                        </div>
+                        <div style="grid-column: 1 / -1;">
+                            <span class="mobile-item-meta-label">Descrição</span>
+                            <span class="mobile-item-meta-value" style="white-space: pre-wrap; word-wrap: break-word;"><?php echo nl2br(htmlspecialchars($lembrete['descricao'])); ?></span>
+                        </div>
+                    </div>
+                    <div class="mobile-item-actions">
+                        <?php if ($lembrete['status_lembrete'] == 'Pendente'): ?>
+                            <a href="acompanhamento_clientes.php?action=concluir&id=<?php echo $lembrete['id']; ?>" class="btn btn-sm btn-success" title="Marcar como Concluído" onclick="return confirm('Marcar este lembrete como concluído?');"><i class="fas fa-check"></i></a>
+                        <?php endif; ?>
+                        <a href="criar_acompanhamento_venda.php?venda_id=<?php echo $lembrete['venda_id']; ?>" class="btn btn-sm btn-info" title="Criar Novo Acompanhamento para esta Venda"><i class="fas fa-plus"></i></a>
+                    </div>
+                </div>
+                <?php endforeach; ?>
+            <?php else: ?>
+                <div class="text-center p-4">Nenhum lembrete encontrado para os filtros selecionados.</div>
+            <?php endif; ?>
+        </div>
+
         <?php
         echo render_pagination([
             'current_page' => $pagina_atual,

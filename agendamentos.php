@@ -68,7 +68,7 @@ $conn->close();
 include_once __DIR__ . '/includes/header.php';
 ?>
 
-<div class="page-header d-flex justify-content-between align-items-center">
+<div class="page-header d-flex justify-content-between align-items-center flex-wrap gap-2">
     <div>
         <h1 class="page-title"><i class="fas fa-calendar-alt me-2"></i>Agendamentos</h1>
         <p class="page-subtitle">Gerenciamento de agendamentos de entrega</p>
@@ -128,7 +128,7 @@ include_once __DIR__ . '/includes/header.php';
         <h5 class="modern-card-title"><i class="fas fa-list me-2"></i>Lista de Agendamentos</h5>
     </div>
     <div class="card-body-modern">
-        <div class="table-responsive">
+        <div class="table-responsive table-responsive-custom">
                 <table class="table table-hover">
                 <thead>
                     <tr>
@@ -204,6 +204,82 @@ include_once __DIR__ . '/includes/header.php';
                 </tbody>
             </table>
         </div>
+
+        <!-- Cards para Mobile -->
+        <div class="mobile-items-container">
+            <?php
+            if ($result_agendamentos->num_rows > 0) {
+                $result_agendamentos->data_seek(0);
+                while($row = $result_agendamentos->fetch_assoc()) {
+                    $status_class = '';
+                    switch ($row['status_entrega']) {
+                        case 'agendado':
+                            $status_class = 'bg-primary';
+                            break;
+                        case 'em_rota':
+                            $status_class = 'bg-info';
+                            break;
+                        case 'entregue':
+                            $status_class = 'bg-success';
+                            break;
+                        case 'cancelado':
+                            $status_class = 'bg-danger';
+                            break;
+                        default:
+                            $status_class = 'bg-secondary';
+                    }
+
+                    $referencia = 'N/A';
+                    if ($row['venda_id']) {
+                        $referencia = '<a href="detalhes_venda.php?id=' . htmlspecialchars($row['venda_id']) . '" class="text-decoration-none">Venda #' . htmlspecialchars($row['venda_id']) . '</a>';
+                    } elseif ($row['orcamento_id']) {
+                        $referencia = '<a href="detalhes_orcamento.php?id=' . htmlspecialchars($row['orcamento_id']) . '" class="text-decoration-none">Orçamento #' . htmlspecialchars($row['orcamento_id']) . '</a>';
+                    }
+                    ?>
+                    <div class="mobile-item-card">
+                        <div class="mobile-item-title">
+                            <?php echo htmlspecialchars($row['nome_cliente']); ?>
+                            <small class="text-muted d-block fw-normal">
+                                #<?php echo htmlspecialchars($row['id']); ?> &middot; <?php echo date('d/m/Y H:i', strtotime($row['data_hora_entrega'])); ?>
+                            </small>
+                        </div>
+
+                        <div class="mobile-item-meta">
+                            <div>
+                                <span class="mobile-item-meta-label">Status</span>
+                                <span class="mobile-item-meta-value"><span class="badge <?php echo $status_class; ?>"><?php echo htmlspecialchars(ucfirst(str_replace('_', ' ', $row['status_entrega']))); ?></span></span>
+                            </div>
+                            <div>
+                                <span class="mobile-item-meta-label">Venda/Orçamento</span>
+                                <span class="mobile-item-meta-value"><?php echo $referencia; ?></span>
+                            </div>
+                            <div>
+                                <span class="mobile-item-meta-label">Endereço</span>
+                                <span class="mobile-item-meta-value"><?php echo htmlspecialchars($row['endereco_entrega']); ?></span>
+                            </div>
+                        </div>
+
+                        <div class="mobile-item-actions">
+                            <a href="detalhes_agendamento.php?id=<?php echo $row['id']; ?>" class="btn btn-info btn-sm" title="Ver Detalhes">
+                                <i class="fas fa-eye"></i>
+                                <span class="ms-1">Detalhes</span>
+                            </a>
+                            <a href="agendar_entrega.php?id=<?php echo $row['id']; ?>" class="btn btn-primary btn-sm" title="Editar">
+                                <i class="fas fa-edit"></i>
+                                <span class="ms-1">Editar</span>
+                            </a>
+                            <button type="button" class="btn btn-warning btn-sm" title="Alterar Status" data-bs-toggle="modal" data-bs-target="#modalStatusAgendamento" data-id="<?php echo $row['id']; ?>" data-current-status="<?php echo $row['status_entrega']; ?>">
+                                <i class="fas fa-sync-alt"></i>
+                                <span class="ms-1">Status</span>
+                            </button>
+                        </div>
+                    </div>
+                    <?php
+                }
+            }
+            ?>
+        </div>
+
         <?php echo render_pagination($ag_total, $ag_pag_atual, $ag_por_pag); ?>
     </div>
 </div>

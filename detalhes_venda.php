@@ -92,7 +92,7 @@ include_once __DIR__ . '/includes/header.php';
     }
     ?>
     <div class="card shadow-sm mb-4">
-        <div class="card-header bg-white d-flex justify-content-between align-items-center">
+        <div class="card-header bg-white d-flex justify-content-between align-items-center flex-wrap gap-2">
             <h5>Informações da Venda</h5>
             <div>
                 <a href="gerar_pdf_venda.php?id=<?php echo htmlspecialchars($venda['id']); ?>" class="btn btn-success btn-sm me-2" title="Gerar PDF de Confirmação" target="_blank">
@@ -129,7 +129,7 @@ include_once __DIR__ . '/includes/header.php';
     </div>
 
     <h4 class="mb-3"><i class="fas fa-boxes me-2 text-primary"></i> Itens da Venda</h4>
-    <div class="table-responsive">
+    <div class="table-responsive table-responsive-custom">
         <table class="table table-bordered table-striped">
             <thead>
                 <tr>
@@ -159,6 +159,38 @@ include_once __DIR__ . '/includes/header.php';
                 ?>
             </tbody>
         </table>
+    </div>
+
+    <!-- Cards para Mobile -->
+    <div class="mobile-items-container">
+        <?php if (!empty($itens_venda)): ?>
+            <?php foreach ($itens_venda as $item): ?>
+                <?php $subtotal_item = $item['quantidade'] * $item['preco_unitario']; ?>
+                <div class="mobile-item-card">
+                    <div class="mobile-item-title">
+                        <?php echo htmlspecialchars($item['produto_nome']); ?>
+                    </div>
+                    <div class="mobile-item-meta">
+                        <div>
+                            <span class="mobile-item-meta-label">Quantidade</span>
+                            <span class="mobile-item-meta-value"><?php echo htmlspecialchars($item['quantidade']); ?></span>
+                        </div>
+                        <div>
+                            <span class="mobile-item-meta-label">Preço Unitário</span>
+                            <span class="mobile-item-meta-value">R$ <?php echo number_format($item['preco_unitario'], 2, ',', '.'); ?></span>
+                        </div>
+                        <div>
+                            <span class="mobile-item-meta-label">Subtotal</span>
+                            <span class="mobile-item-meta-value">R$ <?php echo number_format($subtotal_item, 2, ',', '.'); ?></span>
+                        </div>
+                    </div>
+                </div>
+            <?php endforeach; ?>
+        <?php else: ?>
+            <div class="mobile-item-card">
+                <div class="text-center text-muted">Nenhum item encontrado para esta venda.</div>
+            </div>
+        <?php endif; ?>
     </div>
 
 <?php endif; ?>

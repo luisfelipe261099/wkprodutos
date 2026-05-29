@@ -290,7 +290,7 @@ include_once __DIR__ . '/includes/header.php';
         </div>
     </div>
     <div class="card-body-modern">
-        <div class="table-responsive">
+        <div class="table-responsive table-responsive-custom">
             <table class="table table-hover">
                 <thead>
                     <tr>
@@ -403,6 +403,125 @@ include_once __DIR__ . '/includes/header.php';
                     ?>
                 </tbody>
             </table>
+        </div>
+
+        <!-- Cards para Mobile -->
+        <div class="mobile-items-container">
+            <?php
+            if ($result_links && $result_links->num_rows > 0) {
+                $result_links->data_seek(0);
+                while($link = $result_links->fetch_assoc()) {
+                    $url_marketplace = "http://" . $_SERVER['HTTP_HOST'] . dirname($_SERVER['PHP_SELF']) . "/marketplace.php?token=" . $link['token_acesso'];
+                    $url_orcamento = "http://" . $_SERVER['HTTP_HOST'] . dirname($_SERVER['PHP_SELF']) . "/orcamento_cliente.php?token=" . $link['token_acesso'];
+                    $status_class = $link['ativo'] ? 'success' : 'danger';
+                    $status_text = $link['ativo'] ? 'Ativo' : 'Inativo';
+
+                    // Verificar se expirou
+                    $expirado = false;
+                    if ($link['data_expiracao'] && strtotime($link['data_expiracao']) < time()) {
+                        $expirado = true;
+                        $status_class = 'warning';
+                        $status_text = 'Expirado';
+                    }
+                    ?>
+                    <div class="mobile-item-card">
+                        <div class="mobile-item-title">
+                            <?php if (strpos($link['cliente_nome'] ?? '', '[Avulso]') === 0): ?>
+                                <span class="badge bg-warning text-dark">Avulso</span>
+                                <small class="text-muted d-block fw-normal">Link genérico</small>
+                            <?php else: ?>
+                                <?php echo htmlspecialchars($link['cliente_nome']); ?>
+                                <small class="text-muted d-block fw-normal"><?php echo htmlspecialchars($link['cliente_email']); ?></small>
+                            <?php endif; ?>
+                        </div>
+                        <div class="mobile-item-meta">
+                            <div>
+                                <span class="mobile-item-meta-label">Status</span>
+                                <span class="mobile-item-meta-value">
+                                    <span class="badge bg-<?php echo $status_class; ?>"><?php echo $status_text; ?></span>
+                                </span>
+                            </div>
+                            <div>
+                                <span class="mobile-item-meta-label">Acessos</span>
+                                <span class="mobile-item-meta-value"><?php echo $link['total_acessos']; ?></span>
+                            </div>
+                            <div>
+                                <span class="mobile-item-meta-label">Criado em</span>
+                                <span class="mobile-item-meta-value"><?php echo date('d/m/Y H:i', strtotime($link['data_criacao'])); ?></span>
+                            </div>
+                            <div>
+                                <span class="mobile-item-meta-label">Expira em</span>
+                                <span class="mobile-item-meta-value">
+                                    <?php
+                                    if ($link['data_expiracao']) {
+                                        echo date('d/m/Y', strtotime($link['data_expiracao']));
+                                    } else {
+                                        echo '<span class="text-muted">Sem expiração</span>';
+                                    }
+                                    ?>
+                                </span>
+                            </div>
+                            <div>
+                                <span class="mobile-item-meta-label">Último Acesso</span>
+                                <span class="mobile-item-meta-value">
+                                    <?php
+                                    if ($link['ultimo_acesso']) {
+                                        echo date('d/m/Y H:i', strtotime($link['ultimo_acesso']));
+                                    } else {
+                                        echo '<span class="text-muted">Nunca</span>';
+                                    }
+                                    ?>
+                                </span>
+                            </div>
+                            <div style="grid-column: 1 / -1;">
+                                <span class="mobile-item-meta-label">Link Marketplace</span>
+                                <div class="input-group">
+                                    <input type="text" class="form-control form-control-sm" style="min-width:0;" value="<?php echo $url_marketplace; ?>" readonly id="m_link_<?php echo $link['id']; ?>">
+                                    <button class="btn btn-outline-primary btn-sm" type="button" onclick="copiarLink('m_link_<?php echo $link['id']; ?>')" title="Copiar link marketplace">
+                                        <i class="fas fa-copy"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <div style="grid-column: 1 / -1;">
+                                <span class="mobile-item-meta-label">Link Orçamento</span>
+                                <div class="input-group">
+                                    <input type="text" class="form-control form-control-sm" style="min-width:0;" value="<?php echo $url_orcamento; ?>" readonly id="m_link_orc_<?php echo $link['id']; ?>">
+                                    <button class="btn btn-outline-success btn-sm" type="button" onclick="copiarLink('m_link_orc_<?php echo $link['id']; ?>')" title="Copiar link orçamento">
+                                        <i class="fas fa-copy"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mobile-item-actions">
+                            <?php if ($link['ativo'] && !$expirado): ?>
+                                <form method="POST" style="display: inline;">
+                                    <input type="hidden" name="acao" value="desativar_link">
+                                    <input type="hidden" name="link_id" value="<?php echo $link['id']; ?>">
+                                    <button type="submit" class="btn btn-warning btn-sm" title="Desativar">
+                                        <i class="fas fa-pause"></i>
+                                    </button>
+                                </form>
+                            <?php else: ?>
+                                <form method="POST" style="display: inline;">
+                                    <input type="hidden" name="acao" value="ativar_link">
+                                    <input type="hidden" name="link_id" value="<?php echo $link['id']; ?>">
+                                    <button type="submit" class="btn btn-success btn-sm" title="Ativar">
+                                        <i class="fas fa-play"></i>
+                                    </button>
+                                </form>
+                            <?php endif; ?>
+
+                            <a href="<?php echo $url_marketplace; ?>" target="_blank" class="btn btn-info btn-sm" title="Visualizar">
+                                <i class="fas fa-external-link-alt"></i>
+                            </a>
+                        </div>
+                    </div>
+                    <?php
+                }
+            } else {
+                echo '<p class="text-center text-muted mb-0">Nenhum link gerado ainda.</p>';
+            }
+            ?>
         </div>
     </div>
 </div>

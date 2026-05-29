@@ -298,7 +298,7 @@ include_once __DIR__ . '/includes/header.php';
                         </a>
                     </div>
                 <?php else: ?>
-                    <div class="table-modern">
+                    <div class="table-modern table-responsive-custom">
                         <table class="table table-hover mb-0">
                             <thead>
                                 <tr>
@@ -369,6 +369,58 @@ include_once __DIR__ . '/includes/header.php';
                             </tbody>
                         </table>
                     </div>
+
+                    <!-- Cards para Mobile -->
+                    <div class="mobile-items-container">
+                        <?php foreach ($ultimas_vendas as $venda): ?>
+                            <?php
+                            $status_class = '';
+                            switch($venda['status_venda']) {
+                                case 'concluida':
+                                    $status_class = 'status-success';
+                                    $status_text = 'Concluída';
+                                    break;
+                                case 'pendente':
+                                    $status_class = 'status-warning';
+                                    $status_text = 'Pendente';
+                                    break;
+                                case 'cancelada':
+                                    $status_class = 'status-danger';
+                                    $status_text = 'Cancelada';
+                                    break;
+                                default:
+                                    $status_class = 'status-info';
+                                    $status_text = ucfirst($venda['status_venda']);
+                            }
+                            ?>
+                            <div class="mobile-item-card">
+                                <div class="mobile-item-title">
+                                    Venda #<?php echo $venda['id']; ?>
+                                    <small class="text-muted d-block fw-normal"><?php echo htmlspecialchars($venda['cliente_nome'] ?? 'Cliente não informado'); ?></small>
+                                </div>
+                                <div class="mobile-item-meta">
+                                    <div>
+                                        <span class="mobile-item-meta-label">Data</span>
+                                        <span class="mobile-item-meta-value"><?php echo date('d/m/Y H:i', strtotime($venda['data_venda'])); ?></span>
+                                    </div>
+                                    <div>
+                                        <span class="mobile-item-meta-label">Valor</span>
+                                        <span class="mobile-item-meta-value fw-bold text-success">R$ <?php echo number_format($venda['valor_total'], 2, ',', '.'); ?></span>
+                                    </div>
+                                    <div>
+                                        <span class="mobile-item-meta-label">Status</span>
+                                        <span class="mobile-item-meta-value"><span class="status-badge <?php echo $status_class; ?>"><?php echo $status_text; ?></span></span>
+                                    </div>
+                                </div>
+                                <div class="mobile-item-actions">
+                                    <a href="detalhes_venda.php?id=<?php echo $venda['id']; ?>" class="btn btn-outline-primary btn-sm">
+                                        <i class="fas fa-eye me-1"></i> Ver Detalhes
+                                    </a>
+                                </div>
+                            </div>
+                        <?php endforeach; ?>
+                    </div>
+
                     <div class="text-center mt-4">
                         <a href="vendas.php" class="btn btn-outline-primary">
                             <i class="fas fa-list me-2"></i> Ver Todas as Vendas

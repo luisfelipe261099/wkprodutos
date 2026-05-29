@@ -332,6 +332,7 @@ include_once __DIR__ . '/includes/header.php';
             <!-- Mobile Cards -->
             <div class="d-block d-md-none">
                         <?php
+                        $result_usuarios->data_seek(0);
                         while($row = $result_usuarios->fetch_assoc()) {
                     $is_current_user = ($row['id'] == $_SESSION['id']);
                     $is_active = isset($row['ativo']) ? $row['ativo'] : true;

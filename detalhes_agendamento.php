@@ -76,7 +76,7 @@ include_once __DIR__ . '/includes/header.php';
     }
     ?>
     <div class="card shadow-sm mb-4">
-        <div class="card-header bg-white d-flex justify-content-between align-items-center">
+        <div class="card-header bg-white d-flex justify-content-between align-items-center flex-wrap gap-2">
             <h5>Informações do Agendamento</h5>
             <div>
                 <a href="agendar_entrega.php?id=<?php echo htmlspecialchars($agendamento['id']); ?>" class="btn btn-primary btn-sm me-2" title="Editar Agendamento">
