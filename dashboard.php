@@ -16,78 +16,66 @@ require_once __DIR__ . '/includes/encoding_helper.php';
 checkAndAlertEncoding($conn);
 
 // --- Lógica para buscar dados dinâmicos para o Dashboard ---
+// OTIMIZAÇÃO: queries agrupadas (menos idas ao banco remoto) e filtros de data
+// "sargáveis" (intervalo em vez de DATE()/MONTH()/YEAR() na coluna) para permitir
+// o uso de índices em vendas.data_venda.
 
-// 1. Total de Vendas Concluídas Hoje
-$total_vendas_hoje = 0;
-$sql_vendas_hoje = "SELECT SUM(valor_total) FROM vendas WHERE status_venda = 'concluida' AND DATE(data_venda) = CURDATE()";
-if ($result = $conn->query($sql_vendas_hoje)) {
-    $total_vendas_hoje = $result->fetch_row()[0] ?? 0;
+$total_vendas_hoje = 0; $total_vendas_mes = 0;
+$lucro_hoje = 0; $lucro_mes = 0;
+$produtos_criticos = 0; $total_produtos = 0;
+$agendamentos_proximos = 0; $total_clientes = 0; $orcamentos_pendentes = 0;
+
+// 1 + 2) Total de vendas concluídas: hoje e no mês, em uma única consulta.
+$sql_vendas = "SELECT
+                  COALESCE(SUM(CASE WHEN data_venda >= CURDATE() AND data_venda < CURDATE() + INTERVAL 1 DAY THEN valor_total END), 0) AS hoje,
+                  COALESCE(SUM(valor_total), 0) AS mes
+               FROM vendas
+               WHERE status_venda = 'concluida'
+                 AND data_venda >= DATE_FORMAT(CURDATE(), '%Y-%m-01')
+                 AND data_venda <  DATE_FORMAT(CURDATE(), '%Y-%m-01') + INTERVAL 1 MONTH";
+if ($result = $conn->query($sql_vendas)) {
+    if ($row = $result->fetch_assoc()) {
+        $total_vendas_hoje = $row['hoje'];
+        $total_vendas_mes  = $row['mes'];
+    }
 }
 
-// 2. Total de Vendas do Mês
-$total_vendas_mes = 0;
-$sql_vendas_mes = "SELECT SUM(valor_total) FROM vendas WHERE status_venda = 'concluida' AND MONTH(data_venda) = MONTH(CURDATE()) AND YEAR(data_venda) = YEAR(CURDATE())";
-if ($result = $conn->query($sql_vendas_mes)) {
-    $total_vendas_mes = $result->fetch_row()[0] ?? 0;
+// 3 + 4) Lucro (hoje e mês) com os joins, também em uma única consulta.
+$sql_lucro = "SELECT
+                 COALESCE(SUM(CASE WHEN v.data_venda >= CURDATE() AND v.data_venda < CURDATE() + INTERVAL 1 DAY
+                                   THEN iv.preco_unitario * iv.quantidade * (p.percentual_lucro / 100) END), 0) AS hoje,
+                 COALESCE(SUM(iv.preco_unitario * iv.quantidade * (p.percentual_lucro / 100)), 0) AS mes
+              FROM vendas v
+              JOIN itens_venda iv ON v.id = iv.venda_id
+              JOIN produtos p ON iv.produto_id = p.id
+              WHERE v.status_venda = 'concluida'
+                AND v.data_venda >= DATE_FORMAT(CURDATE(), '%Y-%m-01')
+                AND v.data_venda <  DATE_FORMAT(CURDATE(), '%Y-%m-01') + INTERVAL 1 MONTH";
+if ($result = $conn->query($sql_lucro)) {
+    if ($row = $result->fetch_assoc()) {
+        $lucro_hoje = $row['hoje'];
+        $lucro_mes  = $row['mes'];
+    }
 }
 
-// --- NOVOS CÁLCULOS DE LUCRO ---
-
-// 3. Lucro Total de Hoje
-$lucro_hoje = 0;
-$sql_lucro_hoje = "SELECT SUM(iv.preco_unitario * iv.quantidade * (p.percentual_lucro / 100))
-                   FROM vendas v
-                   JOIN itens_venda iv ON v.id = iv.venda_id
-                   JOIN produtos p ON iv.produto_id = p.id
-                   WHERE v.status_venda = 'concluida' AND DATE(v.data_venda) = CURDATE()";
-if ($result = $conn->query($sql_lucro_hoje)) {
-    $lucro_hoje = $result->fetch_row()[0] ?? 0;
-}
-
-// 4. Lucro Total do Mês
-$lucro_mes = 0;
-$sql_lucro_mes = "SELECT SUM(iv.preco_unitario * iv.quantidade * (p.percentual_lucro / 100))
-                  FROM vendas v
-                  JOIN itens_venda iv ON v.id = iv.venda_id
-                  JOIN produtos p ON iv.produto_id = p.id
-                  WHERE v.status_venda = 'concluida' AND MONTH(v.data_venda) = MONTH(CURDATE()) AND YEAR(v.data_venda) = YEAR(CURDATE())";
-if ($result = $conn->query($sql_lucro_mes)) {
-    $lucro_mes = $result->fetch_row()[0] ?? 0;
-}
-
-// 5. Número de Produtos com Estoque Crítico
-$produtos_criticos = 0;
-$sql_produtos_criticos = "SELECT COUNT(*) FROM produtos WHERE quantidade_estoque <= estoque_minimo";
-if ($result = $conn->query($sql_produtos_criticos)) {
-    $produtos_criticos = $result->fetch_row()[0] ?? 0;
-}
-
-// 6. Total de Produtos
-$total_produtos = 0;
-$sql_total_produtos = "SELECT COUNT(*) FROM produtos";
-if ($result = $conn->query($sql_total_produtos)) {
-    $total_produtos = $result->fetch_row()[0] ?? 0;
-}
-
-// 7. Número de Agendamentos Próximos
-$agendamentos_proximos = 0;
-$sql_agendamentos_proximos = "SELECT COUNT(*) FROM agendamentos_entrega WHERE data_hora_entrega BETWEEN CURDATE() AND DATE_ADD(CURDATE(), INTERVAL 7 DAY) AND (status_entrega = 'agendado' OR status_entrega = 'em_rota')";
-if ($result = $conn->query($sql_agendamentos_proximos)) {
-    $agendamentos_proximos = $result->fetch_row()[0] ?? 0;
-}
-
-// 8. Total de Clientes
-$total_clientes = 0;
-$sql_total_clientes = "SELECT COUNT(*) FROM clientes";
-if ($result = $conn->query($sql_total_clientes)) {
-    $total_clientes = $result->fetch_row()[0] ?? 0;
-}
-
-// 9. Orçamentos Pendentes
-$orcamentos_pendentes = 0;
-$sql_orcamentos_pendentes = "SELECT COUNT(*) FROM orcamentos WHERE status_orcamento = 'pendente'";
-if ($result = $conn->query($sql_orcamentos_pendentes)) {
-    $orcamentos_pendentes = $result->fetch_row()[0] ?? 0;
+// 5 a 9) Contadores diversos (tabelas diferentes) em uma única ida ao banco.
+$sql_contadores = "SELECT
+        (SELECT COUNT(*) FROM produtos WHERE quantidade_estoque <= estoque_minimo) AS produtos_criticos,
+        (SELECT COUNT(*) FROM produtos) AS total_produtos,
+        (SELECT COUNT(*) FROM clientes) AS total_clientes,
+        (SELECT COUNT(*) FROM orcamentos WHERE status_orcamento = 'pendente') AS orcamentos_pendentes,
+        (SELECT COUNT(*) FROM agendamentos_entrega
+            WHERE data_hora_entrega >= CURDATE()
+              AND data_hora_entrega <  CURDATE() + INTERVAL 8 DAY
+              AND status_entrega IN ('agendado', 'em_rota')) AS agendamentos_proximos";
+if ($result = $conn->query($sql_contadores)) {
+    if ($row = $result->fetch_assoc()) {
+        $produtos_criticos    = $row['produtos_criticos'];
+        $total_produtos       = $row['total_produtos'];
+        $total_clientes       = $row['total_clientes'];
+        $orcamentos_pendentes = $row['orcamentos_pendentes'];
+        $agendamentos_proximos = $row['agendamentos_proximos'];
+    }
 }
 
 // 10. Vendas e Lucro dos últimos 7 dias para gráfico (SQL ATUALIZADO)

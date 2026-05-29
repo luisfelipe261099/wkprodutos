@@ -45,22 +45,23 @@ $user_role_label = (isset($_SESSION['nivel_acesso']) && $_SESSION['nivel_acesso'
     
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    
+
     <!-- Font Awesome -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" rel="stylesheet">
-    
-    <!-- Chart.js -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-    
-    <!-- CSS Principal (inline para garantir carregamento) -->
+
+    <!-- CSS Principal: arquivo estatico (cacheavel pelo navegador). Versionado por
+         mtime para invalidar o cache automaticamente a cada deploy/alteracao. -->
     <?php
     $main_css = __DIR__ . '/../css/main.css';
-    if (file_exists($main_css)) {
-        echo "<style>\n" . file_get_contents($main_css) . "\n</style>";
-    } else {
-        echo '<link rel="stylesheet" href="css/main.css">';
-    }
+    $css_ver = file_exists($main_css) ? filemtime($main_css) : '1';
     ?>
+    <link rel="stylesheet" href="/css/main.css?v=<?php echo $css_ver; ?>">
+
+    <!-- Chart.js: carregado apenas nas paginas com grafico e com defer
+         (nao bloqueia a renderizacao). A init no dashboard ja espera DOMContentLoaded. -->
+    <?php if (in_array($current_page, ['dashboard.php'], true)): ?>
+    <script defer src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <?php endif; ?>
 </head>
 <body>
     <!-- Sidebar -->

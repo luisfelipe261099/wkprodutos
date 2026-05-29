@@ -749,18 +749,60 @@ html, body {
         flex: 1 1 auto;
     }
 
-    .modal-dialog {
+    /* No celular, neutralizamos os comportamentos do Bootstrap que causam o
+       corte do rodapé:
+       - modal-dialog-centered usa min-height baseado em 100vh (centraliza e
+         empurra o modal pra baixo da barra do navegador);
+       - modal-dialog-scrollable fixa uma altura também baseada em 100vh.
+       Em vez disso, prendemos o modal no topo e limitamos pela altura VISÍVEL
+       (100dvh desconta a barra do navegador; 100vh é o fallback). */
+    .modal-dialog,
+    .modal-dialog-centered,
+    .modal-dialog-scrollable {
         width: calc(100vw - 1rem);
         max-width: calc(100vw - 1rem);
         margin: 0.5rem auto;
+        height: auto;            /* anula a altura fixa do scrollable */
+        min-height: 0;           /* anula o min-height do centered */
+        align-items: stretch;    /* não centraliza verticalmente */
+        max-height: calc(100vh - 1rem);
+        max-height: calc(100dvh - 1rem);
     }
 
-    .modal-content {
+    /* O conteúdo do modal vira uma coluna flexível limitada à tela visível:
+       o corpo rola e o cabeçalho/rodapé ficam sempre visíveis. */
+    .modal-dialog .modal-content {
         border-radius: 14px;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;                    /* nada vaza p/ fora do modal */
+        max-height: calc(100vh - 1rem);      /* fallback navegadores antigos */
+        max-height: calc(100dvh - 1rem);
     }
 
-    .modal-body {
-        max-height: calc(100vh - 180px);
+    /* Alguns modais envolvem header/body/footer num <form>. Para o corpo rolar
+       e o rodapé ficar fixo nesses casos, o form também precisa ser uma coluna
+       flexível que preenche o .modal-content. Cobre as 3 estruturas usadas no
+       sistema (com form em volta de tudo, sem form, ou form só no body+footer). */
+    .modal-dialog .modal-content > form {
+        display: flex;
+        flex-direction: column;
+        flex: 1 1 auto;
+        min-height: 0;
+        max-height: 100%;
+        overflow: hidden;
+    }
+
+    /* Cabeçalho e rodapé NUNCA encolhem -> os botões ficam sempre visíveis. */
+    .modal-dialog .modal-header,
+    .modal-dialog .modal-footer {
+        flex-shrink: 0;
+    }
+
+    /* Apenas o corpo rola quando o conteúdo é maior que a tela. */
+    .modal-dialog .modal-body {
+        flex: 1 1 auto;
+        min-height: 0;            /* permite o flex item encolher e rolar */
         overflow-y: auto;
         -webkit-overflow-scrolling: touch;
     }
