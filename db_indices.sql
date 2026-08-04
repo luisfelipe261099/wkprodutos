@@ -51,8 +51,12 @@ CREATE INDEX IF NOT EXISTS idx_transacoes_data ON transacoes_financeiras (data_t
 -- ============================================================================
 
 -- PRODUTOS -------------------------------------------------------------------
--- Filtro/JOIN por empresa representada na tela de produtos (produtos.php):
+-- OBS: o índice do filtro por empresa (idx_produtos_empresa em empresa_id) JÁ
+-- EXISTE no banco -- conferido no dump u182607388_karla_wollinge.sql. A linha
+-- abaixo fica só como documentação; com o IF NOT EXISTS ela não faz nada.
 CREATE INDEX IF NOT EXISTS idx_produtos_empresa      ON produtos (empresa_id);
--- Filtro por fornecedor + ordenação padrão por nome:
+
+-- Estes dois ainda NÃO existem. Ajudam o filtro por fornecedor e a ordenação
+-- padrão por nome na tela de produtos:
 CREATE INDEX IF NOT EXISTS idx_produtos_fornecedor   ON produtos (fornecedor);
 CREATE INDEX IF NOT EXISTS idx_produtos_nome         ON produtos (nome);
