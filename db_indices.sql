@@ -49,3 +49,10 @@ CREATE INDEX IF NOT EXISTS idx_transacoes_data ON transacoes_financeiras (data_t
 --  produtos costuma ser pequena. Se um dia ficar grande, a saída é manter uma
 --  coluna/flag "estoque_critico" atualizada por trigger e indexá-la.
 -- ============================================================================
+
+-- PRODUTOS -------------------------------------------------------------------
+-- Filtro/JOIN por empresa representada na tela de produtos (produtos.php):
+CREATE INDEX IF NOT EXISTS idx_produtos_empresa      ON produtos (empresa_id);
+-- Filtro por fornecedor + ordenação padrão por nome:
+CREATE INDEX IF NOT EXISTS idx_produtos_fornecedor   ON produtos (fornecedor);
+CREATE INDEX IF NOT EXISTS idx_produtos_nome         ON produtos (nome);

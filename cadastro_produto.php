@@ -80,10 +80,6 @@ $submit_button_text = "Cadastrar Produto";
 $message = '';
 $message_type = '';
 
-// Buscar empresas representadas para o dropdown
-$sql_empresas = "SELECT id, nome_empresa FROM empresas_representadas WHERE status = 'ativo' ORDER BY nome_empresa ASC";
-$result_empresas = $conn->query($sql_empresas);
-
 // Processar formulário quando enviado
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     // Coleta e sanitiza os dados do formulário
@@ -147,7 +143,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     if ($stmt->execute()) {
                         $message = "Produto cadastrado com sucesso!";
                         $message_type = "success";
-                        $id = $nome = $descricao = $sku = $preco_venda = $percentual_lucro = $quantidade_estoque = $estoque_minimo = $fornecedor = $empresa_id = "";
+                        // Mantém a empresa selecionada para agilizar o cadastro em sequência
+                        $id = $nome = $descricao = $sku = $preco_venda = $percentual_lucro = $quantidade_estoque = $estoque_minimo = $fornecedor = "";
                     } else {
                         $message = "Erro ao cadastrar produto: " . $stmt->error;
                         $message_type = "danger";
@@ -179,6 +176,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             }
         }
     }
+}
+
+// Pré-selecionar a empresa quando o usuário vem da listagem já filtrada por empresa
+if ($_SERVER["REQUEST_METHOD"] !== "POST" && !isset($_GET["id"]) && isset($_GET["empresa_id"]) && ctype_digit((string)$_GET["empresa_id"])) {
+    $empresa_id = (int)$_GET["empresa_id"];
 }
 
 // Preencher formulário para edição se um ID for passado via GET
@@ -213,6 +215,21 @@ if (isset($_GET["id"]) && empty($message)) {
     }
 }
 
+// Buscar empresas representadas para o dropdown. A empresa já vinculada ao produto
+// entra na lista mesmo se estiver inativa, para não ser perdida ao salvar a edição.
+$empresa_id_atual = ($empresa_id !== '' && ctype_digit((string)$empresa_id)) ? (int)$empresa_id : 0;
+$sql_empresas = "SELECT id, nome_empresa, status FROM empresas_representadas
+                 WHERE status = 'ativo' OR id = ?
+                 ORDER BY nome_empresa ASC";
+$stmt_empresas = $conn->prepare($sql_empresas);
+$stmt_empresas->bind_param("i", $empresa_id_atual);
+$stmt_empresas->execute();
+$empresas_list = $stmt_empresas->get_result()->fetch_all(MYSQLI_ASSOC);
+$stmt_empresas->close();
+
+// -1 é o valor sentinela usado para "estoque ilimitado"
+$estoque_e_ilimitado = ($quantidade_estoque !== '' && (int)$quantidade_estoque === -1);
+
 $conn->close();
 
 include_once __DIR__ . '/includes/header.php';
@@ -243,15 +260,24 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 </script>
 
-<!-- Select2 CSS -->
-<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
-<link href="https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.3.0/dist/select2-bootstrap-5-theme.min.css" rel="stylesheet" />
-
-<h2 class="mb-4"><i class="fas fa-<?php echo ($id ? 'edit' : 'plus-circle'); ?> me-2"></i> <?php echo $title; ?></h2>
+<div class="page-header fade-in-up d-flex flex-wrap justify-content-between align-items-center gap-3">
+    <div>
+        <h1 class="page-title"><i class="fas fa-<?php echo ($id ? 'edit' : 'plus-circle'); ?>"></i> <?php echo $title; ?></h1>
+        <p class="page-subtitle mb-0">
+            <?php echo $id
+                ? 'Atualize os dados do produto e mantenha o estoque em dia.'
+                : 'Vincule o produto a uma empresa representada para facilitar a busca depois.'; ?>
+        </p>
+    </div>
+    <a href="produtos.php<?php echo (!$id && $empresa_id !== '' ? '?empresa_id=' . (int)$empresa_id : ''); ?>" class="btn btn-outline-secondary">
+        <i class="fas fa-list me-2"></i> Ver produtos
+    </a>
+</div>
 
 <?php if (!empty($message)): ?>
-    <div class="alert alert-<?php echo $message_type; ?> alert-dismissible fade show" role="alert">
-        <?php echo $message; ?>
+    <div class="alert alert-<?php echo $message_type; ?> alert-dismissible fade show fade-in-up" role="alert">
+        <i class="fas fa-<?php echo $message_type === 'success' ? 'check-circle' : 'exclamation-triangle'; ?> me-2"></i>
+        <?php echo htmlspecialchars($message); ?>
         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
     </div>
 <?php endif; ?>
@@ -270,6 +296,12 @@ document.addEventListener('DOMContentLoaded', function() {
                         <strong>Busca Rápida:</strong> Antes de cadastrar, verifique se o produto já existe
                         <div class="mt-2">
                             <input type="text" class="form-control" id="quickSearch" placeholder="Digite o nome, código ou qualquer termo para buscar produtos existentes..." autocomplete="off">
+                            <div class="form-check mt-2">
+                                <input class="form-check-input" type="checkbox" id="quickSearchEmpresa" checked>
+                                <label class="form-check-label small" for="quickSearchEmpresa">
+                                    Buscar somente na empresa selecionada
+                                </label>
+                            </div>
                             <div id="quickSearchResults" class="mt-2" style="display: none;">
                                 <div class="card">
                                     <div class="card-body p-2">
@@ -286,18 +318,20 @@ document.addEventListener('DOMContentLoaded', function() {
             <div class="row">
                 <div class="col-md-6 mb-3">
                     <label for="empresa_id" class="form-label">Empresa Representada <span class="text-danger">*</span></label>
-                    <select class="form-select" id="empresa_id" name="empresa_id" required>
+                    <select class="form-select" id="empresa_id" name="empresa_id" required
+                            data-searchable data-search-placeholder="Buscar empresa por nome..."
+                            data-search-empty="Nenhuma empresa encontrada">
                         <option value="">Selecione a empresa...</option>
-                        <?php
-                        if ($result_empresas && $result_empresas->num_rows > 0) {
-                            $result_empresas->data_seek(0);
-                            while($empresa = $result_empresas->fetch_assoc()) {
-                                $selected = ($empresa['id'] == $empresa_id) ? 'selected' : '';
-                                echo "<option value='{$empresa['id']}' {$selected}>" . htmlspecialchars($empresa['nome_empresa']) . "</option>";
-                            }
-                        }
-                        ?>
+                        <?php foreach ($empresas_list as $empresa): ?>
+                            <option value="<?php echo (int)$empresa['id']; ?>" <?php echo ((string)$empresa['id'] === (string)$empresa_id) ? 'selected' : ''; ?>>
+                                <?php
+                                echo htmlspecialchars($empresa['nome_empresa']);
+                                echo $empresa['status'] !== 'ativo' ? ' (inativa)' : '';
+                                ?>
+                            </option>
+                        <?php endforeach; ?>
                     </select>
+                    <div class="form-text">Usada para filtrar os produtos na listagem.</div>
                 </div>
                 <div class="col-md-6 mb-3">
                     <label for="nome" class="form-label">Nome do Produto <span class="text-danger">*</span></label>
@@ -374,22 +408,24 @@ document.addEventListener('DOMContentLoaded', function() {
                 </div>
                 <div class="col-lg-3 col-6 mb-3">
                     <label for="quantidade_estoque" class="form-label">Estoque Atual <span class="text-danger">*</span></label>
-                    <input type="number" class="form-control" id="quantidade_estoque" name="quantidade_estoque" value="<?php echo htmlspecialchars($quantidade_estoque !== -1 ? $quantidade_estoque : ''); ?>" required min="0">
+                    <input type="number" class="form-control" id="quantidade_estoque" name="quantidade_estoque" value="<?php echo htmlspecialchars($estoque_e_ilimitado ? '' : $quantidade_estoque); ?>" required min="0">
                 </div>
                 <div class="col-lg-3 col-6 mb-3">
                     <label for="estoque_minimo" class="form-label">Estoque Mínimo <span class="text-danger">*</span></label>
-                    <input type="number" class="form-control" id="estoque_minimo" name="estoque_minimo" value="<?php echo htmlspecialchars($estoque_minimo !== -1 ? $estoque_minimo : ''); ?>" required min="0">
+                    <input type="number" class="form-control" id="estoque_minimo" name="estoque_minimo" value="<?php echo htmlspecialchars($estoque_e_ilimitado ? '' : $estoque_minimo); ?>" required min="0">
                 </div>
             </div>
 
             <div class="row mb-3">
                 <div class="col-12">
-                    <div class="form-check">
-                        <input class="form-check-input" type="checkbox" id="estoque_ilimitado" name="estoque_ilimitado" <?php echo ($quantidade_estoque === -1 ? 'checked' : ''); ?>>
-                        <label class="form-check-label" for="estoque_ilimitado">
-                            <i class="fas fa-infinity me-2"></i><strong>Estoque Ilimitado</strong> (Fábrica/Fornecedor com quantidade indefinida)
-                        </label>
-                        <small class="d-block text-muted mt-1">Marque esta opção quando puder obter quantidades ilimitadas do produto sem necessidade de rastreamento de estoque.</small>
+                    <div class="border rounded p-3 bg-light">
+                        <div class="form-check mb-0">
+                            <input class="form-check-input" type="checkbox" id="estoque_ilimitado" name="estoque_ilimitado" <?php echo ($estoque_e_ilimitado ? 'checked' : ''); ?>>
+                            <label class="form-check-label" for="estoque_ilimitado">
+                                <i class="fas fa-infinity me-2"></i><strong>Estoque Ilimitado</strong> (Fábrica/Fornecedor com quantidade indefinida)
+                            </label>
+                        </div>
+                        <small class="text-muted d-block mt-2">Marque esta opção quando puder obter quantidades ilimitadas do produto sem necessidade de rastreamento de estoque. Os campos de estoque acima ficam desativados.</small>
                     </div>
                 </div>
             </div>
@@ -550,25 +586,36 @@ document.addEventListener('DOMContentLoaded', function() {
     const quickSearchInput = document.getElementById('quickSearch');
     const quickSearchResults = document.getElementById('quickSearchResults');
     const searchResultsList = document.getElementById('searchResultsList');
+    const quickSearchEmpresa = document.getElementById('quickSearchEmpresa');
+    const empresaSelect = document.getElementById('empresa_id');
     let searchTimeout;
 
+    function dispararBusca() {
+        const termo = quickSearchInput.value.trim();
+
+        clearTimeout(searchTimeout);
+
+        if (termo.length < 2) {
+            quickSearchResults.style.display = 'none';
+            return;
+        }
+
+        // Debounce - aguardar 300ms após parar de digitar
+        searchTimeout = setTimeout(() => {
+            buscarProdutos(termo);
+        }, 300);
+    }
+
     if (quickSearchInput) {
-        quickSearchInput.addEventListener('input', function() {
-            const termo = this.value.trim();
+        quickSearchInput.addEventListener('input', dispararBusca);
 
-            // Limpar timeout anterior
-            clearTimeout(searchTimeout);
-
-            if (termo.length < 2) {
-                quickSearchResults.style.display = 'none';
-                return;
-            }
-
-            // Debounce - aguardar 300ms após parar de digitar
-            searchTimeout = setTimeout(() => {
-                buscarProdutos(termo);
-            }, 300);
-        });
+        // Refazer a busca ao trocar a empresa ou o escopo da busca
+        if (quickSearchEmpresa) {
+            quickSearchEmpresa.addEventListener('change', dispararBusca);
+        }
+        if (empresaSelect) {
+            empresaSelect.addEventListener('change', dispararBusca);
+        }
 
         // Esconder resultados ao clicar fora
         document.addEventListener('click', function(e) {
@@ -583,7 +630,14 @@ document.addEventListener('DOMContentLoaded', function() {
         searchResultsList.innerHTML = '<div class="text-center p-2"><i class="fas fa-spinner fa-spin"></i> Buscando...</div>';
         quickSearchResults.style.display = 'block';
 
-        fetch(`api_busca_produtos.php?q=${encodeURIComponent(termo)}`)
+        // Restringe a busca à empresa selecionada, quando solicitado
+        let url = `api_busca_produtos.php?q=${encodeURIComponent(termo)}`;
+        const empresaId = empresaSelect ? empresaSelect.value : '';
+        if (quickSearchEmpresa && quickSearchEmpresa.checked && empresaId) {
+            url += `&empresa_id=${encodeURIComponent(empresaId)}`;
+        }
+
+        fetch(url)
             .then(response => response.json())
             .then(data => {
                 if (data.error) {
@@ -599,28 +653,36 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function exibirResultados(produtos, termo) {
+        const escopoEmpresa = quickSearchEmpresa && quickSearchEmpresa.checked && empresaSelect && empresaSelect.value;
+
         if (produtos.length === 0) {
-            searchResultsList.innerHTML = '<div class="text-muted p-2"><i class="fas fa-info-circle"></i> Nenhum produto encontrado</div>';
+            searchResultsList.innerHTML = '<div class="text-muted p-2"><i class="fas fa-info-circle"></i> Nenhum produto encontrado' +
+                (escopoEmpresa ? ' nesta empresa. Desmarque a opção acima para buscar em todas.' : '.') + '</div>';
             return;
         }
 
-        let html = `<div class="mb-2"><strong>Produtos encontrados (${produtos.length}):</strong></div>`;
+        let html = `<div class="mb-2"><strong>Produtos encontrados (${produtos.length}):</strong>` +
+            (escopoEmpresa ? ' <span class="badge bg-secondary">apenas na empresa selecionada</span>' : '') + '</div>';
 
         produtos.forEach(produto => {
+            const estoque = Number(produto.quantidade_estoque) < 0 ? 'Ilimitado' : produto.quantidade_estoque;
             html += `
                 <div class="border-bottom pb-2 mb-2">
                     <div class="d-flex justify-content-between align-items-start">
                         <div class="flex-grow-1">
                             <div class="fw-semibold">${destacarTermo(produto.nome, termo)}</div>
+                            <small class="text-muted d-block">
+                                <i class="fas fa-building me-1"></i>${destacarTermo(produto.empresa, termo)}
+                            </small>
                             <small class="text-muted">
                                 SKU: ${destacarTermo(produto.sku, termo)} |
                                 Fornecedor: ${destacarTermo(produto.fornecedor, termo)} |
-                                Estoque: ${produto.quantidade_estoque}
+                                Estoque: ${escapeHtml(estoque)}
                             </small>
-                            <div class="text-primary">R$ ${produto.preco_venda}</div>
+                            <div class="text-primary">R$ ${escapeHtml(produto.preco_venda)}</div>
                         </div>
                         <div class="ms-2">
-                            <a href="cadastro_produto.php?id=${produto.id}" class="btn btn-sm btn-outline-primary" title="Editar produto">
+                            <a href="cadastro_produto.php?id=${encodeURIComponent(produto.id)}" class="btn btn-sm btn-outline-primary" title="Editar produto">
                                 <i class="fas fa-edit"></i>
                             </a>
                         </div>
@@ -632,31 +694,25 @@ document.addEventListener('DOMContentLoaded', function() {
         searchResultsList.innerHTML = html;
     }
 
-    function destacarTermo(texto, termo) {
-        if (!termo || !texto) return texto;
+    function escapeHtml(texto) {
+        return (texto === null || texto === undefined ? '' : String(texto))
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;');
+    }
 
-        const regex = new RegExp(`(${termo.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
-        return texto.replace(regex, '<mark>$1</mark>');
+    function destacarTermo(texto, termo) {
+        const seguro = escapeHtml(texto);
+        if (!termo || !seguro) return seguro;
+
+        const regex = new RegExp(`(${escapeHtml(termo).replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
+        return seguro.replace(regex, '<mark>$1</mark>');
     }
 });
 </script>
 
-<!-- Select2 JS -->
-<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
-
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        // Inicializar Select2 para o campo de empresa
-        $('#empresa_id').select2({
-            placeholder: 'Buscar empresa por nome...',
-            allowClear: true,
-            language: 'pt-BR',
-            width: '100%',
-            theme: 'bootstrap-5'
-        });
-    });
-</script>
-});
-</script>
+<!-- Select com busca (vanilla JS, sem jQuery/Select2) -->
+<script src="/js/searchable-select.js?v=<?php echo file_exists(__DIR__ . '/js/searchable-select.js') ? filemtime(__DIR__ . '/js/searchable-select.js') : '1'; ?>"></script>
 
 <?php include_once __DIR__ . '/includes/footer.php'; ?>

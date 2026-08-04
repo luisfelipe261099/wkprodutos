@@ -25,20 +25,28 @@ if (strlen($termo_busca) < 2) {
     exit;
 }
 
+// Filtro opcional por empresa representada
+$empresa_id = isset($_GET['empresa_id']) && ctype_digit((string)$_GET['empresa_id']) ? (int)$_GET['empresa_id'] : null;
+
 try {
     // Preparar termo para busca LIKE
     $termo_like = '%' . $termo_busca . '%';
-    
-    // Query para buscar produtos por nome, SKU, descrição ou fornecedor
+    $termo_inicio = $termo_busca . '%'; // Para priorizar resultados que começam com o termo
+
+    $filtro_empresa_sql = $empresa_id !== null ? " AND p.empresa_id = ?" : "";
+
+    // Query para buscar produtos por nome, SKU, descrição, fornecedor ou empresa
     $sql = "SELECT p.id, p.nome, p.sku, p.preco_venda, p.quantidade_estoque, p.fornecedor, e.nome_empresa
             FROM produtos p
             LEFT JOIN empresas_representadas e ON p.empresa_id = e.id
-            WHERE (p.nome LIKE ? 
-                   OR p.sku LIKE ? 
-                   OR p.descricao LIKE ? 
-                   OR p.fornecedor LIKE ?)
-            ORDER BY 
-                CASE 
+            WHERE (p.nome LIKE ?
+                   OR p.sku LIKE ?
+                   OR p.descricao LIKE ?
+                   OR p.fornecedor LIKE ?
+                   OR e.nome_empresa LIKE ?)
+                  {$filtro_empresa_sql}
+            ORDER BY
+                CASE
                     WHEN p.nome LIKE ? THEN 1
                     WHEN p.sku LIKE ? THEN 2
                     WHEN p.fornecedor LIKE ? THEN 3
@@ -46,16 +54,26 @@ try {
                 END,
                 p.nome ASC
             LIMIT 10";
-    
+
     $stmt = $conn->prepare($sql);
     if (!$stmt) {
         throw new Exception("Erro na preparação da query: " . $conn->error);
     }
-    
-    // Bind dos parâmetros (7 vezes o mesmo termo)
-    $termo_inicio = $termo_busca . '%'; // Para priorizar resultados que começam com o termo
-    $stmt->bind_param("sssssss", $termo_like, $termo_like, $termo_like, $termo_like, $termo_inicio, $termo_inicio, $termo_inicio);
-    
+
+    // Bind: 5 termos do WHERE (+ empresa opcional) + 3 termos da ordenação
+    $tipos = "sssss";
+    $valores = [$termo_like, $termo_like, $termo_like, $termo_like, $termo_like];
+
+    if ($empresa_id !== null) {
+        $tipos .= "i";
+        $valores[] = $empresa_id;
+    }
+
+    $tipos .= "sss";
+    array_push($valores, $termo_inicio, $termo_inicio, $termo_inicio);
+
+    $stmt->bind_param($tipos, ...$valores);
+
     if (!$stmt->execute()) {
         throw new Exception("Erro na execução da query: " . $stmt->error);
     }

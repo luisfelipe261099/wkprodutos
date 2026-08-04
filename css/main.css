@@ -1742,3 +1742,219 @@ textarea.form-control {
         width: 100%;
     }
 }
+
+/* =============================================
+   SEARCHABLE SELECT (js/searchable-select.js)
+   ============================================= */
+
+.ss-wrapper {
+    position: relative;
+    width: 100%;
+}
+
+/* O <select> nativo continua no DOM (envio/validacao do form),
+   mas fica invisivel atras do controle customizado. */
+.ss-wrapper .ss-native {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    pointer-events: none;
+    z-index: -1;
+}
+
+.ss-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    width: 100%;
+    min-height: 42px;
+    padding: 0.6rem 2.25rem 0.6rem 1rem;
+    text-align: left;
+    background-color: #fff;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    font-size: 0.875rem;
+    color: #111827;
+    cursor: pointer;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.ss-toggle:hover:not(:disabled) {
+    border-color: #9ca3af;
+}
+
+.ss-toggle:focus-visible,
+.ss-open .ss-toggle {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.ss-toggle:disabled {
+    background-color: #f3f4f6;
+    color: #9ca3af;
+    cursor: not-allowed;
+}
+
+.ss-toggle-label {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.ss-toggle-placeholder .ss-toggle-label {
+    color: #9ca3af;
+}
+
+.ss-panel {
+    position: absolute;
+    min-width: 240px;
+    top: calc(100% + 4px);
+    left: 0;
+    right: 0;
+    z-index: 1060;
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+    box-shadow: 0 12px 24px rgba(15, 23, 42, 0.12);
+    padding: 0.5rem;
+}
+
+.ss-search {
+    width: 100%;
+    padding: 0.5rem 0.75rem;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    font-size: 0.875rem;
+    margin-bottom: 0.5rem;
+}
+
+.ss-search:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.ss-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    max-height: 260px;
+    overflow-y: auto;
+}
+
+.ss-option {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    padding: 0.5rem 0.75rem;
+    border-radius: 6px;
+    font-size: 0.875rem;
+    color: #374151;
+    cursor: pointer;
+}
+
+.ss-option:hover,
+.ss-option-active {
+    background: #eff6ff;
+    color: #1d4ed8;
+}
+
+.ss-option-selected {
+    background: #e0e7ff;
+    color: #3730a3;
+    font-weight: 600;
+}
+
+.ss-option-disabled {
+    color: #9ca3af;
+    cursor: not-allowed;
+}
+
+.ss-option-text {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.ss-option-hint {
+    flex-shrink: 0;
+    font-size: 0.75rem;
+    color: #6b7280;
+    background: #f3f4f6;
+    border-radius: 999px;
+    padding: 0.1rem 0.5rem;
+}
+
+.ss-empty {
+    padding: 0.75rem;
+    text-align: center;
+    color: #9ca3af;
+    font-size: 0.875rem;
+}
+
+/* =============================================
+   BARRA DE FILTROS
+   ============================================= */
+
+.filter-bar {
+    background: #f9fafb;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    padding: 1rem;
+    margin-bottom: 1.25rem;
+}
+
+.filter-bar .form-label {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    color: #6b7280;
+    margin-bottom: 0.35rem;
+}
+
+.filter-chips {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: 0.85rem;
+}
+
+.filter-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    background: #eff6ff;
+    color: #1d4ed8;
+    border: 1px solid #bfdbfe;
+    border-radius: 999px;
+    padding: 0.25rem 0.65rem;
+    font-size: 0.78rem;
+    font-weight: 500;
+    text-decoration: none;
+}
+
+.filter-chip:hover {
+    background: #dbeafe;
+    color: #1e40af;
+}
+
+.filter-chip i {
+    font-size: 0.7rem;
+    opacity: 0.75;
+}
+
+.filter-chips-label {
+    font-size: 0.78rem;
+    color: #6b7280;
+}
+
+@media (max-width: 576px) {
+    .filter-bar { padding: 0.85rem; }
+}
