@@ -174,6 +174,21 @@ if (!isset($produtos_data)) {
         <a href="cadastro_produto.php" class="btn btn-primary"><i class="fas fa-plus me-2"></i> Adicionar Primeiro Produto</a>
     </div>
 <?php else: ?>
+    <?php
+    // Os filtros se somam (E), então empresa/fornecedor/estoque podem esconder
+    // justamente o produto que a busca deveria achar. Quando isso acontece,
+    // oferecemos a saída: repetir a busca no catálogo inteiro.
+    $outros_filtros = [];
+    if ($filtro_empresa !== '') {
+        $outros_filtros[] = 'empresa: ' . ($empresa_selecionada_nome ?: $filtro_empresa);
+    }
+    if ($filtro_fornecedor !== '') {
+        $outros_filtros[] = 'fornecedor: ' . $filtro_fornecedor;
+    }
+    if ($filtro_estoque !== '') {
+        $outros_filtros[] = 'estoque: ' . $filtro_estoque;
+    }
+    ?>
     <div class="text-center py-5">
         <div class="stats-icon info mx-auto mb-3"><i class="fas fa-filter"></i></div>
         <h5 class="text-muted mb-2">
@@ -183,8 +198,23 @@ if (!isset($produtos_data)) {
                 Nenhum produto encontrado com os filtros aplicados
             <?php endif; ?>
         </h5>
-        <p class="text-muted">Ajuste a busca, a empresa ou o fornecedor para ver mais resultados.</p>
-        <a href="produtos.php" class="btn btn-outline-secondary"><i class="fas fa-eraser me-2"></i> Limpar filtros</a>
+
+        <?php if (!empty($outros_filtros)): ?>
+            <p class="text-muted mb-3">
+                A busca está limitada por <strong><?php echo htmlspecialchars(implode(' · ', $outros_filtros)); ?></strong>.
+            </p>
+            <div class="d-flex flex-wrap justify-content-center gap-2">
+                <?php if ($filtro_busca !== ''): ?>
+                    <a href="<?php echo htmlspecialchars(produtos_url([], ['search' => $filtro_busca])); ?>" class="btn btn-primary">
+                        <i class="fas fa-search me-2"></i> Buscar em todos os produtos
+                    </a>
+                <?php endif; ?>
+                <a href="produtos.php" class="btn btn-outline-secondary"><i class="fas fa-eraser me-2"></i> Limpar filtros</a>
+            </div>
+        <?php else: ?>
+            <p class="text-muted">Tente outro termo &mdash; a busca cobre nome, SKU, descrição, fornecedor e empresa.</p>
+            <a href="produtos.php" class="btn btn-outline-secondary"><i class="fas fa-eraser me-2"></i> Limpar filtros</a>
+        <?php endif; ?>
     </div>
 <?php endif; ?>
 

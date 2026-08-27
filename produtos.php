@@ -129,11 +129,20 @@ if ($filtro_fornecedor !== '') {
 }
 
 if ($filtro_busca !== '') {
-    $where_conditions[] = "(p.nome LIKE ? OR p.sku LIKE ? OR p.fornecedor LIKE ? OR p.descricao LIKE ? OR e.nome_empresa LIKE ?)";
-    $search_term = "%{$filtro_busca}%";
-    for ($i = 0; $i < 5; $i++) {
-        $params[] = $search_term;
-        $types .= "s";
+    // Busca por palavras: cada termo precisa aparecer em algum dos campos, em
+    // qualquer ordem. Assim "bellplus 60" acha o saco de 60lts desse
+    // fornecedor, sem exigir que o usuário digite o nome exato e completo.
+    $termos_busca = preg_split('/\s+/', $filtro_busca, -1, PREG_SPLIT_NO_EMPTY) ?: [];
+    $termos_busca = array_slice($termos_busca, 0, 6);
+
+    foreach ($termos_busca as $termo) {
+        $where_conditions[] = "(p.nome LIKE ? OR p.sku LIKE ? OR p.fornecedor LIKE ? OR p.descricao LIKE ? OR e.nome_empresa LIKE ?)";
+        // % e _ digitados pelo usuário são texto, não curinga
+        $search_term = '%' . addcslashes($termo, '%_\\') . '%';
+        for ($i = 0; $i < 5; $i++) {
+            $params[] = $search_term;
+            $types .= "s";
+        }
     }
 }
 
