@@ -35,6 +35,7 @@
             return;
         }
         select.dataset.searchableReady = '1';
+        select.searchableSelect = this;
 
         var self = this;
         idSeq += 1;
@@ -253,7 +254,31 @@
         });
     }
 
-    window.SearchableSelect = { init: initAll };
+    /**
+     * Re-sincroniza o controle depois que o valor ou as opcoes do <select>
+     * mudam via codigo (ex.: filtros atualizados por AJAX).
+     * Aceita um <select> ou qualquer elemento que contenha selects.
+     */
+    function refresh(target) {
+        var node = target || document;
+
+        if (node.tagName === 'SELECT') {
+            if (node.searchableSelect) {
+                node.searchableSelect.syncLabel();
+            }
+            return;
+        }
+
+        node.querySelectorAll('select[data-searchable]').forEach(function (select) {
+            if (select.searchableSelect) {
+                select.searchableSelect.syncLabel();
+            } else {
+                new SearchableSelect(select);
+            }
+        });
+    }
+
+    window.SearchableSelect = { init: initAll, refresh: refresh };
 
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', function () { initAll(document); });
