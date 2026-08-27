@@ -129,11 +129,20 @@ if ($filtro_fornecedor !== '') {
 }
 
 if ($filtro_busca !== '') {
-    $where_conditions[] = "(p.nome LIKE ? OR p.sku LIKE ? OR p.fornecedor LIKE ? OR p.descricao LIKE ? OR e.nome_empresa LIKE ?)";
-    $search_term = "%{$filtro_busca}%";
-    for ($i = 0; $i < 5; $i++) {
-        $params[] = $search_term;
-        $types .= "s";
+    // Busca por palavras: cada termo precisa aparecer em algum dos campos, em
+    // qualquer ordem. Assim "bellplus 60" acha o saco de 60lts desse
+    // fornecedor, sem exigir que o usuário digite o nome exato e completo.
+    $termos_busca = preg_split('/\s+/', $filtro_busca, -1, PREG_SPLIT_NO_EMPTY) ?: [];
+    $termos_busca = array_slice($termos_busca, 0, 6);
+
+    foreach ($termos_busca as $termo) {
+        $where_conditions[] = "(p.nome LIKE ? OR p.sku LIKE ? OR p.fornecedor LIKE ? OR p.descricao LIKE ? OR e.nome_empresa LIKE ?)";
+        // % e _ digitados pelo usuário são texto, não curinga
+        $search_term = '%' . addcslashes($termo, '%_\\') . '%';
+        for ($i = 0; $i < 5; $i++) {
+            $params[] = $search_term;
+            $types .= "s";
+        }
     }
 }
 
@@ -278,6 +287,41 @@ function produtos_url(array $filtros, array $overrides = []): string
     return 'produtos.php' . ($query !== '' ? '?' . $query : '');
 }
 
+// --- Resposta parcial (AJAX): busca e filtros sem recarregar a página ---
+// A página inteira continua funcionando sem JavaScript (o formulário é um GET
+// comum); quando há JS, só este trecho é recarregado, então o cursor e o
+// teclado nunca são perdidos enquanto o usuário digita.
+if (isset($_GET['ajax']) && $_GET['ajax'] === '1') {
+    // Os partials usam fmt_brl()/render_pagination(), normalmente carregados
+    // pelo header — que não é renderizado nesta resposta.
+    $ui_helper_path = __DIR__ . '/includes/ui_helpers.php';
+    if (file_exists($ui_helper_path)) {
+        require_once $ui_helper_path;
+    }
+
+    $partials = [
+        'stats'        => __DIR__ . '/includes/produtos_stats.php',
+        'chips'        => __DIR__ . '/includes/produtos_chips.php',
+        'resultado'    => __DIR__ . '/includes/produtos_lista.php',
+        'fornecedores' => __DIR__ . '/includes/produtos_fornecedores_options.php',
+    ];
+    $resposta = [
+        'total'    => $total_produtos_db,
+        'contador' => $total_produtos_db . ' produto' . ($total_produtos_db === 1 ? '' : 's'),
+    ];
+    foreach ($partials as $chave => $arquivo) {
+        ob_start();
+        include $arquivo;
+        $resposta[$chave] = ob_get_clean();
+    }
+
+    $conn->close();
+    header('Content-Type: application/json; charset=utf-8');
+    header('Cache-Control: no-store');
+    echo json_encode($resposta, JSON_UNESCAPED_UNICODE);
+    exit;
+}
+
 include_once __DIR__ . '/includes/header.php';
 ?>
 
@@ -294,42 +338,15 @@ include_once __DIR__ . '/includes/header.php';
     </div>
 <?php endif; ?>
 
-<div class="row g-4 mb-4">
-    <div class="col-6 col-lg-3">
-        <div class="stats-card primary fade-in-up">
-            <div class="stats-icon primary"><i class="fas fa-boxes"></i></div>
-            <div class="stats-value"><?php echo $total_produtos_db; ?></div>
-            <div class="stats-label"><?php echo $possui_filtros ? 'Produtos no filtro' : 'Total de Produtos'; ?></div>
-        </div>
-    </div>
-    <div class="col-6 col-lg-3">
-        <div class="stats-card danger fade-in-up">
-            <div class="stats-icon danger"><i class="fas fa-exclamation-triangle"></i></div>
-            <div class="stats-value"><?php echo $criticos; ?></div>
-            <div class="stats-label">Estoque Crítico</div>
-        </div>
-    </div>
-    <div class="col-6 col-lg-3">
-        <div class="stats-card success fade-in-up">
-            <div class="stats-icon success"><i class="fas fa-dollar-sign"></i></div>
-            <div class="stats-value"><?php echo fmt_brl($valor_total_estoque); ?></div>
-            <div class="stats-label">Valor em Estoque</div>
-        </div>
-    </div>
-    <div class="col-6 col-lg-3">
-        <div class="stats-card info fade-in-up">
-            <div class="stats-icon info"><i class="fas fa-building"></i></div>
-            <div class="stats-value"><?php echo $filtro_empresa !== '' ? 1 : $empresas_no_resultado; ?></div>
-            <div class="stats-label">Empresas no resultado</div>
-        </div>
-    </div>
+<div id="produtosStats">
+    <?php include __DIR__ . '/includes/produtos_stats.php'; ?>
 </div>
 
 <div class="modern-card fade-in-up">
     <div class="card-header-modern d-flex justify-content-between align-items-center flex-wrap gap-2">
         <span><i class="fas fa-list"></i> Lista de Produtos</span>
         <div class="d-flex align-items-center gap-2">
-            <span class="badge bg-primary"><?php echo $total_produtos_db; ?> produto<?php echo $total_produtos_db === 1 ? '' : 's'; ?></span>
+            <span class="badge bg-primary" id="produtosContador"><?php echo $total_produtos_db; ?> produto<?php echo $total_produtos_db === 1 ? '' : 's'; ?></span>
             <a href="cadastro_produto.php<?php echo $filtro_empresa !== '' && $filtro_empresa !== 'sem' ? '?empresa_id=' . (int)$filtro_empresa : ''; ?>" class="btn btn-primary">
                 <i class="fas fa-plus me-2"></i> Novo Produto
             </a>
@@ -340,19 +357,34 @@ include_once __DIR__ . '/includes/header.php';
         <!-- Barra de filtros -->
         <form class="filter-bar" method="get" action="produtos.php" id="filtrosProdutos">
             <div class="row g-3 align-items-end">
-                <div class="col-12 col-lg-4">
-                    <label class="form-label" for="searchInput">Buscar</label>
-                    <div class="input-group">
-                        <input type="text" class="form-control" id="searchInput" name="search"
-                               value="<?php echo htmlspecialchars($filtro_busca); ?>"
-                               placeholder="Nome, SKU, descrição, fornecedor ou empresa..." autocomplete="off">
-                        <button class="btn btn-outline-primary" type="submit" title="Buscar">
-                            <i class="fas fa-search"></i>
+                <div class="col-12 col-lg-6">
+                    <label class="form-label" for="searchInput">Buscar produto</label>
+                    <div class="search-field">
+                        <div class="search-field-control">
+                            <i class="fas fa-search search-field-icon" aria-hidden="true"></i>
+                            <input type="text" class="form-control search-field-input" id="searchInput" name="search"
+                                   value="<?php echo htmlspecialchars($filtro_busca); ?>"
+                                   placeholder="Nome, SKU, descrição, fornecedor ou empresa..."
+                                   autocomplete="off" spellcheck="false"
+                                   aria-describedby="searchHint" aria-controls="produtosResultado">
+                            <span class="search-field-spinner" id="searchSpinner" hidden aria-hidden="true"></span>
+                            <button type="button" class="search-field-clear" id="searchClear"
+                                    title="Limpar busca (Esc)" aria-label="Limpar busca"
+                                    <?php echo $filtro_busca === '' ? 'hidden' : ''; ?>>
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                        <button class="btn btn-primary search-field-submit" type="submit" title="Buscar">
+                            <i class="fas fa-search"></i><span class="d-none d-sm-inline ms-2">Buscar</span>
                         </button>
                     </div>
+                    <small class="filter-hint" id="searchHint">
+                        A lista é atualizada enquanto você digita &mdash; o campo não perde o foco.
+                        <span class="d-none d-lg-inline">Atalho: <kbd>Ctrl</kbd> + <kbd>K</kbd>.</span>
+                    </small>
                 </div>
 
-                <div class="col-12 col-md-6 col-lg-4">
+                <div class="col-12 col-md-6 col-lg-3">
                     <label class="form-label" for="empresa_id">Empresa representada</label>
                     <select class="form-select" id="empresa_id" name="empresa_id"
                             data-searchable data-search-placeholder="Buscar empresa por nome..."
@@ -376,17 +408,12 @@ include_once __DIR__ . '/includes/header.php';
                     </select>
                 </div>
 
-                <div class="col-12 col-md-6 col-lg-4">
+                <div class="col-12 col-md-6 col-lg-3">
                     <label class="form-label" for="fornecedor">Fornecedor</label>
                     <select class="form-select" id="fornecedor" name="fornecedor"
                             data-searchable data-search-placeholder="Buscar fornecedor..."
                             data-search-empty="Nenhum fornecedor encontrado">
-                        <option value="">Todos</option>
-                        <?php foreach ($fornecedores_list as $fornecedor): ?>
-                            <option value="<?php echo htmlspecialchars($fornecedor); ?>" <?php echo ($filtro_fornecedor === $fornecedor) ? 'selected' : ''; ?>>
-                                <?php echo htmlspecialchars($fornecedor); ?>
-                            </option>
-                        <?php endforeach; ?>
+                        <?php include __DIR__ . '/includes/produtos_fornecedores_options.php'; ?>
                     </select>
                 </div>
 
@@ -425,234 +452,23 @@ include_once __DIR__ . '/includes/header.php';
                     <button type="submit" class="btn btn-primary">
                         <i class="fas fa-filter me-2"></i> Aplicar filtros
                     </button>
-                    <?php if ($possui_filtros): ?>
-                        <a href="produtos.php" class="btn btn-outline-secondary">
-                            <i class="fas fa-eraser me-2"></i> Limpar filtros
-                        </a>
-                    <?php endif; ?>
+                    <a href="produtos.php" class="btn btn-outline-secondary" id="limparFiltros"
+                       <?php echo $possui_filtros ? '' : 'hidden'; ?>>
+                        <i class="fas fa-eraser me-2"></i> Limpar filtros
+                    </a>
                 </div>
             </div>
 
-            <?php if ($possui_filtros): ?>
-                <div class="filter-chips">
-                    <span class="filter-chips-label"><i class="fas fa-sliders-h me-1"></i> Filtros ativos:</span>
-                    <?php if ($filtro_busca !== ''): ?>
-                        <a class="filter-chip" href="<?php echo htmlspecialchars(produtos_url($filtros_atuais, ['search' => ''])); ?>">
-                            Busca: "<?php echo htmlspecialchars($filtro_busca); ?>" <i class="fas fa-times"></i>
-                        </a>
-                    <?php endif; ?>
-                    <?php if ($filtro_empresa !== ''): ?>
-                        <a class="filter-chip" href="<?php echo htmlspecialchars(produtos_url($filtros_atuais, ['empresa_id' => '', 'fornecedor' => ''])); ?>">
-                            Empresa: <?php echo htmlspecialchars($empresa_selecionada_nome ?: $filtro_empresa); ?> <i class="fas fa-times"></i>
-                        </a>
-                    <?php endif; ?>
-                    <?php if ($filtro_fornecedor !== ''): ?>
-                        <a class="filter-chip" href="<?php echo htmlspecialchars(produtos_url($filtros_atuais, ['fornecedor' => ''])); ?>">
-                            Fornecedor: <?php echo htmlspecialchars($filtro_fornecedor); ?> <i class="fas fa-times"></i>
-                        </a>
-                    <?php endif; ?>
-                    <?php if ($filtro_estoque !== ''): ?>
-                        <a class="filter-chip" href="<?php echo htmlspecialchars(produtos_url($filtros_atuais, ['estoque' => ''])); ?>">
-                            Estoque: <?php echo htmlspecialchars(ucfirst($filtro_estoque)); ?> <i class="fas fa-times"></i>
-                        </a>
-                    <?php endif; ?>
-                    <?php if ($ordenacao !== 'nome_asc'): ?>
-                        <a class="filter-chip" href="<?php echo htmlspecialchars(produtos_url($filtros_atuais, ['ordem' => ''])); ?>">
-                            Ordem: <?php echo htmlspecialchars($ordenacoes[$ordenacao]['label']); ?> <i class="fas fa-times"></i>
-                        </a>
-                    <?php endif; ?>
-                </div>
-            <?php endif; ?>
+            <div id="produtosChips">
+                <?php include __DIR__ . '/includes/produtos_chips.php'; ?>
+            </div>
         </form>
 
-        <?php if ($total_ilimitados > 0): ?>
-            <p class="text-muted small mb-3">
-                <i class="fas fa-infinity me-1"></i>
-                <?php echo $total_ilimitados; ?> produto<?php echo $total_ilimitados === 1 ? '' : 's'; ?> com estoque ilimitado
-                <?php echo $total_ilimitados === 1 ? 'não é considerado' : 'não são considerados'; ?> no valor em estoque.
-            </p>
-        <?php endif; ?>
+        <p class="visually-hidden" role="status" id="produtosStatus"></p>
 
-        <?php if (!empty($produtos_data)): ?>
-            <div class="table-responsive table-responsive-custom">
-                <table class="table table-hover mb-0" id="produtosTable">
-                    <thead>
-                        <tr>
-                            <th>Produto</th>
-                            <th>Empresa</th>
-                            <th>Preço / Lucro</th>
-                            <th class="text-center">Estoque</th>
-                            <th>Fornecedor</th>
-                            <th class="text-center">Ações</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <?php foreach ($produtos_data as $row): ?>
-                            <?php
-                            $estoque = (int)$row['quantidade_estoque'];
-                            $ilimitado = $estoque < 0;
-                            $estoque_baixo = !$ilimitado && $estoque <= (int)$row['estoque_minimo'];
-                            ?>
-                            <tr>
-                                <td>
-                                    <div class="fw-semibold"><?php echo htmlspecialchars($row['nome']); ?></div>
-                                    <small class="text-muted">
-                                        #<?php echo $row['id']; ?>
-                                        <?php if (!empty($row['sku'])): ?>
-                                            &middot; SKU <code class="bg-light px-1 rounded"><?php echo htmlspecialchars($row['sku']); ?></code>
-                                        <?php endif; ?>
-                                    </small>
-                                </td>
-                                <td>
-                                    <?php if (!empty($row['nome_empresa'])): ?>
-                                        <a class="text-decoration-none"
-                                           href="<?php echo htmlspecialchars(produtos_url($filtros_atuais, ['empresa_id' => (int)$row['empresa_id'], 'fornecedor' => '', 'page' => ''])); ?>"
-                                           title="Filtrar por esta empresa">
-                                            <i class="fas fa-building me-1 text-muted"></i><?php echo htmlspecialchars($row['nome_empresa']); ?>
-                                        </a>
-                                    <?php else: ?>
-                                        <span class="text-muted"><i class="fas fa-minus me-1"></i>Sem empresa</span>
-                                    <?php endif; ?>
-                                </td>
-                                <td>
-                                    <div class="fw-semibold text-success">R$ <?php echo number_format($row['preco_venda'], 2, ',', '.'); ?></div>
-                                    <small class="text-muted">Lucro: <?php echo number_format($row['percentual_lucro'], 2, ',', '.'); ?>%</small>
-                                </td>
-                                <td class="text-center">
-                                    <?php if ($ilimitado): ?>
-                                        <span class="status-badge status-info" title="Estoque ilimitado">
-                                            <i class="fas fa-infinity me-1"></i>Ilimitado
-                                        </span>
-                                    <?php else: ?>
-                                        <span class="status-badge <?php echo $estoque_baixo ? 'status-danger' : 'status-success'; ?>" title="Mínimo: <?php echo (int)$row['estoque_minimo']; ?>">
-                                            <?php echo $estoque; ?>
-                                        </span>
-                                    <?php endif; ?>
-                                </td>
-                                <td><?php echo htmlspecialchars($row['fornecedor'] ?: 'N/A'); ?></td>
-                                <td class="text-center">
-                                    <div class="dropdown">
-                                        <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                            <i class="fas fa-cog"></i>
-                                        </button>
-                                        <ul class="dropdown-menu dropdown-menu-end">
-                                            <li><a class="dropdown-item" href="cadastro_produto.php?id=<?php echo $row['id']; ?>"><i class="fas fa-edit me-2"></i>Editar</a></li>
-                                            <li><hr class="dropdown-divider"></li>
-                                            <li><a class="dropdown-item text-danger"
-                                                   href="<?php echo htmlspecialchars(produtos_url($filtros_atuais, ['page' => $pagina_atual > 1 ? $pagina_atual : '', 'action' => 'delete', 'id' => $row['id']])); ?>"
-                                                   onclick="return confirm('Tem certeza que deseja excluir este produto? A exclusão só será permitida se ele não estiver em nenhuma venda ou orçamento.');"><i class="fas fa-trash-alt me-2"></i>Excluir</a></li>
-                                        </ul>
-                                    </div>
-                                </td>
-                            </tr>
-                        <?php endforeach; ?>
-                    </tbody>
-                </table>
-            </div>
-
-            <!-- Cards para Mobile -->
-            <div class="mobile-items-container">
-                <?php foreach ($produtos_data as $row): ?>
-                    <?php
-                    $estoque = (int)$row['quantidade_estoque'];
-                    $ilimitado = $estoque < 0;
-                    $estoque_baixo = !$ilimitado && $estoque <= (int)$row['estoque_minimo'];
-                    ?>
-                    <div class="mobile-item-card">
-                        <div class="mobile-item-title">
-                            <?php echo htmlspecialchars($row['nome']); ?>
-                            <small class="text-muted d-block fw-normal">
-                                #<?php echo $row['id']; ?>
-                                <?php if (!empty($row['sku'])): ?> &middot; SKU: <?php echo htmlspecialchars($row['sku']); ?><?php endif; ?>
-                            </small>
-                        </div>
-
-                        <div class="mobile-item-meta">
-                            <div>
-                                <span class="mobile-item-meta-label">Empresa</span>
-                                <span class="mobile-item-meta-value"><?php echo htmlspecialchars($row['nome_empresa'] ?: 'Sem empresa'); ?></span>
-                            </div>
-                            <div>
-                                <span class="mobile-item-meta-label">Preço de Venda</span>
-                                <span class="mobile-item-meta-value text-success">R$ <?php echo number_format($row['preco_venda'], 2, ',', '.'); ?></span>
-                            </div>
-                            <div>
-                                <span class="mobile-item-meta-label">Margem de Lucro</span>
-                                <span class="mobile-item-meta-value"><?php echo number_format($row['percentual_lucro'], 2, ',', '.'); ?>%</span>
-                            </div>
-                            <div>
-                                <span class="mobile-item-meta-label">Estoque</span>
-                                <span class="mobile-item-meta-value">
-                                    <?php if ($ilimitado): ?>
-                                        <span class="status-badge status-info"><i class="fas fa-infinity me-1"></i> Ilimitado</span>
-                                    <?php else: ?>
-                                        <span class="status-badge <?php echo $estoque_baixo ? 'status-danger' : 'status-success'; ?>">
-                                            <?php echo $estoque; ?> un.
-                                        </span>
-                                    <?php endif; ?>
-                                </span>
-                            </div>
-                            <?php if (!$ilimitado): ?>
-                            <div>
-                                <span class="mobile-item-meta-label">Estoque Mínimo</span>
-                                <span class="mobile-item-meta-value"><?php echo (int)$row['estoque_minimo']; ?> un.</span>
-                            </div>
-                            <?php endif; ?>
-                            <?php if (!empty($row['fornecedor'])): ?>
-                            <div>
-                                <span class="mobile-item-meta-label">Fornecedor</span>
-                                <span class="mobile-item-meta-value"><?php echo htmlspecialchars($row['fornecedor']); ?></span>
-                            </div>
-                            <?php endif; ?>
-                        </div>
-
-                        <div class="mobile-item-actions">
-                            <a href="cadastro_produto.php?id=<?php echo $row['id']; ?>" class="btn btn-sm btn-outline-primary" title="Editar Produto">
-                                <i class="fas fa-edit me-1"></i> Editar
-                            </a>
-                            <a href="<?php echo htmlspecialchars(produtos_url($filtros_atuais, ['page' => $pagina_atual > 1 ? $pagina_atual : '', 'action' => 'delete', 'id' => $row['id']])); ?>"
-                               class="btn btn-sm btn-outline-danger" title="Excluir Produto"
-                               onclick="return confirm('Tem certeza que deseja excluir este produto? A exclusão só será permitida se ele não estiver em nenhuma venda ou orçamento.');">
-                                <i class="fas fa-trash-alt me-1"></i> Excluir
-                            </a>
-                        </div>
-                    </div>
-                <?php endforeach; ?>
-            </div>
-
-        <?php elseif ($total_produtos_geral === 0): ?>
-            <div class="text-center py-5">
-                <div class="stats-icon primary mx-auto mb-3"><i class="fas fa-box-open"></i></div>
-                <h5 class="text-muted mb-2">Nenhum produto cadastrado</h5>
-                <p class="text-muted">Comece adicionando seu primeiro produto ao sistema.</p>
-                <a href="cadastro_produto.php" class="btn btn-primary"><i class="fas fa-plus me-2"></i> Adicionar Primeiro Produto</a>
-            </div>
-        <?php else: ?>
-            <div class="text-center py-5">
-                <div class="stats-icon info mx-auto mb-3"><i class="fas fa-filter"></i></div>
-                <h5 class="text-muted mb-2">Nenhum produto encontrado com os filtros aplicados</h5>
-                <p class="text-muted">Ajuste a busca, a empresa ou o fornecedor para ver mais resultados.</p>
-                <a href="produtos.php" class="btn btn-outline-secondary"><i class="fas fa-eraser me-2"></i> Limpar filtros</a>
-            </div>
-        <?php endif; ?>
-
-        <?php
-        echo render_pagination([
-            'current_page' => $pagina_atual,
-            'total_pages' => $total_paginas,
-            'page_param' => 'page',
-            'base_params' => $filtros_ativos_query,
-            'aria_label' => 'Paginacao de produtos',
-            'summary' => $total_produtos_db . ' produtos encontrados',
-            'window' => 7,
-            'labels' => [
-                'first' => '&laquo;&laquo;',
-                'previous' => '&laquo;',
-                'next' => '&raquo;',
-                'last' => '&raquo;&raquo;'
-            ]
-        ]);
-        ?>
+        <div id="produtosResultado">
+            <?php include __DIR__ . '/includes/produtos_lista.php'; ?>
+        </div>
     </div>
 </div>
 
@@ -664,49 +480,265 @@ document.addEventListener('DOMContentLoaded', function () {
         return;
     }
 
-    // Mantém a URL limpa: campos vazios ou no valor padrão não entram na query string
+    const searchInput  = document.getElementById('searchInput');
+    const searchClear  = document.getElementById('searchClear');
+    const spinner      = document.getElementById('searchSpinner');
+    const boxStats     = document.getElementById('produtosStats');
+    const boxChips     = document.getElementById('produtosChips');
+    const boxResultado = document.getElementById('produtosResultado');
+    const contador     = document.getElementById('produtosContador');
+    const statusBusca  = document.getElementById('produtosStatus');
+    const btnLimpar    = document.getElementById('limparFiltros');
+    const selFornecedor = document.getElementById('fornecedor');
+
+    // Campos que não entram na URL quando estão no valor padrão
     const valoresPadrao = { ordem: 'nome_asc', por_pagina: '15' };
-    function aplicarFiltros() {
+    const suportaAjax = 'fetch' in window && 'AbortController' in window && 'URLSearchParams' in window;
+
+    /** Lê o formulário e devolve os parâmetros de filtro (sem os valores padrão). */
+    function parametrosDoFormulario() {
+        const params = new URLSearchParams();
         form.querySelectorAll('input[name], select[name]').forEach(function (campo) {
+            const valor = (campo.value || '').trim();
             const padrao = valoresPadrao[campo.name];
-            if (campo.value === '' || (padrao !== undefined && campo.value === padrao)) {
-                campo.disabled = true;
+            if (valor === '' || (padrao !== undefined && valor === padrao)) {
+                return;
             }
+            params.set(campo.name, campo.value);
         });
-        form.submit();
+        return params; // trocar filtro sempre volta para a primeira página
     }
 
+    /** Copia os parâmetros de uma URL de volta para os campos do formulário. */
+    function sincronizarFormulario(params) {
+        form.querySelectorAll('input[name], select[name]').forEach(function (campo) {
+            const valor = params.get(campo.name);
+            const novo = valor !== null ? valor : (valoresPadrao[campo.name] || '');
+            if (campo.value === novo) {
+                return;
+            }
+            campo.value = novo;
+            if (campo.tagName === 'SELECT' && campo.value !== novo) {
+                campo.value = ''; // opção não existe mais na lista atual
+            }
+        });
+        atualizarBotaoLimpar();
+        if (window.SearchableSelect && window.SearchableSelect.refresh) {
+            window.SearchableSelect.refresh(form);
+        }
+    }
+
+    function urlDosFiltros(params) {
+        const query = params.toString();
+        return 'produtos.php' + (query !== '' ? '?' + query : '');
+    }
+
+    function atualizarBotaoLimpar() {
+        const temFiltro = parametrosDoFormulario().toString() !== '';
+        if (btnLimpar) {
+            btnLimpar.hidden = !temFiltro;
+        }
+        if (searchClear && searchInput) {
+            searchClear.hidden = searchInput.value === '';
+        }
+    }
+
+    function carregando(ativo) {
+        if (spinner) {
+            spinner.hidden = !ativo;
+        }
+        if (boxResultado) {
+            boxResultado.classList.toggle('is-loading', ativo);
+            boxResultado.setAttribute('aria-busy', ativo ? 'true' : 'false');
+        }
+    }
+
+    let requisicao = null;
+    let sequencia = 0;
+
+    /** Atualiza apenas a listagem, preservando foco e cursor do campo de busca. */
+    function aplicarFiltros(params, opcoes) {
+        const config = opcoes || {};
+        const alvo = params || parametrosDoFormulario();
+        const url = urlDosFiltros(alvo);
+
+        if (!suportaAjax) {
+            window.location.href = url;
+            return;
+        }
+
+        if (requisicao) {
+            requisicao.abort();
+        }
+        requisicao = new AbortController();
+
+        const atual = ++sequencia;
+        carregando(true);
+
+        fetch(url + (url.indexOf('?') === -1 ? '?' : '&') + 'ajax=1', {
+            headers: { 'X-Requested-With': 'XMLHttpRequest' },
+            credentials: 'same-origin',
+            signal: requisicao.signal
+        })
+            .then(function (resposta) {
+                if (!resposta.ok) {
+                    throw new Error('HTTP ' + resposta.status);
+                }
+                return resposta.json();
+            })
+            .then(function (dados) {
+                if (atual !== sequencia) {
+                    return; // chegou uma resposta mais nova
+                }
+                boxStats.innerHTML = dados.stats;
+                boxChips.innerHTML = dados.chips;
+                boxResultado.innerHTML = dados.resultado;
+                if (contador) {
+                    contador.textContent = dados.contador;
+                }
+                if (statusBusca) {
+                    statusBusca.textContent = dados.contador + ' na listagem.';
+                }
+                // A lista de fornecedores depende da empresa selecionada
+                if (selFornecedor && typeof dados.fornecedores === 'string') {
+                    selFornecedor.innerHTML = dados.fornecedores;
+                    if (window.SearchableSelect && window.SearchableSelect.refresh) {
+                        window.SearchableSelect.refresh(selFornecedor);
+                    }
+                }
+                atualizarBotaoLimpar();
+                carregando(false);
+                if (config.historico === 'substituir') {
+                    // Digitar não deve empilhar uma entrada de histórico por letra
+                    window.history.replaceState({ produtos: true }, '', url);
+                } else if (config.historico !== false) {
+                    window.history.pushState({ produtos: true }, '', url);
+                }
+                if (config.rolar) {
+                    boxResultado.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            })
+            .catch(function (erro) {
+                if (erro.name === 'AbortError') {
+                    return;
+                }
+                // Qualquer falha cai no comportamento antigo: navegação normal
+                window.location.href = url;
+            });
+    }
+
+    // --- Envio do formulário (Enter ou botões) ---
     form.addEventListener('submit', function (event) {
         event.preventDefault();
         aplicarFiltros();
     });
 
-    // Selects aplicam o filtro imediatamente
-    ['empresa_id', 'fornecedor', 'estoque', 'ordem', 'por_pagina'].forEach(function (campo) {
-        const elemento = form.querySelector('[name="' + campo + '"]');
-        if (elemento) {
-            elemento.addEventListener('change', aplicarFiltros);
+    // --- Selects aplicam o filtro imediatamente ---
+    ['empresa_id', 'fornecedor', 'estoque', 'ordem', 'por_pagina'].forEach(function (nome) {
+        const campo = form.querySelector('[name="' + nome + '"]');
+        if (campo) {
+            campo.addEventListener('change', function () {
+                aplicarFiltros();
+            });
         }
     });
 
-    // Busca com debounce (sem precisar clicar em "Aplicar filtros")
-    const searchInput = document.getElementById('searchInput');
+    // --- Busca enquanto digita, sem recarregar a página ---
     if (searchInput) {
-        let searchTimeout;
+        let temporizador;
+        let ultimoTermo = searchInput.value.trim();
+
         searchInput.addEventListener('input', function () {
-            clearTimeout(searchTimeout);
-            searchTimeout = setTimeout(aplicarFiltros, 600);
+            atualizarBotaoLimpar();
+            clearTimeout(temporizador);
+            temporizador = setTimeout(function () {
+                const termo = searchInput.value.trim();
+                if (termo === ultimoTermo) {
+                    return; // nada mudou de fato (espaços, acentuação em composição)
+                }
+                ultimoTermo = termo;
+                aplicarFiltros(null, { historico: 'substituir' });
+            }, 400);
         });
 
+        searchInput.addEventListener('keydown', function (event) {
+            if (event.key === 'Escape' && searchInput.value !== '') {
+                event.preventDefault();
+                clearTimeout(temporizador);
+                searchInput.value = '';
+                ultimoTermo = '';
+                atualizarBotaoLimpar();
+                aplicarFiltros(null, { historico: 'substituir' });
+            }
+        });
+
+        if (searchClear) {
+            searchClear.addEventListener('click', function () {
+                clearTimeout(temporizador);
+                searchInput.value = '';
+                ultimoTermo = '';
+                searchInput.focus();
+                atualizarBotaoLimpar();
+                aplicarFiltros(null, { historico: 'substituir' });
+            });
+        }
+
         // Ctrl+K / Ctrl+F focam a busca
-        document.addEventListener('keydown', function (e) {
-            if ((e.ctrlKey || e.metaKey) && (e.key === 'f' || e.key === 'k')) {
-                e.preventDefault();
+        document.addEventListener('keydown', function (event) {
+            if ((event.ctrlKey || event.metaKey) && (event.key === 'f' || event.key === 'k')) {
+                event.preventDefault();
                 searchInput.focus();
                 searchInput.select();
             }
         });
     }
+
+    // --- Links internos (paginação, chips, empresa da tabela) também via AJAX ---
+    document.addEventListener('click', function (event) {
+        if (!suportaAjax || event.defaultPrevented || event.button !== 0 ||
+            event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) {
+            return;
+        }
+
+        const link = event.target.closest('a[href]');
+        if (!link || link.target || link.hasAttribute('download')) {
+            return;
+        }
+        const dentroDaListagem = boxStats.contains(link) || boxChips.contains(link) ||
+            boxResultado.contains(link) || link === btnLimpar;
+        if (!dentroDaListagem) {
+            return;
+        }
+
+        const href = link.getAttribute('href');
+        if (!href || href.charAt(0) === '#') {
+            return;
+        }
+
+        const destino = new URL(href, window.location.href);
+        const arquivo = destino.pathname.split('/').pop();
+        // Só interceptamos links da própria listagem (paginação usa "?page=2")
+        if (destino.origin !== window.location.origin || (arquivo !== '' && arquivo !== 'produtos.php')) {
+            return;
+        }
+        if (destino.searchParams.has('action')) {
+            return; // exclusão continua sendo uma navegação normal
+        }
+
+        event.preventDefault();
+        sincronizarFormulario(destino.searchParams);
+        aplicarFiltros(destino.searchParams, { rolar: destino.searchParams.has('page') });
+    });
+
+    // --- Voltar/avançar do navegador ---
+    window.addEventListener('popstate', function () {
+        const params = new URLSearchParams(window.location.search);
+        params.delete('ajax');
+        sincronizarFormulario(params);
+        aplicarFiltros(params, { historico: false });
+    });
+
+    atualizarBotaoLimpar();
 });
 </script>
 

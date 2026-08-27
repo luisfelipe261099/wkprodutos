@@ -1812,7 +1812,8 @@ textarea.form-control {
 
 .ss-panel {
     position: absolute;
-    min-width: 240px;
+    min-width: min(240px, 100%);
+    max-width: 100vw;
     top: calc(100% + 4px);
     left: 0;
     right: 0;
@@ -1955,6 +1956,170 @@ textarea.form-control {
     color: #6b7280;
 }
 
+.filter-chip-label {
+    flex-shrink: 0;
+    opacity: 0.75;
+}
+
+/* Um termo de busca (ou nome de empresa) longo nao pode esticar o chip */
+.filter-chip-value {
+    display: inline-block;
+    max-width: 16rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    vertical-align: bottom;
+}
+
+.filter-chip-reset {
+    background: #fff;
+    color: #6b7280;
+    border-color: #e5e7eb;
+}
+
+.filter-chip-reset:hover {
+    background: #f3f4f6;
+    color: #374151;
+}
+
+.filter-hint {
+    display: block;
+    margin-top: 0.35rem;
+    font-size: 0.75rem;
+    color: #6b7280;
+}
+
+.filter-hint kbd {
+    font-size: 0.7rem;
+    padding: 0.05rem 0.3rem;
+}
+
+/* ---------------------------------------------
+   Campo de busca (input + limpar + spinner + botao)
+   --------------------------------------------- */
+
+.search-field {
+    display: flex;
+    align-items: stretch;
+}
+
+.search-field-control {
+    position: relative;
+    flex: 1 1 auto;
+    /* essencial: sem isso o input nao encolhe dentro do flex e o texto
+       digitado "empurra" o layout quando o nome e grande */
+    min-width: 0;
+}
+
+.search-field-icon {
+    position: absolute;
+    left: 0.9rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #9ca3af;
+    font-size: 0.85rem;
+    pointer-events: none;
+}
+
+.search-field-input.form-control {
+    width: 100%;
+    height: 100%;
+    min-height: 42px;
+    padding: 0.6rem 3.6rem 0.6rem 2.4rem;
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+    text-overflow: ellipsis;
+}
+
+.search-field-clear,
+.search-field-spinner {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+.search-field-clear {
+    right: 0.55rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 22px;
+    height: 22px;
+    padding: 0;
+    border: 0;
+    border-radius: 50%;
+    background: #e5e7eb;
+    color: #4b5563;
+    font-size: 0.7rem;
+    line-height: 1;
+    cursor: pointer;
+}
+
+.search-field-clear:hover {
+    background: #d1d5db;
+    color: #111827;
+}
+
+.search-field-spinner {
+    right: 2.2rem;
+    width: 14px;
+    height: 14px;
+    border: 2px solid #bfdbfe;
+    border-top-color: #2563eb;
+    border-radius: 50%;
+    animation: search-field-spin 0.6s linear infinite;
+}
+
+.search-field-clear[hidden],
+.search-field-spinner[hidden] {
+    display: none;
+}
+
+@keyframes search-field-spin {
+    to { transform: translateY(-50%) rotate(360deg); }
+}
+
+.search-field-submit {
+    flex: 0 0 auto;
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+    white-space: nowrap;
+}
+
+/* Resultado esmaecido enquanto a busca carrega (o campo continua utilizavel) */
+#produtosResultado {
+    transition: opacity 0.15s ease;
+}
+
+#produtosResultado.is-loading {
+    opacity: 0.5;
+    pointer-events: none;
+}
+
+/* ---------------------------------------------
+   Listagem: nomes longos nao podem quebrar a tabela
+   --------------------------------------------- */
+
+.cell-ellipsis {
+    display: block;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+#produtosTable .col-produto { max-width: 22rem; }
+#produtosTable .col-empresa { max-width: 15rem; }
+#produtosTable .col-fornecedor { max-width: 12rem; }
+
+@media (max-width: 1399.98px) {
+    #produtosTable .col-produto { max-width: 16rem; }
+    #produtosTable .col-empresa { max-width: 11rem; }
+    #produtosTable .col-fornecedor { max-width: 9rem; }
+}
+
 @media (max-width: 576px) {
     .filter-bar { padding: 0.85rem; }
+    .filter-chip-value { max-width: 10rem; }
+    .search-field-input.form-control { padding-right: 3.4rem; }
 }
