@@ -77,11 +77,6 @@ function kw_render_head(string $metaTitle, string $metaDescription, string $acti
         "addressRegion": "<?php echo kw_esc(KW_ADDRESS_STATE); ?>",
         "addressCountry": "BR"
       },
-      "geo": {
-        "@type": "GeoCoordinates",
-        "latitude": "-25.4284",
-        "longitude": "-49.2733"
-      },
       "areaServed": [
         {"@type": "City", "name": "Curitiba"},
         {"@type": "State", "name": "Parana"}
