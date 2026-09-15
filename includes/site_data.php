@@ -5,6 +5,17 @@ declare(strict_types=1);
 const KW_WHATSAPP_NUMBER = '5541998593242';
 const KW_WHATSAPP_LABEL = '(41) 99859-3242';
 const KW_CONTACT_EMAIL = 'karlawollinger02@gmail.com';
+const KW_ADDRESS_STREET = 'Rua Marechal Cândido Rondon, 111';
+const KW_ADDRESS_COMPLEMENT = 'Sobrado 10';
+const KW_ADDRESS_CEP = '83025-090';
+const KW_ADDRESS_CITY = 'São José dos Pinhais';
+const KW_ADDRESS_STATE = 'PR';
+
+function kw_address_line(): string
+{
+    return KW_ADDRESS_STREET . ' - ' . KW_ADDRESS_COMPLEMENT . ' - CEP ' . KW_ADDRESS_CEP
+        . ' - ' . KW_ADDRESS_CITY . ' - ' . KW_ADDRESS_STATE;
+}
 
 function kw_site_categories(): array
 {

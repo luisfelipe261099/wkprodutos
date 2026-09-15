@@ -68,13 +68,18 @@ class ModernPDF extends FPDF {
         $this->Cell(0, 5, $this->convertToLatin1('Representação Comercial'), 0, 1, 'L');
         $this->SetFont('Arial', '', 9);
         $this->SetXY(120, 10);
-        $this->Cell(0, 4, 'karlawollinger2@gmail.com', 0, 1, 'R');
+        $this->Cell(0, 4, 'karlawollinger02@gmail.com', 0, 1, 'R');
         $this->SetXY(120, 16);
         $this->Cell(0, 4, '(41) 99859-3242', 0, 1, 'R');
         $this->SetXY(120, 22);
         $this->Cell(0, 4, 'CNPJ : 30.459.625/0001-87', 0, 1, 'R');
+        $this->SetFont('Arial', '', 8);
+        $this->SetXY(120, 28);
+        $this->Cell(0, 4, $this->convertToLatin1('Rua Marechal Cândido Rondon, 111 - Sobrado 10'), 0, 1, 'R');
+        $this->SetXY(120, 33);
+        $this->Cell(0, 4, $this->convertToLatin1('CEP 83025-090 - São José dos Pinhais - PR'), 0, 1, 'R');
         $this->SetTextColor(0, 0, 0);
-        $this->Ln(25);
+        $this->SetY(51);
     }
     function Footer() {
         $this->SetY(-20);
@@ -289,7 +294,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
         $mail->setFrom('faciencia@lfmtecnologia.com', 'Karla Wollinger - Representações');
         $mail->addAddress($destinatario_email);
-        $mail->addReplyTo('karlawollinger2@gmail.com', 'Karla Wollinger');
+        $mail->addReplyTo('karlawollinger02@gmail.com', 'Karla Wollinger');
         $mail->addStringAttachment($pdf_content, $nome_arquivo_pdf);
 
         $mail->isHTML(true);
@@ -353,7 +358,8 @@ Atenciosamente,
 **Karla Wollinger**
 *Representação Comercial*
 📞 (41) 99859-3242
-📧 karlawollinger2@gmail.com
+📧 karlawollinger02@gmail.com
+📍 Rua Marechal Cândido Rondon, 111 - Sobrado 10 - CEP 83025-090 - São José dos Pinhais - PR
 ";
 ?>
 <!DOCTYPE html>

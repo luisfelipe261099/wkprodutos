@@ -104,7 +104,7 @@ try {
         ['marketplace_ativo', '1', 'Marketplace ativo (1) ou inativo (0)'],
         ['titulo_marketplace', 'Karla Wollinger - Marketplace', 'Título do marketplace'],
         ['descricao_marketplace', 'Faça seus pedidos online de forma rápida e prática', 'Descrição do marketplace'],
-        ['email_notificacoes', 'contato@karlawollinger.com', 'Email para receber notificações de pedidos'],
+        ['email_notificacoes', 'karlawollinger02@gmail.com', 'Email para receber notificações de pedidos'],
         ['prazo_entrega_padrao', '3', 'Prazo padrão de entrega em dias úteis'],
         ['valor_minimo_pedido', '0.00', 'Valor mínimo para pedidos'],
         ['permitir_agendamento', '1', 'Permitir agendamento de entrega (1) ou não (0)'],

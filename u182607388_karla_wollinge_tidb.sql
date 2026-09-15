@@ -1613,7 +1613,7 @@ INSERT INTO `marketplace_configuracoes` (`id`, `chave`, `valor`, `descricao`, `d
 (1, 'marketplace_ativo', '1', 'Marketplace ativo (1) ou inativo (0)', '2025-06-05 18:30:07'),
 (2, 'titulo_marketplace', 'Karla Wollinger - Marketplace', 'TÃ­tulo do marketplace', '2025-06-05 18:30:07'),
 (3, 'descricao_marketplace', 'FaÃ§a seus pedidos online de forma rÃ¡pida e prÃ¡tica', 'DescriÃ§Ã£o do marketplace', '2025-06-05 18:30:07'),
-(4, 'email_notificacoes', 'contato@karlawollinger.com', 'Email para receber notificaÃ§Ãµes de pedidos', '2025-06-05 18:30:07'),
+(4, 'email_notificacoes', 'karlawollinger02@gmail.com', 'Email para receber notificaÃ§Ãµes de pedidos', '2025-06-05 18:30:07'),
 (5, 'prazo_entrega_padrao', '3', 'Prazo padrÃ£o de entrega em dias Ãºteis', '2025-06-05 18:30:07'),
 (6, 'valor_minimo_pedido', '0.00', 'Valor mÃ­nimo para pedidos', '2025-06-05 18:30:07'),
 (7, 'permitir_agendamento', '1', 'Permitir agendamento de entrega (1) ou nÃ£o (0)', '2025-06-05 18:30:07'),
