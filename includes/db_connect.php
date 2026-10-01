@@ -1,5 +1,7 @@
 <?php
 
+require_once __DIR__ . '/timezone.php';
+
 // GARANTIR UTF-8 EM TODOS OS HEADERS HTTP
 if (headers_sent() === false) {
     header('Content-Type: text/html; charset=utf-8');
@@ -98,5 +100,13 @@ $conn->set_charset('utf8mb4');
 mysqli_query($conn, "SET NAMES utf8mb4 COLLATE utf8mb4_unicode_ci");
 mysqli_query($conn, "SET CHARACTER SET utf8mb4");
 mysqli_query($conn, "SET COLLATION_CONNECTION = utf8mb4_unicode_ci");
+
+// FUSO DE BRASILIA NA SESSAO DO BANCO - NOW(), CURDATE() e as colunas com
+// DEFAULT CURRENT_TIMESTAMP usam o fuso da sessao, nao o do PHP. O nome do fuso
+// so funciona se o servidor tiver as tabelas de fuso carregadas; quando nao
+// tem, cai no deslocamento numerico, que sempre funciona.
+if (!mysqli_query($conn, "SET time_zone = '" . $conn->real_escape_string(kw_timezone()) . "'")) {
+    mysqli_query($conn, "SET time_zone = '" . $conn->real_escape_string(kw_timezone_offset()) . "'");
+}
 
 ?>

@@ -4,6 +4,7 @@ use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\SMTP;
 use PHPMailer\PHPMailer\Exception;
 
+require_once __DIR__ . '/includes/timezone.php';
 require __DIR__ . '/vendor/autoload.php'; // Certifique-se de ter o PHPMailer instalado via Composer
 
 // Adicionar log para depuração
@@ -56,7 +57,7 @@ function sendEmail($subject, $body, $from_email, $from_name, $isHTML = true) {
         $mail->setFrom('desenvolvimento@lfmtecnologia.com', 'Site WK Produtos');
 
         // Adicionar múltiplos destinatários para aumentar chances de recebimento
-        $mail->addAddress('wk.karla@hotmail.com', 'WK Produtos de Limpeza');
+        $mail->addAddress('karlawollinger02@gmail.com', 'WK Produtos de Limpeza');
         // Adicione seu email pessoal como cópia para teste
         // $mail->addCC('seu-email-pessoal@gmail.com'); // Comentado para evitar erros
         $mail->addReplyTo($from_email, $from_name);
@@ -95,7 +96,7 @@ function sendEmailFallback($subject, $body, $from_email, $from_name) {
     $headers .= "Content-Type: text/html; charset=UTF-8\r\n";
 
     // Enviar email
-    $result = mail('wk.karla@hotmail.com', $subject, $body, $headers);
+    $result = mail('karlawollinger02@gmail.com', $subject, $body, $headers);
 
     logMessage("Resultado do envio via mail(): " . ($result ? "SUCESSO" : "FALHA"));
     return $result;
@@ -184,7 +185,7 @@ function generateNewsletterEmailHTML($email) {
                 <p>É recomendável adicionar este email à sua lista de contatos de newsletter.</p>
             </div>
             <div class="footer">
-                <p>WK Produtos de Limpeza - Rua Tiradentes, 406 - São José dos Pinhais - PR</p>
+                <p>WK Produtos de Limpeza - Rua Marechal Cândido Rondon, 111 - Sobrado 10 - CEP 83025-090 - São José dos Pinhais - PR</p>
             </div>
         </div>
     </body>
@@ -422,7 +423,7 @@ function getQuoteEmailTemplate() {
         <!-- Rodapé -->
         <div class="footer">
             <p><strong>WK Produtos de Limpeza</strong></p>
-            <p>Rua Tiradentes, 406 - São José dos Pinhais - PR</p>
+            <p>Rua Marechal Cândido Rondon, 111 - Sobrado 10 - CEP 83025-090 - São José dos Pinhais - PR</p>
             <p>Tel: (41) 3283-7121 | (41) 9 9859-3242</p>
 
             <div class="social-links">
@@ -667,7 +668,7 @@ function getContactEmailTemplate() {
         <!-- Rodapé -->
         <div class="footer">
             <p><strong>WK Produtos de Limpeza</strong></p>
-            <p>Rua Tiradentes, 406 - São José dos Pinhais - PR</p>
+            <p>Rua Marechal Cândido Rondon, 111 - Sobrado 10 - CEP 83025-090 - São José dos Pinhais - PR</p>
             <p>Tel: (41) 3283-7121 | (41) 9 9859-3242</p>
 
             <div class="social-links">

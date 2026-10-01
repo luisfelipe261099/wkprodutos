@@ -51,8 +51,14 @@ kw_render_head($metaTitle, $metaDescription, 'contato');
             </article>
             <article class="card reveal">
                 <div class="card-icon"><i class="fa-solid fa-location-dot"></i></div>
-                <h3>Area atendida</h3>
-                <p>Curitiba e regiao metropolitana.</p>
+                <h3>Endereco</h3>
+                <p>
+                    <?php echo kw_esc(KW_ADDRESS_STREET); ?><br>
+                    <?php echo kw_esc(KW_ADDRESS_COMPLEMENT); ?><br>
+                    CEP <?php echo kw_esc(KW_ADDRESS_CEP); ?><br>
+                    <?php echo kw_esc(KW_ADDRESS_CITY); ?> - <?php echo kw_esc(KW_ADDRESS_STATE); ?>
+                </p>
+                <p>Atendimento em Curitiba e regiao metropolitana.</p>
             </article>
         </div>
 

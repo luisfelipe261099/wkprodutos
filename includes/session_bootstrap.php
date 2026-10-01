@@ -1,5 +1,7 @@
 <?php
 
+require_once __DIR__ . '/timezone.php';
+
 if (!function_exists('kw_auth_secret')) {
     function kw_auth_secret(): string
     {

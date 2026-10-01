@@ -50,7 +50,7 @@ function kw_render_head(string $metaTitle, string $metaDescription, string $acti
     <meta name="twitter:title" content="<?php echo kw_esc($metaTitle); ?>">
     <meta name="twitter:description" content="<?php echo kw_esc($metaDescription); ?>">
     <meta name="geo.region" content="BR-PR">
-    <meta name="geo.placename" content="Curitiba">
+    <meta name="geo.placename" content="<?php echo kw_esc(KW_ADDRESS_CITY); ?>">
     <meta name="theme-color" content="#0c2f58">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -71,14 +71,11 @@ function kw_render_head(string $metaTitle, string $metaDescription, string $acti
       "priceRange": "$$",
       "address": {
         "@type": "PostalAddress",
-        "addressLocality": "Curitiba",
-        "addressRegion": "PR",
+        "streetAddress": "<?php echo kw_esc(KW_ADDRESS_STREET . ' - ' . KW_ADDRESS_COMPLEMENT); ?>",
+        "postalCode": "<?php echo kw_esc(KW_ADDRESS_CEP); ?>",
+        "addressLocality": "<?php echo kw_esc(KW_ADDRESS_CITY); ?>",
+        "addressRegion": "<?php echo kw_esc(KW_ADDRESS_STATE); ?>",
         "addressCountry": "BR"
-      },
-      "geo": {
-        "@type": "GeoCoordinates",
-        "latitude": "-25.4284",
-        "longitude": "-49.2733"
       },
       "areaServed": [
         {"@type": "City", "name": "Curitiba"},
@@ -170,6 +167,7 @@ function kw_render_footer(): void
             <h3>Contato</h3>
             <a href="mailto:<?php echo kw_esc(KW_CONTACT_EMAIL); ?>"><?php echo kw_esc(KW_CONTACT_EMAIL); ?></a>
             <a href="<?php echo kw_esc(kw_whatsapp_link('Oi! Vim pelo site e quero atendimento.')); ?>" target="_blank" rel="noopener">WhatsApp <?php echo kw_esc(KW_WHATSAPP_LABEL); ?></a>
+            <p class="footer-address"><?php echo kw_esc(KW_ADDRESS_STREET); ?><br><?php echo kw_esc(KW_ADDRESS_COMPLEMENT); ?><br>CEP <?php echo kw_esc(KW_ADDRESS_CEP); ?> - <?php echo kw_esc(KW_ADDRESS_CITY); ?> - <?php echo kw_esc(KW_ADDRESS_STATE); ?></p>
             <p>Atendimento em Curitiba e regiao metropolitana</p>
             <div class="social-line">
                 <a href="#" aria-label="Instagram"><i class="fa-brands fa-instagram"></i></a>

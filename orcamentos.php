@@ -438,7 +438,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['action']) && $_GET['act
                 </div>
                 <div class='footer'>
                     <p>Este é um e-mail automático. Por favor, não responda diretamente a este e-mail.</p>
-                    <p>Para entrar em contato, utilize: desenvolvimento@lfmtecnologia.com</p>
+                    <p>Para entrar em contato, utilize: karlawollinger02@gmail.com</p>
                 </div>
             </body>
             </html>";

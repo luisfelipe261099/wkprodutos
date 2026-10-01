@@ -110,15 +110,19 @@ try {
             $this->Cell(0, 4, $this->convertToLatin1('Representação Comercial'), 0, 1, 'L');
 
             $this->SetFont('Arial', '', 7);
-            $this->SetXY(120, 6);
-            $this->Cell(0, 3, 'karlawollinger2@gmail.com', 0, 1, 'R');
-            $this->SetXY(120, 11);
+            $this->SetXY(120, 4);
+            $this->Cell(0, 3, 'karlawollinger02@gmail.com', 0, 1, 'R');
+            $this->SetXY(120, 8);
             $this->Cell(0, 3, '(41) 99859-3242', 0, 1, 'R');
-            $this->SetXY(120, 16);
+            $this->SetXY(120, 12);
             $this->Cell(0, 3, 'CNPJ : 30.459.625/0001-87', 0, 1, 'R');
+            $this->SetXY(120, 16);
+            $this->Cell(0, 3, $this->convertToLatin1('Rua Marechal Cândido Rondon, 111 - Sobrado 10'), 0, 1, 'R');
+            $this->SetXY(120, 20);
+            $this->Cell(0, 3, $this->convertToLatin1('CEP 83025-090 - São José dos Pinhais - PR'), 0, 1, 'R');
 
             $this->SetTextColor(0, 0, 0);
-            $this->Ln(12);
+            $this->SetY(31);
         }
 
         function Footer() {
