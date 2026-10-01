@@ -46,74 +46,75 @@ function registrarHistoricoOrcamento($conn, $orcamento_id, $status_anterior, $st
 }
 
 function gerarPDFComoString($orcamento_id, $conn) {
-    try {
-        $sql_orcamento = "SELECT o.*, c.nome AS nome_cliente, c.email FROM orcamentos o JOIN clientes c ON o.cliente_id = c.id WHERE o.id = ?";
-        $stmt = $conn->prepare($sql_orcamento);
-        $stmt->bind_param("i", $orcamento_id);
-        $stmt->execute();
-        $orcamento = $stmt->get_result()->fetch_assoc();
-        
-        if (!$orcamento) throw new Exception("Orçamento não encontrado");
-
-        $sql_itens = "SELECT i.*, p.nome AS nome_produto FROM itens_orcamento i JOIN produtos p ON i.produto_id = p.id WHERE i.orcamento_id = ?";
-        $stmt_itens = $conn->prepare($sql_itens);
-        $stmt_itens->bind_param("i", $orcamento_id);
-        $stmt_itens->execute();
-        $itens = $stmt_itens->get_result();
-
-        require_once __DIR__ . '/vendor/setasign/fpdf/fpdf.php';
-        
-        $pdf = new FPDF();
-        $pdf->AddPage();
-        $pdf->SetFont('Arial','B',16);
-        $pdf->Cell(0,10,'Orcamento N: ' . $orcamento['id'],0,1,'C');
-        $pdf->Ln(10);
-        $pdf->SetFont('Arial','B',12);
-        $pdf->Cell(0,10,'Informacoes do Orcamento',0,1);
-        $pdf->SetFont('Arial','',12);
-        $pdf->Cell(40,7,'Cliente:',0);
-        $pdf->Cell(0,7,$orcamento['nome_cliente'],0,1);
-        $pdf->Cell(40,7,'Data:',0);
-        $pdf->Cell(0,7,date('d/m/Y', strtotime($orcamento['data_orcamento'])),0,1);
-        $pdf->Cell(40,7,'Status:',0);
-        $pdf->Cell(0,7,ucfirst($orcamento['status_orcamento']),0,1);
-        $pdf->Ln(10);
-        $pdf->SetFont('Arial','B',12);
-        $pdf->Cell(0,10,'Itens do Orcamento',0,1);
-        $pdf->SetFillColor(230,230,230);
-        $pdf->SetFont('Arial','B',10);
-        $pdf->Cell(90,7,'Produto',1,0,'C',true);
-        $pdf->Cell(25,7,'Quantidade',1,0,'C',true);
-        $pdf->Cell(35,7,'Valor Unit.',1,0,'C',true);
-        $pdf->Cell(40,7,'Subtotal',1,1,'C',true);
-        $pdf->SetFont('Arial','',10);
-        
-        while ($item = $itens->fetch_assoc()) {
-            $preco = $item['preco_unitario'] ?? 0;
-            $subtotal = $item['quantidade'] * $preco;
-            $pdf->Cell(90,7,iconv('UTF-8', 'ISO-8859-1//IGNORE', $item['nome_produto']),1,0);
-            $pdf->Cell(25,7,$item['quantidade'],1,0,'C');
-            $pdf->Cell(35,7,'R$ '.number_format($preco, 2, ',', '.'),1,0,'R');
-            $pdf->Cell(40,7,'R$ '.number_format($subtotal, 2, ',', '.'),1,1,'R');
-        }
-        
-        $pdf->SetFont('Arial','B',11);
-        $pdf->Cell(150,7,'Valor Total:',1,0,'R');
-        $pdf->Cell(40,7,'R$ '.number_format($orcamento['valor_total'], 2, ',', '.'),1,1,'R');
-        
-        if (!empty($orcamento['observacoes'])) {
-            $pdf->Ln(10);
-            $pdf->SetFont('Arial','B',12);
-            $pdf->Cell(0,7,'Observacoes:',0,1);
-            $pdf->SetFont('Arial','',11);
-            $pdf->MultiCell(0,7,iconv('UTF-8', 'ISO-8859-1//IGNORE', $orcamento['observacoes']),0);
-        }
-        
-        return $pdf->Output('S');
-    } catch (Exception $e) {
-        error_log("Erro ao gerar PDF do orçamento #$orcamento_id: " . $e->getMessage());
-        throw $e;
+    // Usa o mesmo gerador do botao "Baixar PDF" (gerarPDFModerno), para o PDF
+    // que o cliente recebe por e-mail ser identico ao que a Karla ve na tela:
+    // mesmo cabecalho com e-mail e endereco, mesmo quadro de contato e aceite.
+    // Antes daqui saia um PDF sem nenhum dado da empresa.
+    $sql_orcamento = "SELECT o.*, c.nome as cliente_nome, c.email as cliente_email, c.telefone, c.inscricao_estadual,
+                             c.endereco, c.numero, c.ponto_referencia, c.nome_fantasia, c.cidade, c.estado, c.cep, c.cpf_cnpj, c.tipo_pessoa
+                      FROM orcamentos o
+                      LEFT JOIN clientes c ON o.cliente_id = c.id
+                      WHERE o.id = ?";
+    $stmt_orcamento = $conn->prepare($sql_orcamento);
+    if (!$stmt_orcamento) {
+        throw new Exception("Erro no banco: " . $conn->error);
     }
+    $stmt_orcamento->bind_param("i", $orcamento_id);
+    $stmt_orcamento->execute();
+    $orcamento = $stmt_orcamento->get_result()->fetch_assoc();
+    $stmt_orcamento->close();
+
+    if (!$orcamento) {
+        throw new Exception("Orcamento #$orcamento_id nao encontrado");
+    }
+
+    $sql_itens = "SELECT io.*, p.nome as produto_nome, p.sku as codigo, p.descricao,
+                         e.nome_empresa, e.logo_empresa
+                  FROM itens_orcamento io
+                  LEFT JOIN produtos p ON io.produto_id = p.id
+                  LEFT JOIN empresas_representadas e ON p.empresa_id = e.id
+                  WHERE io.orcamento_id = ?";
+    $stmt_itens = $conn->prepare($sql_itens);
+    if (!$stmt_itens) {
+        throw new Exception("Erro no banco (itens): " . $conn->error);
+    }
+    $stmt_itens->bind_param("i", $orcamento_id);
+    $stmt_itens->execute();
+    $result_itens = $stmt_itens->get_result();
+
+    $itens = [];
+    $empresas_logos = [];
+    while ($item = $result_itens->fetch_assoc()) {
+        $item['quantidade'] = $item['quantidade'] ?? 1;
+        $item['preco_unitario'] = $item['preco_unitario'] ?? 0;
+        $item['produto_nome'] = $item['produto_nome'] ?? 'Produto sem nome';
+        $item['codigo'] = $item['codigo'] ?? '';
+        $item['descricao'] = $item['descricao'] ?? '';
+        $item['nome_empresa'] = $item['nome_empresa'] ?? '';
+        $item['logo_empresa'] = $item['logo_empresa'] ?? '';
+
+        if (!empty($item['logo_empresa']) && !in_array($item['logo_empresa'], $empresas_logos)) {
+            $empresas_logos[] = $item['logo_empresa'];
+        }
+        $itens[] = $item;
+    }
+    $stmt_itens->close();
+
+    if (empty($orcamento['valor_total'])) {
+        $orcamento['valor_total'] = 0;
+        foreach ($itens as $item) {
+            $orcamento['valor_total'] += $item['quantidade'] * $item['preco_unitario'];
+        }
+    }
+
+    // PDF_FUNCTION_ONLY faz o arquivo expor so a funcao, sem rodar a pagina
+    // (que exigiria login e leria $_GET['id']).
+    if (!defined('PDF_FUNCTION_ONLY')) {
+        define('PDF_FUNCTION_ONLY', true);
+    }
+    require_once __DIR__ . '/gerar_pdf_orcamento.php';
+
+    return gerarPDFModerno($orcamento, $itens, $empresas_logos, 'S');
 }
 
 // ===================================================================================

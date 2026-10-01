@@ -112,196 +112,215 @@ try {
     exit;
 }
 
+// Fecha a conexao apenas no uso como pagina. Com PDF_FUNCTION_ONLY o arquivo e
+// so uma biblioteca: quem incluiu (orcamentos.php, gerar_pdf_orcamento_cliente.php)
+// continua usando a mesma $conn depois, e fechar aqui derrubava as consultas
+// seguintes.
+$conn->close();
+
 } // fim do if (!defined('PDF_FUNCTION_ONLY'))
 
-function gerarPDFModerno($orcamento, $itens, $empresas_logos = []) {
+/**
+ * Monta a proposta comercial em PDF.
+ *
+ * @param string $modoSaida 'I' envia o PDF ao navegador (padrao). 'S' devolve
+ *   o PDF como string, para anexar em e-mail, sem emitir cabecalho HTTP nenhum.
+ */
+function gerarPDFModerno($orcamento, $itens, $empresas_logos = [], $modoSaida = 'I') {
     try {
         require_once __DIR__ . '/vendor/setasign/fpdf/fpdf.php';
 
-        class ModernPDF extends FPDF {
-            private $primaryColor = [28, 79, 140];
-            private $accentColor = [13, 110, 253];
-            private $lightGray = [248, 249, 250];
-            private $darkGray = [52, 58, 64];
-            private $successColor = [25, 135, 84];
-            private $tableFontSize = 8;
+        // A classe e declarada aqui dentro. O guard deixa a funcao poder ser
+        // chamada mais de uma vez no mesmo request (ex.: enviar varios
+        // orcamentos por e-mail) sem dar "Cannot redeclare class".
+        if (!class_exists('ModernPDF', false)) {
+            class ModernPDF extends FPDF {
+                private $primaryColor = [28, 79, 140];
+                private $accentColor = [13, 110, 253];
+                private $lightGray = [248, 249, 250];
+                private $darkGray = [52, 58, 64];
+                private $successColor = [25, 135, 84];
+                private $tableFontSize = 8;
             
-            function setTableFontSize($size) {
-                $this->tableFontSize = $size;
-            }
-            
-            function convertToLatin1($text) {
-                return iconv('UTF-8', 'ISO-8859-1//IGNORE', $text);
-            }
-            
-            function Header() {
-                $this->SetFillColor($this->primaryColor[0], $this->primaryColor[1], $this->primaryColor[2]);
-                $this->Rect(0, 0, 210, 30, 'F');
-                $this->SetFillColor($this->accentColor[0], $this->accentColor[1], $this->accentColor[2]);
-                $this->Rect(0, 28, 210, 3, 'F');
-
-                $logo_width = 0;
-                if (file_exists('logo.jpeg')) {
-                    $this->Image('logo.jpeg', 15, 5, 15, 0); // Reduzido de 20 para 15
-                    $logo_width = 20; // Reduzido de 25 para 20
+                function setTableFontSize($size) {
+                    $this->tableFontSize = $size;
                 }
-
-                $this->SetTextColor(255, 255, 255);
-                $this->SetFont('Arial', 'B', 14);
-                $this->SetXY(15 + $logo_width, 8);
-                $this->Cell(0, 6, $this->convertToLatin1('Karla Wollinger'), 0, 1, 'L');
-
-                $this->SetFont('Arial', '', 8);
-                $this->SetXY(15 + $logo_width, 16);
-                $this->Cell(0, 4, $this->convertToLatin1('Representação Comercial'), 0, 1, 'L');
-
-                $this->SetFont('Arial', '', 7);
-                $this->SetXY(120, 4);
-                $this->Cell(0, 3, 'karlawollinger02@gmail.com', 0, 1, 'R');
-                $this->SetXY(120, 8);
-                $this->Cell(0, 3, '(41) 99859-3242', 0, 1, 'R');
-                $this->SetXY(120, 12);
-                $this->Cell(0, 3, 'CNPJ : 30.459.625/0001-87', 0, 1, 'R');
-                $this->SetXY(120, 16);
-                $this->Cell(0, 3, $this->convertToLatin1('Rua Marechal Cândido Rondon, 111 - Sobrado 10'), 0, 1, 'R');
-                $this->SetXY(120, 20);
-                $this->Cell(0, 3, $this->convertToLatin1('CEP 83025-090 - São José dos Pinhais - PR'), 0, 1, 'R');
-
-                $this->SetTextColor(0, 0, 0);
-                $this->SetY(31);
-            }
-
-            function Footer() {
-                $this->SetY(-15);
-                $this->SetDrawColor($this->primaryColor[0], $this->primaryColor[1], $this->primaryColor[2]);
-                $this->SetLineWidth(0.3);
-                $this->Line(15, $this->GetY(), 195, $this->GetY());
-
-                $this->Ln(2);
-                $this->SetFont('Arial', '', 7);
-                $this->SetTextColor($this->darkGray[0], $this->darkGray[1], $this->darkGray[2]);
-
-                $this->SetX(15);
-                $this->Cell(90, 3, $this->convertToLatin1('karla wollinger - Todos os direitos reservados'), 0, 0, 'L');
-                $this->Cell(90, 3, $this->convertToLatin1('Documento gerado em: ') . date('d/m/Y H:i'), 0, 1, 'R');
-
-                $this->SetDrawColor(0, 0, 0);
-                $this->SetTextColor(0, 0, 0);
-                $this->SetLineWidth(0.2);
-            }
             
-            function ShadowBox($x, $y, $w, $h, $title, $content, $bgColor = null) {
-                $this->SetFillColor(200, 200, 200);
-                $this->SetDrawColor(200, 200, 200);
-                $this->Rect($x + 1, $y + 1, $w, $h, 'F');
-
-                if ($bgColor) {
-                    $this->SetFillColor($bgColor[0], $bgColor[1], $bgColor[2]);
-                } else {
-                    $this->SetFillColor(255, 255, 255);
+                function convertToLatin1($text) {
+                    return iconv('UTF-8', 'ISO-8859-1//IGNORE', $text);
                 }
-                $this->SetDrawColor(220, 220, 220);
-                $this->Rect($x, $y, $w, $h, 'DF');
-
-                $this->SetFont('Arial', 'B', 8);
-                $this->SetTextColor($this->primaryColor[0], $this->primaryColor[1], $this->primaryColor[2]);
-                $this->SetXY($x + 3, $y + 2);
-                $this->Cell($w - 6, 5, $this->convertToLatin1($title), 0, 1, 'L');
-
-                $this->SetDrawColor($this->primaryColor[0], $this->primaryColor[1], $this->primaryColor[2]);
-                $this->Line($x + 3, $y + 6, $x + $w - 3, $y + 6);
-
-                $this->SetFont('Arial', '', 7);
-                $this->SetTextColor(0, 0, 0);
-                $this->SetXY($x + 3, $y + 8);
-                $this->MultiCell($w - 6, 3, $this->convertToLatin1($content), 0, 'L');
-
-                $this->SetDrawColor(0, 0, 0);
-            }
             
-            function drawTableHeader($headers, $widths) {
-                $start_x = 15;
-                $this->SetFillColor($this->primaryColor[0], $this->primaryColor[1], $this->primaryColor[2]);
-                $this->SetTextColor(255, 255, 255);
-                $this->SetFont('Arial', 'B', 6);
-                $this->SetDrawColor(255, 255, 255);
-                $current_x = $start_x;
-                for ($i = 0; $i < count($headers); $i++) {
-                    $this->SetXY($current_x, $this->GetY());
-                    $this->Cell($widths[$i], 5, $this->convertToLatin1($headers[$i]), 1, 0, 'C', true);
-                    $current_x += $widths[$i];
-                }
-                $this->Ln();
-                $this->SetTextColor(0, 0, 0);
-                $this->SetFont('Arial', '', 6);
-                $this->SetDrawColor(220, 220, 220);
-            }
+                function Header() {
+                    $this->SetFillColor($this->primaryColor[0], $this->primaryColor[1], $this->primaryColor[2]);
+                    $this->Rect(0, 0, 210, 30, 'F');
+                    $this->SetFillColor($this->accentColor[0], $this->accentColor[1], $this->accentColor[2]);
+                    $this->Rect(0, 28, 210, 3, 'F');
 
-            function ModernTable($headers, $data, $widths) {
-                $start_x = 15;
-
-                $this->drawTableHeader($headers, $widths);
-
-                $fill = false;
-
-                foreach ($data as $row) {
-                    // Calcula a altura necessária para a linha
-                    $max_cell_height = 4;
-
-                    if (isset($row[1])) {
-                        $this->SetFont('Arial', '', 6);
-                        $text_width = $this->GetStringWidth($this->convertToLatin1($row[1]));
-                        if ($text_width > $widths[1] - 2) {
-                            $estimated_lines = ceil($text_width / ($widths[1] - 2));
-                            $max_cell_height = max($max_cell_height, $estimated_lines * 3);
-                        }
+                    $logo_width = 0;
+                    if (file_exists('logo.jpeg')) {
+                        $this->Image('logo.jpeg', 15, 5, 15, 0); // Reduzido de 20 para 15
+                        $logo_width = 20; // Reduzido de 25 para 20
                     }
 
-                    $max_cell_height = min($max_cell_height, 12);
+                    $this->SetTextColor(255, 255, 255);
+                    $this->SetFont('Arial', 'B', 14);
+                    $this->SetXY(15 + $logo_width, 8);
+                    $this->Cell(0, 6, $this->convertToLatin1('Karla Wollinger'), 0, 1, 'L');
 
-                    // Verifica se precisa de nova página
-                    if ($this->GetY() + $max_cell_height > $this->GetPageHeight() - 20) {
-                        $this->AddPage();
-                        $this->drawTableHeader($headers, $widths);
-                        $fill = false;
-                    }
+                    $this->SetFont('Arial', '', 8);
+                    $this->SetXY(15 + $logo_width, 16);
+                    $this->Cell(0, 4, $this->convertToLatin1('Representação Comercial'), 0, 1, 'L');
 
-                    if ($fill) {
-                        $this->SetFillColor($this->lightGray[0], $this->lightGray[1], $this->lightGray[2]);
+                    $this->SetFont('Arial', '', 7);
+                    $this->SetXY(120, 4);
+                    $this->Cell(0, 3, 'karlawollinger02@gmail.com', 0, 1, 'R');
+                    $this->SetXY(120, 8);
+                    $this->Cell(0, 3, '(41) 99859-3242', 0, 1, 'R');
+                    $this->SetXY(120, 12);
+                    $this->Cell(0, 3, 'CNPJ : 30.459.625/0001-87', 0, 1, 'R');
+                    $this->SetXY(120, 16);
+                    $this->Cell(0, 3, $this->convertToLatin1('Rua Marechal Cândido Rondon, 111 - Sobrado 10'), 0, 1, 'R');
+                    $this->SetXY(120, 20);
+                    $this->Cell(0, 3, $this->convertToLatin1('CEP 83025-090 - São José dos Pinhais - PR'), 0, 1, 'R');
+
+                    $this->SetTextColor(0, 0, 0);
+                    $this->SetY(31);
+                }
+
+                function Footer() {
+                    $this->SetY(-15);
+                    $this->SetDrawColor($this->primaryColor[0], $this->primaryColor[1], $this->primaryColor[2]);
+                    $this->SetLineWidth(0.3);
+                    $this->Line(15, $this->GetY(), 195, $this->GetY());
+
+                    $this->Ln(2);
+                    $this->SetFont('Arial', '', 7);
+                    $this->SetTextColor($this->darkGray[0], $this->darkGray[1], $this->darkGray[2]);
+
+                    $this->SetX(15);
+                    $this->Cell(90, 3, $this->convertToLatin1('karla wollinger - Todos os direitos reservados'), 0, 0, 'L');
+                    $this->Cell(90, 3, $this->convertToLatin1('Documento gerado em: ') . date('d/m/Y H:i'), 0, 1, 'R');
+
+                    $this->SetDrawColor(0, 0, 0);
+                    $this->SetTextColor(0, 0, 0);
+                    $this->SetLineWidth(0.2);
+                }
+            
+                function ShadowBox($x, $y, $w, $h, $title, $content, $bgColor = null) {
+                    $this->SetFillColor(200, 200, 200);
+                    $this->SetDrawColor(200, 200, 200);
+                    $this->Rect($x + 1, $y + 1, $w, $h, 'F');
+
+                    if ($bgColor) {
+                        $this->SetFillColor($bgColor[0], $bgColor[1], $bgColor[2]);
                     } else {
                         $this->SetFillColor(255, 255, 255);
                     }
+                    $this->SetDrawColor(220, 220, 220);
+                    $this->Rect($x, $y, $w, $h, 'DF');
 
-                    $start_y = $this->GetY();
+                    $this->SetFont('Arial', 'B', 8);
+                    $this->SetTextColor($this->primaryColor[0], $this->primaryColor[1], $this->primaryColor[2]);
+                    $this->SetXY($x + 3, $y + 2);
+                    $this->Cell($w - 6, 5, $this->convertToLatin1($title), 0, 1, 'L');
+
+                    $this->SetDrawColor($this->primaryColor[0], $this->primaryColor[1], $this->primaryColor[2]);
+                    $this->Line($x + 3, $y + 6, $x + $w - 3, $y + 6);
+
+                    $this->SetFont('Arial', '', 7);
+                    $this->SetTextColor(0, 0, 0);
+                    $this->SetXY($x + 3, $y + 8);
+                    $this->MultiCell($w - 6, 3, $this->convertToLatin1($content), 0, 'L');
+
+                    $this->SetDrawColor(0, 0, 0);
+                }
+            
+                function drawTableHeader($headers, $widths) {
+                    $start_x = 15;
+                    $this->SetFillColor($this->primaryColor[0], $this->primaryColor[1], $this->primaryColor[2]);
+                    $this->SetTextColor(255, 255, 255);
+                    $this->SetFont('Arial', 'B', 6);
+                    $this->SetDrawColor(255, 255, 255);
                     $current_x = $start_x;
-
-                    // Desenha cada célula da linha
-                    for ($i = 0; $i < count($row); $i++) {
-                        $this->SetXY($current_x, $start_y);
-                        $align = ($i == 0 || $i == 3) ? 'C' : (($i >= 4) ? 'R' : 'L');
-
-                        if ($i == 1) {
-                            // Coluna de produto - usa MultiCell para quebrar texto longo
-                            $this->MultiCell($widths[$i], 3, $this->convertToLatin1($row[$i]), 1, $align, true);
-                            $after_y = $this->GetY();
-                            $max_cell_height = max($max_cell_height, $after_y - $start_y);
-                        } else {
-                            $this->Cell($widths[$i], $max_cell_height, $this->convertToLatin1($row[$i]), 1, 0, $align, true);
-                        }
-
+                    for ($i = 0; $i < count($headers); $i++) {
+                        $this->SetXY($current_x, $this->GetY());
+                        $this->Cell($widths[$i], 5, $this->convertToLatin1($headers[$i]), 1, 0, 'C', true);
                         $current_x += $widths[$i];
                     }
-
-                    $this->SetY($start_y + $max_cell_height);
-                    $fill = !$fill;
+                    $this->Ln();
+                    $this->SetTextColor(0, 0, 0);
+                    $this->SetFont('Arial', '', 6);
+                    $this->SetDrawColor(220, 220, 220);
                 }
 
-                $this->SetDrawColor(0, 0, 0);
-                $this->SetFillColor(255, 255, 255);
+                function ModernTable($headers, $data, $widths) {
+                    $start_x = 15;
+
+                    $this->drawTableHeader($headers, $widths);
+
+                    $fill = false;
+
+                    foreach ($data as $row) {
+                        // Calcula a altura necessária para a linha
+                        $max_cell_height = 4;
+
+                        if (isset($row[1])) {
+                            $this->SetFont('Arial', '', 6);
+                            $text_width = $this->GetStringWidth($this->convertToLatin1($row[1]));
+                            if ($text_width > $widths[1] - 2) {
+                                $estimated_lines = ceil($text_width / ($widths[1] - 2));
+                                $max_cell_height = max($max_cell_height, $estimated_lines * 3);
+                            }
+                        }
+
+                        $max_cell_height = min($max_cell_height, 12);
+
+                        // Verifica se precisa de nova página
+                        if ($this->GetY() + $max_cell_height > $this->GetPageHeight() - 20) {
+                            $this->AddPage();
+                            $this->drawTableHeader($headers, $widths);
+                            $fill = false;
+                        }
+
+                        if ($fill) {
+                            $this->SetFillColor($this->lightGray[0], $this->lightGray[1], $this->lightGray[2]);
+                        } else {
+                            $this->SetFillColor(255, 255, 255);
+                        }
+
+                        $start_y = $this->GetY();
+                        $current_x = $start_x;
+
+                        // Desenha cada célula da linha
+                        for ($i = 0; $i < count($row); $i++) {
+                            $this->SetXY($current_x, $start_y);
+                            $align = ($i == 0 || $i == 3) ? 'C' : (($i >= 4) ? 'R' : 'L');
+
+                            if ($i == 1) {
+                                // Coluna de produto - usa MultiCell para quebrar texto longo
+                                $this->MultiCell($widths[$i], 3, $this->convertToLatin1($row[$i]), 1, $align, true);
+                                $after_y = $this->GetY();
+                                $max_cell_height = max($max_cell_height, $after_y - $start_y);
+                            } else {
+                                $this->Cell($widths[$i], $max_cell_height, $this->convertToLatin1($row[$i]), 1, 0, $align, true);
+                            }
+
+                            $current_x += $widths[$i];
+                        }
+
+                        $this->SetY($start_y + $max_cell_height);
+                        $fill = !$fill;
+                    }
+
+                    $this->SetDrawColor(0, 0, 0);
+                    $this->SetFillColor(255, 255, 255);
+                }
             }
         }
 
-        PDFHelper::startPdfOutput('Proposta_Comercial_' . str_pad($orcamento['id'], 6, '0', STR_PAD_LEFT) . '.pdf');
+        if ($modoSaida !== 'S') {
+            PDFHelper::startPdfOutput('Proposta_Comercial_' . str_pad($orcamento['id'], 6, '0', STR_PAD_LEFT) . '.pdf');
+        }
 
         $pdf = new ModernPDF('P', 'mm', 'A4');
         $pdf->SetAutoPageBreak(true, 15);
@@ -629,6 +648,10 @@ function gerarPDFModerno($orcamento, $itens, $empresas_logos = []) {
 
         $filename = 'Proposta_Comercial_' . str_pad($orcamento['id'], 6, '0', STR_PAD_LEFT) . '_' . date('Y-m-d') . '.pdf';
 
+        if ($modoSaida === 'S') {
+            return $pdf->Output('', 'S');
+        }
+
         // Limpa qualquer output buffer antes de enviar o PDF
         if (ob_get_length()) ob_end_clean();
 
@@ -636,6 +659,12 @@ function gerarPDFModerno($orcamento, $itens, $empresas_logos = []) {
         
     } catch (Exception $e) {
         error_log("Erro ao gerar PDF moderno: " . $e->getMessage());
+
+        // Em modo string quem chamou trata o erro: nao da para imprimir HTML
+        // no meio de um anexo de e-mail.
+        if ($modoSaida === 'S') {
+            throw $e;
+        }
         
         echo '<div style="color:#721c24; background-color:#f8d7da; border:1px solid #f5c6cb; border-radius:5px; font-family:Arial,sans-serif; padding:20px; margin:20px; box-shadow:0 0 10px rgba(0,0,0,0.1);">';
         echo '<h2>Erro ao gerar o PDF</h2>';
@@ -645,7 +674,5 @@ function gerarPDFModerno($orcamento, $itens, $empresas_logos = []) {
         echo '</div>';
     }
 }
-
-$conn->close();
 ?>
 
