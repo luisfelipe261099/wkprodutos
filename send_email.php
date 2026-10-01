@@ -4,6 +4,7 @@ use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\SMTP;
 use PHPMailer\PHPMailer\Exception;
 
+require_once __DIR__ . '/includes/timezone.php';
 require __DIR__ . '/vendor/autoload.php'; // Certifique-se de ter o PHPMailer instalado via Composer
 
 // Adicionar log para depuração

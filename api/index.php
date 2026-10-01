@@ -15,6 +15,8 @@
 
 $raizProjeto = dirname(__DIR__);
 
+require_once $raizProjeto . '/includes/timezone.php';
+
 /** Rotas amigáveis do site institucional (equivalem aos "routes" do vercel.json). */
 const ROTAS_AMIGAVEIS = [
     ''                      => 'index.php',

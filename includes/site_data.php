@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+require_once __DIR__ . '/timezone.php';
+
 const KW_WHATSAPP_NUMBER = '5541998593242';
 const KW_WHATSAPP_LABEL = '(41) 99859-3242';
 const KW_CONTACT_EMAIL = 'karlawollinger02@gmail.com';
